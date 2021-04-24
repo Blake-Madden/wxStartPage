@@ -21,12 +21,18 @@ DECLARE_EVENT_TYPE(wxEVT_STARTPAGE_CLICKED, -1)
 #define EVT_STARTPAGE_CLICKED(winid, fn) \
     wx__DECLARE_EVT1(wxEVT_STARTPAGE_CLICKED, winid, wxCommandEventHandler(fn))
 
-/** @brief A landing page for an application.
+/** @brief A wxWidgets landing page for an application.
 
     It displays an MRU list on the right side and a list of customizable list of buttons on the left.
 
     The events of a user clicking on a file or button can be handled via
     an `EVT_STARTPAGE_CLICKED` message map or bound to `wxEVT_STARTPAGE_CLICKED`.
+    This should be bound to a function accepting a wxCommandEvent object.
+    Calling the wxCommandEvent's GetInt() method in your handler will return the ID
+    of the button that was clicked. This ID can be checked against:
+    - GetMRUButtonID() if a file button was clicked
+    - GetButtonID() if a feature button on the left was clicked
+    - or it will be wxStartPage::wxSTART_PAGE_FILE_LIST_CLEAR if the "Clear all..." button was clicked
 */
 class wxStartPage final : public wxWindow
     {
@@ -43,7 +49,7 @@ public:
         @param mruFiles A list of file paths to show in the most-recently-used file list.
         @param logo A logo image of the program to show on the left side.
         @param fileImage Icon to use for the files in the MRU list. This would usually be the application's logo.
-        @param productDescription A name or description of the application to show on the left side.*/
+        @param productDescription An option description of the application to show on the left side (under the application's name).*/
     explicit wxStartPage(wxWindow* parent, wxWindowID id = wxID_ANY, const wxArrayString& mruFiles = wxArrayString(),
         const wxBitmap& logo = wxNullBitmap, const wxBitmap& fileImage = wxNullBitmap,
         const wxString productDescription = wxEmptyString);
@@ -56,6 +62,7 @@ public:
     /// A feature button can be something like "Read the Help" or "Create a New Project."
     /// @param bmp The image for the button.
     /// @param label The label on the button.
+    /// @sa Realise().
     void AddButton(const wxBitmap& bmp, const wxString& label)
         { m_buttons.push_back(wxStartPageButton(bmp, label)); }
     /// @returns The ID of the given index into the custom button list, or returns wxNOT_FOUND if an invalid index is given.
@@ -64,6 +71,7 @@ public:
         { return buttonIndex > m_buttons.size() ? wxNOT_FOUND : m_buttons[buttonIndex].m_id; }
     /// Sets the list of files to be shown in the "most-recently-used" list.
     /// @param mruFiles The list of file names.
+    /// @sa Realise().
     void SetMRUList(const wxArrayString& mruFiles);
     /// @returns The number of items in the MRU list.
     /// @note This is the number of files in the list, not including the "clear all" button.
@@ -77,6 +85,7 @@ public:
     [[nodiscard]] const int GetMRUButtonID(const size_t buttonIndex) const
         { return buttonIndex > GetMRUFileCount() ? wxNOT_FOUND : m_fileButtons[buttonIndex].m_id; }
     /// Recalculate the sizes of the controls and their layout.
+    /// @note This should be called after adding the feature buttons and MRU list.
     void Realise();
     /// Sets the appearance of the start page.
     /// @param style The style for the start page.
