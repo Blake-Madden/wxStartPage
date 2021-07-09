@@ -149,14 +149,14 @@ private:
     void OnPaint([[maybe_unused]] wxPaintEvent& event);
     void OnMouseChange(wxMouseEvent& event);
     void OnMouseClick(wxMouseEvent& event);
-    // supports 100 buttons (usually, you would have 5 or so)
+    // supports 200 file buttons (realistically, there would be ~15)
     static constexpr int ID_FILE_ID_START = wxID_HIGHEST+1;
-    static constexpr int ID_BUTTON_ID_START = wxID_HIGHEST+101;
+    static constexpr int ID_BUTTON_ID_START = wxID_HIGHEST+201;
 public:
     /// ID returned when the "Clear file list" button is clicked.
     /// Client code can check for this in their `wxEVT_STARTPAGE_CLICKED`
     /// code and clear the application's file history.
-    static constexpr int wxSTART_PAGE_FILE_LIST_CLEAR = ID_BUTTON_ID_START+1;
+    static constexpr int wxSTART_PAGE_FILE_LIST_CLEAR = wxID_HIGHEST+200;
 private:
     /// @returns The number of items in the MRU list (including the "clear list" button).
     [[nodiscard]] const size_t GetMRUFileAndClearButtonCount() const
