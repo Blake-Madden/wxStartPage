@@ -15,6 +15,7 @@
 #include <wx/dcgraph.h>
 #include <wx/vector.h>
 #include <wx/artprov.h>
+#include <vector>
 
 DECLARE_EVENT_TYPE(wxEVT_STARTPAGE_CLICKED, -1)
 
@@ -185,8 +186,8 @@ private:
     wxFont m_logoFont;
     wxFont m_buttonFont;
     int m_activeButton{ -1 };
-    wxVector<wxStartPageButton> m_fileButtons;
-    wxVector<wxStartPageButton> m_buttons;
+    std::vector<wxStartPageButton> m_fileButtons;
+    std::vector<wxStartPageButton> m_buttons;
     wxBitmap m_logo;
     wxBitmap m_fileImage;
     wxString m_toolTip;
