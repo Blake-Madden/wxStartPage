@@ -256,7 +256,9 @@ void wxStartPage::OnPaint([[maybe_unused]] wxPaintEvent& event)
 
     // file labels
         {
-        // get the widest file access time label so that we can draw them ragged right
+        // Get the widest file access time label so that we can draw them ragged right.
+        // Also, get the longest file path to make sure the time and path don't overlap.
+        decltype(wxSize::x) filePathLabelWidth{ 0 };
         decltype(wxSize::x) timeLabelWidth{ 0 };
             {
             wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeSmaller());
@@ -273,6 +275,9 @@ void wxStartPage::OnPaint([[maybe_unused]] wxPaintEvent& event)
                         if (timeLabelWidth < timeStringSize.GetWidth())
                             { timeLabelWidth = timeStringSize.GetWidth(); }
                         }
+                    const wxSize filePathStringSize = dc.GetTextExtent(fn.GetFullPath());
+                    if (filePathLabelWidth < filePathStringSize.GetWidth())
+                        { filePathLabelWidth = filePathStringSize.GetWidth(); }
                     }
                 }
             }
@@ -319,15 +324,18 @@ void wxStartPage::OnPaint([[maybe_unused]] wxPaintEvent& event)
                                     fileLabelRect.GetTop() + nameHeight + (GetLabelPaddingHeight()/2)));
                             }
                         // draw the modified time off to the side
-                        wxDateTime accessTime, modTime, createTime;
-                        if (fn.GetTimes(&accessTime, &modTime, &createTime))
+                        if ((m_fileImage.GetWidth()+ GetLabelPaddingWidth()+filePathLabelWidth+timeLabelWidth) < fileLabelRect.GetWidth())
                             {
-                            const wxString accessTimeStr = accessTime.FormatDate() + L" " + accessTime.FormatTime();
-                            const wxSize timeStringSize = dc.GetTextExtent(accessTimeStr);
-                            dc.DrawText(accessTimeStr,
-                                fileLabelRect.GetRight()-(timeLabelWidth+GetLabelPaddingHeight()),
-                                fileLabelRect.GetTop()+
-                                ((fileLabelRect.GetHeight()/2)-(timeStringSize.GetHeight()/2)));
+                            wxDateTime accessTime, modTime, createTime;
+                            if (fn.GetTimes(&accessTime, &modTime, &createTime))
+                                {
+                                const wxString accessTimeStr = accessTime.FormatDate() + L" " + accessTime.FormatTime();
+                                const wxSize timeStringSize = dc.GetTextExtent(accessTimeStr);
+                                dc.DrawText(accessTimeStr,
+                                    fileLabelRect.GetRight()-(timeLabelWidth+GetLabelPaddingHeight()),
+                                    fileLabelRect.GetTop()+
+                                    ((fileLabelRect.GetHeight()/2)-(timeStringSize.GetHeight()/2)));
+                                }
                             }
                         }
                     // if not using an icon, then just keep it simple and draw the filename
