@@ -67,14 +67,18 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
     m_fileButtons.resize(mruFiles.GetCount()+1);
     if (mruFiles.GetCount() == 0)
         { return; }
-    size_t i{ 0 };
-    for (; i < mruFiles.GetCount(); ++i)
+    size_t buttonCount{0};
+    for (const auto& file: mruFiles)
         {
-        m_fileButtons[i].m_id = ID_FILE_ID_START+i;
-        m_fileButtons[i].m_label = mruFiles[i];
+        if (wxFileName::FileExists(file))
+            {
+            m_fileButtons[buttonCount].m_id = ID_FILE_ID_START+buttonCount;
+            m_fileButtons[buttonCount++].m_label = file;
+            }
         }
-    m_fileButtons[i].m_id = wxSTART_PAGE_FILE_LIST_CLEAR;
-    m_fileButtons[i].m_label = _("Clear file list...");
+    m_fileButtons[buttonCount].m_id = wxSTART_PAGE_FILE_LIST_CLEAR;
+    m_fileButtons[buttonCount++].m_label = _("Clear file list...");
+    m_fileButtons.resize(buttonCount);
     }
 
 void wxStartPage::Realise()
