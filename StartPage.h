@@ -1,4 +1,4 @@
-/** @date 2005-2021
+/** @date 2015-2021
     @copyright Oleander Software, Ltd.
     @author Blake Madden
     @details This program is free software; you can redistribute it and/or modify
@@ -13,7 +13,6 @@
 #include <wx/filename.h>
 #include <wx/dcbuffer.h>
 #include <wx/dcgraph.h>
-#include <wx/vector.h>
 #include <wx/artprov.h>
 #include <vector>
 
@@ -28,12 +27,12 @@ DECLARE_EVENT_TYPE(wxEVT_STARTPAGE_CLICKED, -1)
 
     The events of a user clicking on a file or button can be handled via
     an `EVT_STARTPAGE_CLICKED` message map or bound to `wxEVT_STARTPAGE_CLICKED`.
-    This should be bound to a function accepting a wxCommandEvent object.
+    (This should be bound to a function accepting a wxCommandEvent object.)
     Calling the wxCommandEvent's GetInt() method in your handler will return the ID
     of the button that was clicked. This ID can be checked against:
-    - GetMRUButtonID() if a file button was clicked
-    - GetButtonID() if a feature button on the left was clicked
-    - or it will be wxStartPage::wxSTART_PAGE_FILE_LIST_CLEAR if the "Clear all..." button was clicked
+    - GetMRUButtonID(), if a file button was clicked.
+    - GetButtonID(), if a feature button on the left was clicked.
+    - or it will be wxStartPage::wxSTART_PAGE_FILE_LIST_CLEAR if the "Clear all..." button was clicked.
 */
 class wxStartPage final : public wxWindow
     {
@@ -76,7 +75,7 @@ public:
     void SetMRUList(const wxArrayString& mruFiles);
     /// @returns The number of items in the MRU list.
     /// @note This is the number of files in the list, not including the "clear all" button.
-    [[nodiscard]] const size_t GetMRUFileCount() const
+    [[nodiscard]] const size_t GetMRUFileCount() const noexcept
         {
         // the last item is the "clear list" button, so don't count that
         return m_fileButtons.size() > 0 ? m_fileButtons.size()-1 : 0;
@@ -147,7 +146,7 @@ private:
         wxString m_label;
         int m_id{ -1 };
         };
-    void OnPaint([[maybe_unused]] wxPaintEvent& event);
+    void OnPaintWindow([[maybe_unused]] wxPaintEvent& event);
     void OnMouseChange(wxMouseEvent& event);
     void OnMouseClick(wxMouseEvent& event);
     // supports 200 file buttons (realistically, there would be ~15)
@@ -160,7 +159,7 @@ public:
     static constexpr int wxSTART_PAGE_FILE_LIST_CLEAR = wxID_HIGHEST+200;
 private:
     /// @returns The number of items in the MRU list (including the "clear list" button).
-    [[nodiscard]] const size_t GetMRUFileAndClearButtonCount() const
+    [[nodiscard]] const size_t GetMRUFileAndClearButtonCount() const noexcept
         { return m_fileButtons.size(); }
     /// @returns The padding height around the labels.
     [[nodiscard]] const wxCoord GetLabelPaddingHeight() const

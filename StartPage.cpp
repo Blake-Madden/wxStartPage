@@ -33,7 +33,7 @@ wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/, const w
     SetBackgroundStyle(wxBG_STYLE_CUSTOM);
     SetMRUList(mruFiles);
 
-    Bind(wxEVT_PAINT, &wxStartPage::OnPaint, this);
+    Bind(wxEVT_PAINT, &wxStartPage::OnPaintWindow, this);
     Bind(wxEVT_MOTION, &wxStartPage::OnMouseChange, this);
     Bind(wxEVT_LEFT_DOWN, &wxStartPage::OnMouseClick, this);
     }
@@ -133,28 +133,25 @@ void wxStartPage::Realise()
         }
     }
 
-void wxStartPage::OnPaint([[maybe_unused]] wxPaintEvent& event)
+void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
     {
     wxAutoBufferedPaintDC adc(this);
     adc.Clear();
     wxGCDC dc(adc);
 
     wxRect fileColumnHeader;
-    wxRect childArea;
     // calculate the positions of the buttons in the child area
+    const wxRect childArea = wxRect(m_buttonWidth+(GetLeftBorder()*2), 0, GetClientSize().GetWidth()-(m_buttonWidth+(GetLeftBorder()*2)), GetClientSize().GetHeight());
+
+    fileColumnHeader = wxRect(childArea.GetLeft(), 0, childArea.GetWidth(), m_fileColumnHeight);
+    fileColumnHeader.Deflate(1);
+
+    for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
         {
-        childArea = wxRect(m_buttonWidth+(GetLeftBorder()*2), 0, GetClientSize().GetWidth()-(m_buttonWidth+(GetLeftBorder()*2)), GetClientSize().GetHeight());
-
-        fileColumnHeader = wxRect(childArea.GetLeft(), 0, childArea.GetWidth(), m_fileColumnHeight);
-        fileColumnHeader.Deflate(1);
-
-        for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
-            {
-            m_fileButtons[i].m_rect = wxRect(childArea.GetLeft()+1,
-                                             m_fileColumnHeight+(i*GetMruButtonHeight()),
-                                             childArea.GetWidth()-2,
-                                             GetMruButtonHeight());
-            }
+        m_fileButtons[i].m_rect = wxRect(childArea.GetLeft()+1,
+                                            m_fileColumnHeight+(i*GetMruButtonHeight()),
+                                            childArea.GetWidth()-2,
+                                            GetMruButtonHeight());
         }
 
     // fill the background
