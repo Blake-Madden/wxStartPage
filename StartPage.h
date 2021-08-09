@@ -30,8 +30,11 @@ DECLARE_EVENT_TYPE(wxEVT_STARTPAGE_CLICKED, -1)
     (This should be bound to a function accepting a wxCommandEvent object.)
     Calling the wxCommandEvent's GetInt() method in your handler will return the ID
     of the button that was clicked. This ID can be checked against:
-    - GetMRUButtonID(), if a file button was clicked.
-    - GetButtonID(), if a feature button on the left was clicked.
+    - Calling wxStartPage::IsFileId() to see if a file button was clicked.
+      If true, then you can get the selected file path from the event's string value.
+    - GetButtonID(), if a feature button on the left was clicked. If you have 5 buttons,
+      then you can call GetButtonID(0)-GetButtonID(4) and compare the event's ID against the
+      returned IDs to see which button was clicked.
     - or it will be wxStartPage::wxSTART_PAGE_FILE_LIST_CLEAR if the "Clear all..." button was clicked.
 */
 class wxStartPage final : public wxWindow
@@ -72,6 +75,9 @@ public:
     /// Sets the list of files to be shown in the "most-recently-used" list.
     /// @param mruFiles The list of file names.
     /// @sa Realise().
+    /// @note Files that can't be found will be filtered out, although they will remain in the parent application's MRU list.
+    /// That way, if a user is disconnected from their network, then any network files won't appear, but may appear next time
+    /// if they are then connected to the network.
     void SetMRUList(const wxArrayString& mruFiles);
     /// @returns The number of items in the MRU list.
     /// @note This is the number of files in the list, not including the "clear all" button.
@@ -80,10 +86,10 @@ public:
         // the last item is the "clear list" button, so don't count that
         return m_fileButtons.size() > 0 ? m_fileButtons.size()-1 : 0;
         }
-    /// @returns The ID of the given index into the MRU file list, or returns wxNOT_FOUND if an invalid index is given.
-    /// @param buttonIndex The index into the list of files.
-    [[nodiscard]] const int GetMRUButtonID(const size_t buttonIndex) const
-        { return buttonIndex > GetMRUFileCount() ? wxNOT_FOUND : m_fileButtons[buttonIndex].m_id; }
+    /// @returns True if @c Id is an ID within the MRU list.
+    /// @param Id The ID from an EVT_STARTPAGE_CLICKED event after a user clicks a button on the start page.
+    [[nodiscard]] static constexpr bool IsFileId(const int Id) noexcept
+        { return (Id >= ID_FILE_ID_START && Id < wxSTART_PAGE_FILE_LIST_CLEAR); }
     /// Recalculate the sizes of the controls and their layout.
     /// @note This should be called after adding the feature buttons and MRU list.
     void Realise();
@@ -149,14 +155,14 @@ private:
     void OnPaintWindow([[maybe_unused]] wxPaintEvent& event);
     void OnMouseChange(wxMouseEvent& event);
     void OnMouseClick(wxMouseEvent& event);
-    // supports 200 file buttons (realistically, there would be ~15)
+    // supports 50 file buttons (realistically, there would be ~15)
     static constexpr int ID_FILE_ID_START = wxID_HIGHEST+1;
-    static constexpr int ID_BUTTON_ID_START = wxID_HIGHEST+201;
+    static constexpr int ID_BUTTON_ID_START = wxID_HIGHEST+51;
 public:
     /// ID returned when the "Clear file list" button is clicked.
     /// Client code can check for this in their `wxEVT_STARTPAGE_CLICKED`
     /// code and clear the application's file history.
-    static constexpr int wxSTART_PAGE_FILE_LIST_CLEAR = wxID_HIGHEST+200;
+    static constexpr int wxSTART_PAGE_FILE_LIST_CLEAR = wxID_HIGHEST+50;
 private:
     /// @returns The number of items in the MRU list (including the "clear list" button).
     [[nodiscard]] const size_t GetMRUFileAndClearButtonCount() const noexcept

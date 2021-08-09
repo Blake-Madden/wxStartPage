@@ -75,6 +75,9 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
             m_fileButtons[buttonCount].m_id = ID_FILE_ID_START+buttonCount;
             m_fileButtons[buttonCount++].m_label = file;
             }
+        // no more than 50 items here, not enough real estate
+        if (buttonCount == 50)
+            { break; }
         }
     m_fileButtons[buttonCount].m_id = wxSTART_PAGE_FILE_LIST_CLEAR;
     m_fileButtons[buttonCount++].m_label = _("Clear file list...");
@@ -436,7 +439,8 @@ void wxStartPage::OnMouseClick(wxMouseEvent& event)
             else
                 {
                 wxCommandEvent cevent(wxEVT_STARTPAGE_CLICKED, GetId());
-                cevent.SetInt(m_fileButtons[i].m_id);
+                cevent.SetInt(m_fileButtons[i].m_id);       // client calls IsFileId() on this ID to see if a file button was clicked
+                cevent.SetString(m_fileButtons[i].m_label); // selected file path
                 cevent.SetEventObject(this);
                 GetEventHandler()->ProcessEvent(cevent);
                 break;
