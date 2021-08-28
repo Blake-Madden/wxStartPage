@@ -285,6 +285,9 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
                     }
                 }
             }
+        // set file path font color to be slightly ligher/darker than file name color
+        const wxColour filePathColor = (GetDetailFontColor().GetLuminance() < .5f) ?
+            GetDetailFontColor().ChangeLightness(120) : GetDetailFontColor().ChangeLightness(80);
         // begin drawing them
         for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
             {
@@ -317,9 +320,9 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
                             wxPoint(fileLabelRect.GetLeft()+GetLabelPaddingWidth()+m_fileImage.GetWidth(),
                                     fileLabelRect.GetTop()));
                         wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeSmaller());
-                        // draw the filepath in a dark gray
+                        // draw the filepath
                             {
-                            wxDCTextColourChanger cc(dc, wxColour(L"#6F6F6F"));
+                            wxDCTextColourChanger cc(dc, filePathColor);
                             dc.DrawText(
                                 // truncate the path is necessary
                                 (fn.GetFullPath().length() <= 75) ?
