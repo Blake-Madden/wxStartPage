@@ -287,7 +287,7 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
             }
         // set file path font color to be slightly ligher/darker than file name color
         const wxColour filePathColor = (GetDetailFontColor().GetLuminance() < .5f) ?
-            GetDetailFontColor().ChangeLightness(120) : GetDetailFontColor().ChangeLightness(80);
+            GetDetailFontColor().ChangeLightness(160) : GetDetailFontColor().ChangeLightness(40);
         // begin drawing them
         for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
             {
