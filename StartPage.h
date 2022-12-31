@@ -60,7 +60,7 @@ public:
         @param logo A logo image of the program to show on the left side.
         @param fileImage Icon to use for the files in the MRU list.\n
             This would usually be the application's logo.
-        @param productDescription An option description of the application to
+        @param productDescription An optional description of the application to
             show on the left side (under the application's name).*/
     explicit wxStartPage(wxWindow* parent, wxWindowID id = wxID_ANY,
         const wxArrayString& mruFiles = wxArrayString(),
@@ -184,9 +184,9 @@ private:
     void OnPaintWindow([[maybe_unused]] wxPaintEvent& event);
     void OnMouseChange(wxMouseEvent& event);
     void OnMouseClick(wxMouseEvent& event);
-    static constexpr int MAX_BUTTONS_SMALL_SIZE = 6;
-    static constexpr int MAX_FILE_BUTTONS = 15;
-    // supports 15 file buttons
+    static constexpr int MAX_BUTTONS_SMALL_SIZE = 8;
+    static constexpr int MAX_FILE_BUTTONS = 10;
+    // supports 10 file buttons
     static constexpr int ID_FILE_ID_START = wxID_HIGHEST;
     static constexpr int ID_BUTTON_ID_START =
         wxID_HIGHEST + MAX_FILE_BUTTONS + 1;
@@ -230,7 +230,10 @@ private:
         { return FromDIP(wxSize(96, 96)); }
     /// @returns The button size, which will be smaller if there are numerous buttons.
     wxNODISCARD const wxSize GetButtonSize() const
-        { return FromDIP(m_buttons.size() > MAX_BUTTONS_SMALL_SIZE ? wxSize(16, 16) : wxSize(32, 32)); }
+        {
+        return FromDIP(m_buttons.size() > MAX_BUTTONS_SMALL_SIZE ?
+                       wxSize(16, 16) : wxSize(32, 32));
+        }
     /// @returns The size of an icon scaled to 16x16,
     ///     with label padding above and below it.
     wxNODISCARD const wxCoord GetMRUButtonHeight() const noexcept
