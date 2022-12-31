@@ -184,8 +184,9 @@ private:
     void OnPaintWindow([[maybe_unused]] wxPaintEvent& event);
     void OnMouseChange(wxMouseEvent& event);
     void OnMouseClick(wxMouseEvent& event);
-    static constexpr int MAX_FILE_BUTTONS = 20;
-    // supports 20 file buttons
+    static constexpr int MAX_BUTTONS_SMALL_SIZE = 6;
+    static constexpr int MAX_FILE_BUTTONS = 15;
+    // supports 15 file buttons
     static constexpr int ID_FILE_ID_START = wxID_HIGHEST;
     static constexpr int ID_BUTTON_ID_START =
         wxID_HIGHEST + MAX_FILE_BUTTONS + 1;
@@ -229,7 +230,7 @@ private:
         { return FromDIP(wxSize(96, 96)); }
     /// @returns The button size, which will be smaller if there are numerous buttons.
     wxNODISCARD const wxSize GetButtonSize() const
-        { return FromDIP(m_buttons.size() > 2 ? wxSize(16, 16) : wxSize(32, 32)); }
+        { return FromDIP(m_buttons.size() > MAX_BUTTONS_SMALL_SIZE ? wxSize(16, 16) : wxSize(32, 32)); }
     /// @returns The size of an icon scaled to 16x16,
     ///     with label padding above and below it.
     wxNODISCARD const wxCoord GetMRUButtonHeight() const noexcept
@@ -244,7 +245,6 @@ private:
     int m_activeButton{ -1 };
     wxStartPageStyle m_style{ wxStartPageStyle::wxStartPageFlat };
     wxFont m_logoFont;
-    wxFont m_buttonFont;
     std::vector<wxStartPageButton> m_fileButtons;
     std::vector<wxStartPageButton> m_buttons;
     wxBitmapBundle m_logo;

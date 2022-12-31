@@ -23,9 +23,6 @@ wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
           m_logoFont(wxFontInfo(
               wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).
               GetFractionalPointSize() * 2)),
-          m_buttonFont(wxFontInfo(
-              wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).
-              GetFractionalPointSize() * 1.5)),
           m_productDescription(productDescription)
     {
     // Size of an icon scaled to 32x32, with label padding above and below it.
@@ -83,7 +80,7 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
             m_fileButtons[buttonCount].m_id = ID_FILE_ID_START + buttonCount;
             m_fileButtons[buttonCount++].m_label = file;
             }
-        // no more than 20 items here, not enough real estate
+        // no more than 15 items here, not enough real estate
         if (buttonCount == MAX_FILE_BUTTONS)
             { break; }
         }
@@ -121,7 +118,9 @@ void wxStartPage::OnResize([[maybe_unused]] wxSizeEvent& event)
              (appNameWidth + GetAppLogoSize().GetWidth()+(2*GetLabelPaddingWidth())) :
               appNameWidth + (2*GetLabelPaddingWidth())));
 
-        wxDCFontChanger fc(dc, m_buttonFont);
+        wxDCFontChanger fc(dc, m_buttons.size() > MAX_BUTTONS_SMALL_SIZE ?
+                               dc.GetFont().Larger() :
+                               dc.GetFont());
         wxCoord textWidth{ 0 }, textHeight{ 0 };
 
         for (const auto& button : m_buttons)
@@ -154,7 +153,7 @@ void wxStartPage::OnResize([[maybe_unused]] wxSizeEvent& event)
 
     // calculate MRU info
         {
-        wxDCFontChanger fc(dc, m_buttonFont);
+        wxDCFontChanger fc(dc, dc.GetFont().Larger());
         m_fileColumnHeight = dc.GetTextExtent(_("Recent")).GetHeight() +
             (2 * GetLabelPaddingHeight());
         if (m_fileButtons.size())
@@ -279,7 +278,7 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
         }
     // draw MRU column header
         {
-        wxDCFontChanger fc(dc, m_buttonFont);
+        wxDCFontChanger fc(dc, dc.GetFont().Larger());
         wxDCTextColourChanger tcc(dc, GetDetailFontColor());
         wxDCPenChanger pc(dc, GetDetailFontColor());
         dc.SetClippingRegion(fileColumnHeader);
@@ -494,7 +493,9 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
         {
         const auto buttonIconSize = GetButtonSize();
         m_buttonHeight = buttonIconSize.GetHeight() + (2 * GetLabelPaddingHeight());
-        wxDCFontChanger fc(dc, m_buttonFont);
+        wxDCFontChanger fc(dc, m_buttons.size() > MAX_BUTTONS_SMALL_SIZE ?
+                               dc.GetFont().Larger() :
+                               dc.GetFont());
         for (const auto& button : m_buttons)
             {
             if (button.IsOk())
