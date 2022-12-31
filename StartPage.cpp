@@ -43,6 +43,7 @@ wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
     Bind(wxEVT_PAINT, &wxStartPage::OnPaintWindow, this);
     Bind(wxEVT_MOTION, &wxStartPage::OnMouseChange, this);
     Bind(wxEVT_LEFT_DOWN, &wxStartPage::OnMouseClick, this);
+    Bind(wxEVT_SIZE, &wxStartPage::OnResize, this);
     }
 
 //---------------------------------------------------
@@ -86,7 +87,7 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
             m_fileButtons[buttonCount].m_id = ID_FILE_ID_START + buttonCount;
             m_fileButtons[buttonCount++].m_label = file;
             }
-        // no more than 50 items here, not enough real estate
+        // no more than 20 items here, not enough real estate
         if (buttonCount == MAX_FILE_BUTTONS)
             { break; }
         }
@@ -96,7 +97,7 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
     }
 
 //---------------------------------------------------
-void wxStartPage::Realise()
+void wxStartPage::OnResize([[maybe_unused]] wxSizeEvent& event)
     {
     wxClientDC dc(this);
 
@@ -177,23 +178,32 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
     adc.Clear();
     wxGCDC dc(adc);
 
-    // calculate the positions of the buttons in the child area
-    const wxRect childArea = wxRect(m_buttonWidth+(GetLeftBorder() * 2),
+    // calculate the positions of the buttons in the files area
+    const wxRect filesArea = wxRect(m_buttonWidth+(GetLeftBorder() * 2),
         0,
         GetClientSize().GetWidth() - (m_buttonWidth+(GetLeftBorder() * 2)),
         GetClientSize().GetHeight());
 
     wxRect fileColumnHeader =
-        wxRect(childArea.GetLeft(), 0,
-               childArea.GetWidth(), m_fileColumnHeight).Deflate(1);
+        wxRect(filesArea.GetLeft(), 0,
+               filesArea.GetWidth(), m_fileColumnHeight).Deflate(1);
 
     for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
         {
         m_fileButtons[i].m_rect =
-            wxRect(childArea.GetLeft()+1,
+            wxRect(filesArea.GetLeft() + 1,
                    m_fileColumnHeight+(i*GetMruButtonHeight()),
-                   childArea.GetWidth() - 2,
+                   filesArea.GetWidth() - 2,
                    GetMruButtonHeight());
+        }
+
+    // update the buttons' rects
+    for (size_t i = 0; i < m_buttons.size(); ++i)
+        {
+        m_buttons[i].m_rect = wxRect(GetLeftBorder(),
+                                     m_buttonsStart + (i * m_buttonHeight),
+                                     m_buttonWidth,
+                                     m_buttonHeight);
         }
 
     // fill the background
@@ -259,11 +269,11 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
             }
         }
 
-    // draw the child area
+    // draw the MRU files area
         {
         wxDCPenChanger pc(dc, *wxTRANSPARENT_PEN);
         wxDCBrushChanger bc(dc, GetDetailBackgroundColor());
-        dc.DrawRectangle(childArea);
+        dc.DrawRectangle(filesArea);
         }
     // draw MRU column header
         {
@@ -307,10 +317,7 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
             }
         if (!buttonBorderRect.IsEmpty())
             {
-            DrawHighlight(dc, wxRect(buttonBorderRect.GetLeftTop().x,
-                          buttonBorderRect.GetLeftTop().y,
-                          buttonBorderRect.GetWidth(),
-                          buttonBorderRect.GetHeight()), GetHoverColor());
+            DrawHighlight(dc, buttonBorderRect, GetHoverColor());
             }
         }
     else
@@ -389,7 +396,7 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
         // set file path font color to be slightly ligher/darker
         // than file name color
         const wxColour filePathColor =
-            (GetDetailFontColor().GetLuminance() < .5f) ?
+            (GetDetailFontColor().GetLuminance() < 0.5f) ?
                 GetDetailFontColor().ChangeLightness(160) :
                 GetDetailFontColor().ChangeLightness(40);
         // begin drawing them
@@ -490,14 +497,9 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
                 wxDCTextColourChanger cc(dc,
                     m_activeButton == button.m_id ?
                     GetHoverFontColor() : GetBackstageFontColor());
-                wxRect buttonLabelRect =
-                    wxRect{ button.m_rect }.Deflate(GetLabelPaddingWidth());
-                buttonLabelRect.SetWidth(buttonLabelRect.GetWidth() -
-                                         GetLabelPaddingWidth() -
-                                         button.m_icon.GetWidth());
+
                 // draw it
-                dc.SetClippingRegion(
-                    wxRect{ button.m_rect }.Deflate(GetLabelPaddingWidth()));
+                dc.SetClippingRegion(button.m_rect);
                 dc.DrawLabel(button.m_label, button.m_icon,
                     wxRect{ button.m_rect }.Deflate(GetLabelPaddingWidth()));
                 dc.DestroyClippingRegion();

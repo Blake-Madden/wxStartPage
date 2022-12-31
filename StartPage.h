@@ -119,9 +119,6 @@ public:
     ///     user clicks a button on the start page.
     wxNODISCARD static constexpr bool IsFileId(const int Id) noexcept
         { return (Id >= ID_FILE_ID_START && Id < wxSTART_PAGE_FILE_LIST_CLEAR); }
-    /// @brief Recalculate the sizes of the controls and their layout.
-    /// @note This should be called after adding the feature buttons and MRU list.
-    void Realise();
     /// @brief Sets the appearance of the start page.
     /// @param style The style for the start page.
     void SetStyle(const wxStartPageStyle style) noexcept
@@ -182,11 +179,13 @@ private:
         wxString m_label;
         int m_id{ -1 };
         };
+
+    void OnResize([[maybe_unused]] wxSizeEvent& event);
     void OnPaintWindow([[maybe_unused]] wxPaintEvent& event);
     void OnMouseChange(wxMouseEvent& event);
     void OnMouseClick(wxMouseEvent& event);
-    static constexpr int MAX_FILE_BUTTONS = 50;
-    // supports 50 file buttons (realistically, there would be ~15)
+    static constexpr int MAX_FILE_BUTTONS = 20;
+    // supports 20 file buttons
     static constexpr int ID_FILE_ID_START = wxID_HIGHEST;
     static constexpr int ID_BUTTON_ID_START =
         wxID_HIGHEST + MAX_FILE_BUTTONS + 1;
