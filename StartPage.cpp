@@ -159,12 +159,13 @@ void wxStartPage::OnResize([[maybe_unused]] wxSizeEvent& event)
             (2 * GetLabelPaddingHeight());
         if (m_fileButtons.size())
             {
+            wxDCFontChanger fc2(dc, wxFont(dc.GetFont()).MakeSmaller());
             wxCoord textWidth{ 0 }, textHeight{ 0 };
             dc.GetTextExtent(m_fileButtons[0].m_label, &textWidth, &textHeight);
-            // enough space for the text height (or icon, whichever is larger)
-            // and some padding around it
+            // enough space for the text (label and path) height
+            // (or icon, whichever is larger) and some padding around it
             m_mruButtonHeight =
-                std::max(textHeight,
+                std::max(textHeight*2,
                          buttonIconSize.GetHeight()) +
                     (2*GetLabelPaddingHeight());
             }
