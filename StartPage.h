@@ -64,8 +64,8 @@ public:
             show on the left side (under the application's name).*/
     explicit wxStartPage(wxWindow* parent, wxWindowID id = wxID_ANY,
         const wxArrayString& mruFiles = wxArrayString(),
-        const wxBitmap& logo = wxNullBitmap,
-        const wxBitmap& fileImage = wxNullBitmap,
+        const wxBitmapBundle& logo = wxNullBitmap,
+        const wxBitmapBundle& fileImage = wxNullBitmap,
         const wxString productDescription = wxEmptyString);
     /// @private
     wxStartPage() = delete;
@@ -83,7 +83,7 @@ public:
     /// @param bmp The image for the button.
     /// @param label The label on the button.
     /// @sa Realise().
-    void AddButton(const wxBitmap& bmp, const wxString& label)
+    void AddButton(const wxBitmapBundle& bmp, const wxString& label)
         { m_buttons.push_back(wxStartPageButton(bmp, label)); }
     /// @returns The ID of the given index into the custom button list,
     ///     or returns @c wxNOT_FOUND if an invalid index is given.
@@ -168,14 +168,14 @@ public:
 private:
     struct wxStartPageButton
         {
-        wxStartPageButton(const wxBitmap& icon, const wxString& label) :
+        wxStartPageButton(const wxBitmapBundle& icon, const wxString& label) :
             m_icon(icon), m_label(label)
             {}
         wxStartPageButton() = default;
         wxNODISCARD bool IsOk() const
             { return m_label.length() > 0; }
         wxRect m_rect;
-        wxBitmap m_icon;
+        wxBitmapBundle m_icon;
         wxString m_label;
         int m_id{ -1 };
         };
@@ -224,9 +224,15 @@ private:
         return FromDIP(wxSize(wxSizerFlags::GetDefaultBorder() * 4,
                        wxSizerFlags::GetDefaultBorder() * 4)).GetWidth();
         }
+    /// @returns The size for the app logo
+    wxNODISCARD const wxSize GetAppLogoSize() const
+        { return FromDIP(wxSize(96, 96)); }
+    /// @returns The button size, which will be smaller if there are numerous buttons.
+    wxNODISCARD const wxSize GetButtonSize() const
+        { return FromDIP(m_buttons.size() > 2 ? wxSize(16, 16) : wxSize(32, 32)); }
     /// @returns The size of an icon scaled to 16x16,
     ///     with label padding above and below it.
-    wxNODISCARD const wxCoord GetMruButtonHeight() const noexcept
+    wxNODISCARD const wxCoord GetMRUButtonHeight() const noexcept
         { return m_mruButtonHeight; }
     void DrawHighlight(wxDC& dc, const wxRect rect, const wxColour color) const;
 
@@ -241,8 +247,8 @@ private:
     wxFont m_buttonFont;
     std::vector<wxStartPageButton> m_fileButtons;
     std::vector<wxStartPageButton> m_buttons;
-    wxBitmap m_logo;
-    wxBitmap m_fileImage;
+    wxBitmapBundle m_logo;
+    wxBitmapBundle m_fileImage;
     wxString m_toolTip;
     wxString m_productDescription;
     wxColour m_backstageBackgroundColor{ 145, 168, 208 };

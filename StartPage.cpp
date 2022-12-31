@@ -13,12 +13,13 @@ DEFINE_EVENT_TYPE(wxEVT_STARTPAGE_CLICKED)
 //-------------------------------------------
 wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
                          const wxArrayString& mruFiles /*= wxArrayString()*/,
-                         const wxBitmap& logo /*= wxNullBitmap*/,
-                         const wxBitmap& fileImage /*= wxNullBitmap*/,
+                         const wxBitmapBundle& logo /*= wxNullBitmap*/,
+                         const wxBitmapBundle& fileImage /*= wxNullBitmap*/,
                          const wxString productDescription /*= wxEmptyString*/) 
         : wxWindow(parent, id, wxDefaultPosition, wxDefaultSize,
                    wxFULL_REPAINT_ON_RESIZE, L"wxStartPage"),
           m_logo(logo),
+          m_fileImage(fileImage),
           m_logoFont(wxFontInfo(
               wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).
               GetFractionalPointSize() * 2)),
@@ -29,13 +30,8 @@ wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
     {
     // Size of an icon scaled to 32x32, with label padding above and below it.
     // Note that Realise will adjust this later more intelligently.
-    m_buttonHeight = FromDIP(wxSize(32+10, 32+10)).GetHeight();
+    m_buttonHeight = GetButtonSize().GetHeight() + (2 * GetLabelPaddingHeight());
     m_buttonWidth = FromDIP(wxSize(200, 200)).GetWidth();
-
-    const wxSize scaledSize = FromDIP(wxSize(32, 32));
-    m_fileImage = fileImage.ConvertToImage().
-        Scale(scaledSize.GetWidth(), scaledSize.GetHeight(),
-              wxIMAGE_QUALITY_HIGH);
 
     SetBackgroundStyle(wxBG_STYLE_CUSTOM);
     SetMRUList(mruFiles);
@@ -109,7 +105,7 @@ void wxStartPage::OnResize([[maybe_unused]] wxSizeEvent& event)
         }
     m_buttonsStart = m_logo.IsOk() ?
         GetTopBorder() + (2*GetLabelPaddingHeight()) +
-            std::max(appNameHeight, m_logo.GetHeight()) :
+            std::max(appNameHeight, GetAppLogoSize().GetHeight()) :
         GetTopBorder() + (2*GetLabelPaddingHeight()) + appNameHeight;
     if (m_productDescription.length())
         {
@@ -117,28 +113,31 @@ void wxStartPage::OnResize([[maybe_unused]] wxSizeEvent& event)
         m_buttonsStart += appDescHeight+(2*GetLabelPaddingHeight());
         }
     // calculate how wide the buttons/top label need to be fit their content
+    const auto buttonIconSize = GetButtonSize();
+    m_buttonHeight = buttonIconSize.GetHeight() + (2 * GetLabelPaddingHeight());
         {
         m_buttonWidth = std::max(m_buttonWidth,
             (m_logo.IsOk() ?
-             (appNameWidth + m_logo.GetWidth()+(2*GetLabelPaddingWidth())) :
+             (appNameWidth + GetAppLogoSize().GetWidth()+(2*GetLabelPaddingWidth())) :
               appNameWidth + (2*GetLabelPaddingWidth())));
 
         wxDCFontChanger fc(dc, m_buttonFont);
         wxCoord textWidth{ 0 }, textHeight{ 0 };
+
         for (const auto& button : m_buttons)
             {
             dc.GetTextExtent(button.m_label, &textWidth, &textHeight);
             m_buttonWidth =
                 std::max(m_buttonWidth,
                          textWidth +
-                         (4 * GetLabelPaddingWidth()) + button.m_icon.GetWidth());
+                         (4 * GetLabelPaddingWidth()) + buttonIconSize.GetWidth());
             m_buttonHeight = std::max(m_buttonHeight,
                                       textHeight + (2 * GetLabelPaddingWidth()));
             if (button.m_icon.IsOk())
                 {
                 m_buttonHeight =
                     std::max(m_buttonHeight,
-                             button.m_icon.GetHeight() +
+                             buttonIconSize.GetHeight() +
                                 (2 * GetLabelPaddingHeight()));
                 }
             }
@@ -164,8 +163,9 @@ void wxStartPage::OnResize([[maybe_unused]] wxSizeEvent& event)
             dc.GetTextExtent(m_fileButtons[0].m_label, &textWidth, &textHeight);
             // enough space for the text height (or icon, whichever is larger)
             // and some padding around it
-            m_mruButtonHeight = std::max(textHeight,
-                FromDIP(wxSize(32, 32)).GetHeight()) +
+            m_mruButtonHeight =
+                std::max(textHeight,
+                         buttonIconSize.GetHeight()) +
                     (2*GetLabelPaddingHeight());
             }
         }
@@ -192,9 +192,9 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
         {
         m_fileButtons[i].m_rect =
             wxRect(filesArea.GetLeft() + 1,
-                   m_fileColumnHeight+(i*GetMruButtonHeight()),
+                   m_fileColumnHeight+(i * GetMRUButtonHeight()),
                    filesArea.GetWidth() - 2,
-                   GetMruButtonHeight());
+                   GetMRUButtonHeight());
         }
 
     // update the buttons' rects
@@ -221,29 +221,30 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
         wxDCTextColourChanger cc(dc, GetBackstageFontColor());
         wxDCPenChanger pc(dc, GetBackstageFontColor());
         wxCoord textWidth{ 0 }, textHeight{ 0 };
-        if (m_logo.IsOk())
+        wxBitmap appLogo = m_logo.GetBitmap(ToDIP(GetAppLogoSize()));
+        if (appLogo.IsOk())
             {
-            dc.DrawBitmap(m_logo, GetLeftBorder(), GetTopBorder());
+            dc.DrawBitmap(appLogo, GetLeftBorder(), GetTopBorder());
             // draw with larger font
                 {
                 wxDCFontChanger fc(dc, m_logoFont);
                 dc.GetTextExtent(wxTheApp->GetAppName(), &textWidth, &textHeight);
                 dc.DrawText(wxTheApp->GetAppName(),
-                            GetLeftBorder()+m_logo.GetWidth()+GetLabelPaddingWidth(),
-                            GetTopBorder()+((m_logo.GetHeight()/2)-(textHeight/2)));
+                            GetLeftBorder()+appLogo.GetWidth()+GetLabelPaddingWidth(),
+                            GetTopBorder()+((appLogo.GetHeight()/2)-(textHeight/2)));
                 }
             if (m_productDescription.length())
                 {
                 dc.DrawText(m_productDescription,
                             (GetLeftBorder()) + ((m_buttonWidth/2) - (appDescWidth/2)),
-                            GetTopBorder() + std::max(m_logo.GetHeight(),textHeight) +
+                            GetTopBorder() + std::max(appLogo.GetHeight(),textHeight) +
                             GetLabelPaddingHeight());
                 }
             dc.DrawLine(wxPoint((2*GetLeftBorder()),
-                            GetTopBorder() + std::max(m_logo.GetHeight(), textHeight) +
+                            GetTopBorder() + std::max(appLogo.GetHeight(), textHeight) +
                             appDescHeight),
                         wxPoint(m_buttonWidth, GetTopBorder() +
-                            std::max(m_logo.GetHeight(), textHeight) + appDescHeight));
+                            std::max(appLogo.GetHeight(), textHeight) + appDescHeight));
             }
         else
             {
@@ -400,6 +401,7 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
                 GetDetailFontColor().ChangeLightness(160) :
                 GetDetailFontColor().ChangeLightness(40);
         // begin drawing them
+        wxBitmap fileIcon = m_fileImage.GetBitmap(wxSize(16, 16));
         for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
             {
             if (m_fileButtons[i].IsOk())
@@ -423,19 +425,19 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
                     {
                     // show the files
                     const wxFileName fn(m_fileButtons[i].m_label);
-                    if (m_fileImage.IsOk() && m_fileImage.GetHeight())
+                    if (fileIcon.IsOk())
                         {
-                        dc.DrawBitmap(m_fileImage,
+                        dc.DrawBitmap(fileIcon,
                             wxPoint(fileLabelRect.GetLeft(),
                                     fileLabelRect.GetTop() +
                                         (fileLabelRect.GetHeight() -
-                                         m_fileImage.GetHeight(), 2)));
+                                         fileIcon.GetHeight(), 2)));
                         // draw the filename
                         const auto nameHeight =
                             dc.GetTextExtent(fn.GetFullName()).GetHeight();
                         dc.DrawText(fn.GetFullName(),
                             wxPoint(fileLabelRect.GetLeft() +
-                                    GetLabelPaddingWidth()+m_fileImage.GetWidth(),
+                                    GetLabelPaddingWidth() + fileIcon.GetWidth(),
                                     fileLabelRect.GetTop()));
                         wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeSmaller());
                         // draw the filepath
@@ -448,12 +450,12 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
                                 (fn.GetFullPath().substr(0,75) + L"..."),
                                 wxPoint(fileLabelRect.GetLeft() +
                                         GetLabelPaddingWidth() +
-                                        m_fileImage.GetWidth(),
+                                        fileIcon.GetWidth(),
                                         fileLabelRect.GetTop() + nameHeight +
                                         (GetLabelPaddingHeight()/2)));
                             }
                         // draw the modified time off to the side
-                        if ((m_fileImage.GetWidth() +
+                        if ((fileIcon.GetWidth() +
                              GetLabelPaddingWidth() +
                              filePathLabelWidth + timeLabelWidth) <
                             fileLabelRect.GetWidth())
@@ -489,6 +491,8 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
 
     // draw the backstage button labels
         {
+        const auto buttonIconSize = GetButtonSize();
+        m_buttonHeight = buttonIconSize.GetHeight() + (2 * GetLabelPaddingHeight());
         wxDCFontChanger fc(dc, m_buttonFont);
         for (const auto& button : m_buttons)
             {
@@ -500,7 +504,7 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
 
                 // draw it
                 dc.SetClippingRegion(button.m_rect);
-                dc.DrawLabel(button.m_label, button.m_icon,
+                dc.DrawLabel(button.m_label, button.m_icon.GetBitmap(ToDIP(buttonIconSize)),
                     wxRect{ button.m_rect }.Deflate(GetLabelPaddingWidth()));
                 dc.DestroyClippingRegion();
                 }
