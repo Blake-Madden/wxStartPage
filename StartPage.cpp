@@ -223,7 +223,7 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
         wxDCTextColourChanger cc(dc, GetBackstageFontColor());
         wxDCPenChanger pc(dc, GetBackstageFontColor());
         wxCoord textWidth{ 0 }, textHeight{ 0 };
-        wxBitmap appLogo = m_logo.GetBitmap(ToDIP(GetAppLogoSize()));
+        wxBitmap appLogo = m_logo.GetBitmap(GetAppLogoSize());
         if (appLogo.IsOk())
             {
             dc.DrawBitmap(appLogo, GetLeftBorder(), GetTopBorder());
@@ -403,7 +403,7 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
                 GetDetailFontColor().ChangeLightness(160) :
                 GetDetailFontColor().ChangeLightness(40);
         // begin drawing them
-        wxBitmap fileIcon = m_fileImage.GetBitmap(wxSize(16, 16));
+        wxBitmap fileIcon = m_fileImage.GetBitmap(FromDIP(wxSize(16, 16)));
         for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
             {
             if (m_fileButtons[i].IsOk())
@@ -508,7 +508,7 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
 
                 // draw it
                 dc.SetClippingRegion(button.m_rect);
-                dc.DrawLabel(button.m_label, button.m_icon.GetBitmap(ToDIP(buttonIconSize)),
+                dc.DrawLabel(button.m_label, button.m_icon.GetBitmap(buttonIconSize),
                     wxRect{ button.m_rect }.Deflate(GetLabelPaddingWidth()));
                 dc.DestroyClippingRegion();
                 }

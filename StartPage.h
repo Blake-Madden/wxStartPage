@@ -203,28 +203,16 @@ private:
         { return m_fileButtons.size(); }
     /// @returns The padding height around the labels.
     wxNODISCARD const wxCoord GetLabelPaddingHeight() const
-        {
-        return FromDIP(wxSize(wxSizerFlags::GetDefaultBorder(),
-                       wxSizerFlags::GetDefaultBorder())).GetHeight();
-        }
+        { return wxSizerFlags::GetDefaultBorder(); }
     /// @returns The padding width around the labels.
     wxNODISCARD const wxCoord GetLabelPaddingWidth() const
-        {
-        return FromDIP(wxSize(wxSizerFlags::GetDefaultBorder(),
-                       wxSizerFlags::GetDefaultBorder())).GetWidth();
-        }
+        { return wxSizerFlags::GetDefaultBorder(); }
     /// @returns The padding at the top of the control.
     wxNODISCARD const wxCoord GetTopBorder() const
-        {
-        return FromDIP(wxSize(wxSizerFlags::GetDefaultBorder() * 4,
-                       wxSizerFlags::GetDefaultBorder() * 4)).GetHeight();
-        }
+        { return wxSizerFlags::GetDefaultBorder() * 4; }
     /// @returns The left border around the icons/labels.
     wxNODISCARD const wxCoord GetLeftBorder() const
-        {
-        return FromDIP(wxSize(wxSizerFlags::GetDefaultBorder() * 4,
-                       wxSizerFlags::GetDefaultBorder() * 4)).GetWidth();
-        }
+        { return wxSizerFlags::GetDefaultBorder() * 4; }
     /// @returns The size for the app logo
     wxNODISCARD const wxSize GetAppLogoSize() const
         { return FromDIP(wxSize(96, 96)); }
