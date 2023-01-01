@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Name:        startpage.cpp
 // Author:      Blake Madden
-// Copyright:   (c) 2005-2022 Blake Madden
+// Copyright:   (c) 2005-2023 Blake Madden
 // Licence:     3-Clause BSD licence
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "StartPage.h"
+#include "startpage.h"
 
 DEFINE_EVENT_TYPE(wxEVT_STARTPAGE_CLICKED)
 
