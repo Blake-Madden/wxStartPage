@@ -57,15 +57,13 @@ public:
         @param id The start page's ID.
         @param mruFiles A list of file paths to show in the
             most-recently-used file list.
-        @param logo A logo image of the program to show on the left side.
-        @param fileImage Icon to use for the files in the MRU list.\n
-            This would usually be the application's logo.
+        @param logo A logo image of the program to show on the left side,
+            as well as the files in the MRU list.
         @param productDescription An optional description of the application to
             show on the left side (under the application's name).*/
     explicit wxStartPage(wxWindow* parent, wxWindowID id = wxID_ANY,
-        const wxArrayString& mruFiles = wxArrayString(),
-        const wxBitmapBundle& logo = wxNullBitmap,
-        const wxBitmapBundle& fileImage = wxNullBitmap,
+        const wxArrayString& mruFiles = wxArrayString{},
+        const wxBitmapBundle& logo = wxBitmapBundle{},
         const wxString productDescription = wxEmptyString);
     /// @private
     wxStartPage() = delete;
@@ -239,7 +237,6 @@ private:
     std::vector<wxStartPageButton> m_fileButtons;
     std::vector<wxStartPageButton> m_buttons;
     wxBitmapBundle m_logo;
-    wxBitmapBundle m_fileImage;
     wxString m_toolTip;
     wxString m_productDescription;
     wxColour m_backstageBackgroundColor{ 145, 168, 208 };

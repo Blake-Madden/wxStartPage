@@ -12,14 +12,12 @@ DEFINE_EVENT_TYPE(wxEVT_STARTPAGE_CLICKED)
 
 //-------------------------------------------
 wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
-                         const wxArrayString& mruFiles /*= wxArrayString()*/,
-                         const wxBitmapBundle& logo /*= wxNullBitmap*/,
-                         const wxBitmapBundle& fileImage /*= wxNullBitmap*/,
+                         const wxArrayString& mruFiles /*= wxArrayString{}*/,
+                         const wxBitmapBundle& logo /*= wxBitmapBundle{}*/,
                          const wxString productDescription /*= wxEmptyString*/) 
         : wxWindow(parent, id, wxDefaultPosition, wxDefaultSize,
                    wxFULL_REPAINT_ON_RESIZE, L"wxStartPage"),
           m_logo(logo),
-          m_fileImage(fileImage),
           m_logoFont(wxFontInfo(
               wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).
               GetFractionalPointSize() * 2)),
@@ -403,7 +401,7 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
                 GetDetailFontColor().ChangeLightness(160) :
                 GetDetailFontColor().ChangeLightness(40);
         // begin drawing them
-        wxBitmap fileIcon = m_fileImage.GetBitmap(FromDIP(wxSize(16, 16)));
+        wxBitmap fileIcon = m_logo.GetBitmap(FromDIP(wxSize(16, 16)));
         for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
             {
             if (m_fileButtons[i].IsOk())
