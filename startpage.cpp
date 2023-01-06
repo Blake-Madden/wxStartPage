@@ -14,13 +14,13 @@ DEFINE_EVENT_TYPE(wxEVT_STARTPAGE_CLICKED)
 wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
                          const wxArrayString& mruFiles /*= wxArrayString{}*/,
                          const wxBitmapBundle& logo /*= wxBitmapBundle{}*/,
-                         const wxString productDescription /*= wxEmptyString*/) 
+                         const wxString productDescription /*= wxString{}*/) 
         : wxWindow(parent, id, wxDefaultPosition, wxDefaultSize,
                    wxFULL_REPAINT_ON_RESIZE, L"wxStartPage"),
           m_logo(logo),
           m_logoFont(wxFontInfo(
               wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).
-              GetFractionalPointSize() * 2)),
+              GetFractionalPointSize() * 1.75)),
           m_productDescription(productDescription)
     {
     // Size of an icon scaled to 32x32, with label padding above and below it.
@@ -34,6 +34,7 @@ wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
     Bind(wxEVT_PAINT, &wxStartPage::OnPaintWindow, this);
     Bind(wxEVT_MOTION, &wxStartPage::OnMouseChange, this);
     Bind(wxEVT_LEFT_DOWN, &wxStartPage::OnMouseClick, this);
+    Bind(wxEVT_LEAVE_WINDOW, &wxStartPage::OnMouseLeave, this);
     Bind(wxEVT_SIZE, &wxStartPage::OnResize, this);
     }
 
@@ -82,13 +83,13 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
         if (buttonCount == MAX_FILE_BUTTONS)
             { break; }
         }
-    m_fileButtons[buttonCount].m_id = wxSTART_PAGE_FILE_LIST_CLEAR;
+    m_fileButtons[buttonCount].m_id = START_PAGE_FILE_LIST_CLEAR;
     m_fileButtons[buttonCount++].m_label = _("Clear file list...");
     m_fileButtons.resize(buttonCount);
     }
 
 //---------------------------------------------------
-void wxStartPage::OnResize([[maybe_unused]] wxSizeEvent& event)
+void wxStartPage::OnResize(wxSizeEvent& WXUNUSED(event))
     {
     wxClientDC dc(this);
 
@@ -172,7 +173,7 @@ void wxStartPage::OnResize([[maybe_unused]] wxSizeEvent& event)
     }
 
 //---------------------------------------------------
-void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
+void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     {
     wxAutoBufferedPaintDC adc(this);
     adc.Clear();
@@ -413,7 +414,7 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
                     wxRect{ m_fileButtons[i].m_rect }.Deflate(GetLabelPaddingHeight());
                 dc.SetClippingRegion(m_fileButtons[i].m_rect);
                 // if the "clear all" button
-                if (i == GetMRUFileAndClearButtonCount()-1)
+                if (i == GetMRUFileAndClearButtonCount() - 1)
                     {
                     wxDCPenChanger pc(dc, *wxLIGHT_GREY_PEN);
                     dc.DrawLine(m_fileButtons[i].m_rect.GetLeftTop(),
@@ -517,6 +518,28 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
 //---------------------------------------------------
 void wxStartPage::OnMouseChange(wxMouseEvent& event)
     {
+    // see which (if any) button was previously highlighted
+    wxRect previousRect, currentRect;
+    if (m_activeButton != wxNOT_FOUND)
+        {
+        for (const auto& button : m_buttons)
+            {
+            if (m_activeButton == button.m_id)
+                {
+                previousRect = button.m_rect;
+                break;
+                }
+            }
+        for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
+            {
+            if (m_activeButton == m_fileButtons[i].m_id)
+                {
+                previousRect = m_fileButtons[i].m_rect;
+                break;
+                }
+            }
+        }
+
     m_activeButton = wxNOT_FOUND;
     for (const auto& button : m_buttons)
         {
@@ -524,7 +547,13 @@ void wxStartPage::OnMouseChange(wxMouseEvent& event)
             button.m_rect.Contains(event.GetX(), event.GetY()) )
             {
             m_activeButton = button.m_id;
-            Refresh();
+            // just refresh the current and previous (if applicable) highlighted areas
+            currentRect = button.m_rect;
+            wxRect refreshRect = previousRect.IsEmpty() ?
+                currentRect :
+                previousRect.Union(currentRect);
+            refreshRect.Inflate(GetLabelPaddingHeight());
+            Refresh(true, &refreshRect);
             Update();
             return;
             }
@@ -535,12 +564,56 @@ void wxStartPage::OnMouseChange(wxMouseEvent& event)
             m_fileButtons[i].m_rect.Contains(event.GetX(), event.GetY()) )
             {
             m_activeButton = m_fileButtons[i].m_id;
-            Refresh();
+            currentRect = m_fileButtons[i].m_rect;
+            wxRect refreshRect = previousRect.IsEmpty() ?
+                currentRect :
+                previousRect.Union(currentRect);
+            refreshRect.Inflate(GetLabelPaddingHeight());
+            Refresh(true, &refreshRect);
             Update();
             return;
             }
         }
-    Refresh();
+
+    if (previousRect.IsEmpty())
+        { previousRect = GetClientRect(); }
+    else
+        { previousRect.Inflate(GetLabelPaddingHeight()); }
+    Refresh(true, &previousRect);
+    Update();
+    }
+
+//---------------------------------------------------
+void wxStartPage::OnMouseLeave(wxMouseEvent& WXUNUSED(event))
+    {
+    // see which (if any) button was previously highlighted
+    wxRect refreshRect;
+    if (m_activeButton != wxNOT_FOUND)
+        {
+        for (const auto& button : m_buttons)
+            {
+            if (m_activeButton == button.m_id)
+                {
+                refreshRect = button.m_rect;
+                break;
+                }
+            }
+        for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
+            {
+            if (m_activeButton == m_fileButtons[i].m_id)
+                {
+                refreshRect = m_fileButtons[i].m_rect;
+                break;
+                }
+            }
+        }
+    else
+        { return; }
+
+    m_activeButton = wxNOT_FOUND;
+
+    refreshRect.Inflate(GetLabelPaddingHeight());
+    Refresh(true, &refreshRect);
     Update();
     }
 
@@ -565,7 +638,7 @@ void wxStartPage::OnMouseClick(wxMouseEvent& event)
             m_fileButtons[i].m_rect.Contains(event.GetX(), event.GetY()) )
             {
             // if clicking the clear all button
-            if (i == GetMRUFileAndClearButtonCount()-1)
+            if (i == GetMRUFileAndClearButtonCount() - 1)
                 {
                 if (wxMessageBox(
                         _("Do you wish to clear the list of recent files?"),
@@ -577,7 +650,7 @@ void wxStartPage::OnMouseClick(wxMouseEvent& event)
                     // give the caller a change to clear the file history
                     // from their doc manager and whatnot
                     wxCommandEvent cevent(wxEVT_STARTPAGE_CLICKED, GetId());
-                    cevent.SetInt(wxSTART_PAGE_FILE_LIST_CLEAR);
+                    cevent.SetInt(START_PAGE_FILE_LIST_CLEAR);
                     cevent.SetEventObject(this);
                     GetEventHandler()->ProcessEvent(cevent);
                     break;
