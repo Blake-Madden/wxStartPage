@@ -8,7 +8,7 @@
 
 #include "startpage.h"
 
-DEFINE_EVENT_TYPE(wxEVT_STARTPAGE_CLICKED)
+wxDEFINE_EVENT(wxEVT_STARTPAGE_CLICKED, wxCommandEvent);
 
 //-------------------------------------------
 wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
@@ -49,7 +49,7 @@ void wxStartPage::DrawHighlight(wxDC& dc, const wxRect rect,
         dc.GradientFillLinear(rect, color, color.ChangeLightness(140), wxSOUTH);
         // create a shiny overlay
         dc.GradientFillLinear(wxRect(rect.GetX(), rect.GetY(),
-                              rect.GetWidth(), rect.GetHeight() * .25),
+                              rect.GetWidth(), rect.GetHeight() * 0.25),
                               wxColour(255, 255, 255, 25),
                               wxColour(255, 255, 255, 125), wxSOUTH);
         dc.DrawLine(rect.GetLeftTop(), rect.GetRightTop());
@@ -508,7 +508,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 // draw it
                 dc.SetClippingRegion(button.m_rect);
                 dc.DrawLabel(button.m_label, button.m_icon.GetBitmap(buttonIconSize),
-                    wxRect{ button.m_rect }.Deflate(GetLabelPaddingWidth()));
+                    wxRect(button.m_rect).Deflate(GetLabelPaddingWidth()));
                 dc.DestroyClippingRegion();
                 }
             }
@@ -626,7 +626,7 @@ void wxStartPage::OnMouseClick(wxMouseEvent& event)
             button.m_rect.Contains(event.GetX(), event.GetY()) )
             {
             wxCommandEvent cevent(wxEVT_STARTPAGE_CLICKED, GetId());
-            cevent.SetInt(button.m_id);
+            cevent.SetId(button.m_id);
             cevent.SetEventObject(this);
             GetEventHandler()->ProcessEvent(cevent);
             break;
@@ -650,7 +650,7 @@ void wxStartPage::OnMouseClick(wxMouseEvent& event)
                     // give the caller a change to clear the file history
                     // from their doc manager and whatnot
                     wxCommandEvent cevent(wxEVT_STARTPAGE_CLICKED, GetId());
-                    cevent.SetInt(START_PAGE_FILE_LIST_CLEAR);
+                    cevent.SetId(START_PAGE_FILE_LIST_CLEAR);
                     cevent.SetEventObject(this);
                     GetEventHandler()->ProcessEvent(cevent);
                     break;
@@ -661,7 +661,7 @@ void wxStartPage::OnMouseClick(wxMouseEvent& event)
                 wxCommandEvent cevent(wxEVT_STARTPAGE_CLICKED, GetId());
                 // client calls IsFileId() on this ID to see
                 // if a file button was clicked
-                cevent.SetInt(m_fileButtons[i].m_id);
+                cevent.SetId(m_fileButtons[i].m_id);
                 // selected file path
                 cevent.SetString(m_fileButtons[i].m_label);
                 cevent.SetEventObject(this);

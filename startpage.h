@@ -18,7 +18,7 @@
 #include <wx/artprov.h>
 #include <vector>
 
-DECLARE_EVENT_TYPE(wxEVT_STARTPAGE_CLICKED, -1)
+wxDECLARE_EVENT(wxEVT_STARTPAGE_CLICKED, wxCommandEvent);
 
 #define EVT_STARTPAGE_CLICKED(winid, fn) \
     wx__DECLARE_EVT1(wxEVT_STARTPAGE_CLICKED, winid, wxCommandEventHandler(fn))
@@ -31,7 +31,7 @@ DECLARE_EVENT_TYPE(wxEVT_STARTPAGE_CLICKED, -1)
     The events of a user clicking on a file or button can be handled via
     an @c EVT_STARTPAGE_CLICKED message map or bound to @c wxEVT_STARTPAGE_CLICKED.
     (This should be bound to a function accepting a @c wxCommandEvent object.)
-    Calling the `wxCommandEvent`'s @c GetInt() method in your handler will return the
+    Calling the `wxCommandEvent`'s @c GetId() method in your handler will return the
     ID of the button that was clicked. This ID can be checked by:
     - Calling IsCustomButtonId() to see if a custom button was clicked.
       If so, then call GetButtonID() to see which button it was. For example,
