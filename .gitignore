@@ -33,3 +33,6 @@
 *.out
 *.app
 /.vs
+/demo/.vs
+/demo/out/
+/demo/CMakeSettings.json

@@ -14,7 +14,9 @@
 #
 
 # Declare the minimum required CMake version
-cmake_minimum_required(VERSION 2.8.12)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
+SET(CMAKE_CXX_STANDARD 11)
+SET(CMAKE_CXX_STANDARD_REQUIRED True)
 
 if(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
     # If no deployment target has been set default to the minimum supported
@@ -27,18 +29,18 @@ if(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
 endif()
 
 # Name the project
-project(startpagedemo)
+PROJECT(startpagedemo)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_CXX_STANDARD 11)
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Request the required wxWidgets libs
-find_package(wxWidgets 3.3 COMPONENTS core base REQUIRED CONFIG)
-
+# Find wxWidgets and select its components
+FIND_PACKAGE(wxWidgets 3.2 REQUIRED core base adv html ribbon xml xrc qa propgrid OPTIONAL_COMPONENTS net)
 # Include the wxWidgets use file to initialize various settings
-if(wxWidgets_USE_FILE)
-    include(${wxWidgets_USE_FILE})
-endif()
+INCLUDE(${wxWidgets_USE_FILE})
+MESSAGE(STATUS "Adding wxWidgets libraries: ${wxWidgets_LIBRARIES}")
+MESSAGE(STATUS "Adding wxWidgets configuration file: ${wxWidgets_CONFIGURATION}/wx/setup.h")
 
 # Define a variable containing a list of source files for the project
 set(SRC_FILES
@@ -46,24 +48,7 @@ set(SRC_FILES
     ../startpage.cpp
     )
 
-if(WIN32)
-    # Include a RC file for windows
-    list(APPEND SRC_FILES sample.rc)
-elseif(APPLE)
-    # Add an icon for the apple .app file
-    list(APPEND SRC_FILES wxmac.icns)
-endif()
-
 # Define the build target for the executable
-add_executable(${PROJECT_NAME} WIN32 MACOSX_BUNDLE ${SRC_FILES})
+ADD_EXECUTABLE(${PROJECT_NAME} WIN32 MACOSX_BUNDLE ${SRC_FILES})
 # Link required libraries to the executable
-target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES})
-
-if(APPLE)
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        RESOURCE "wxmac.icns"
-        MACOSX_BUNDLE_ICON_FILE wxmac.icns
-        MACOSX_BUNDLE_COPYRIGHT "Copyright wxWidgets"
-        MACOSX_BUNDLE_GUI_IDENTIFIER "org.wxwidgets.startpagedemo"
-        )
-endif()
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${wxWidgets_LIBRARIES})
