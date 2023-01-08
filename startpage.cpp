@@ -241,11 +241,11 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                             GetTopBorder() + std::max(appLogo.GetHeight(),textHeight) +
                             GetLabelPaddingHeight());
                 }
-            dc.DrawLine(wxPoint((2*GetLeftBorder()),
-                            GetTopBorder() + std::max(appLogo.GetHeight(), textHeight) +
-                            appDescHeight),
-                        wxPoint(m_buttonWidth, GetTopBorder() +
-                            std::max(appLogo.GetHeight(), textHeight) + appDescHeight));
+            const auto lineY = GetTopBorder() +
+                            std::max(appLogo.GetHeight(), textHeight) +
+                            appDescHeight + GetLabelPaddingWidth();
+            dc.DrawLine(wxPoint((2*GetLeftBorder()),lineY),
+                        wxPoint(m_buttonWidth, lineY));
             }
         else
             {
