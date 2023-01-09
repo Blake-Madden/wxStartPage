@@ -89,6 +89,29 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
     }
 
 //---------------------------------------------------
+void wxStartPage::CalcButtonStart()
+    {
+    wxClientDC dc(this);
+
+    wxCoord appNameWidth{ 0 }, appNameHeight{ 0 },
+            appDescWidth{ 0 }, appDescHeight{ 0 };
+        {
+        wxDCFontChanger fc(dc, m_logoFont);
+        dc.GetTextExtent(wxTheApp->GetAppName(), &appNameWidth, &appNameHeight);
+        }
+
+    if (!m_showAppHeader)
+        { m_buttonsStart = GetTopBorder(); }
+    else
+        {
+        m_buttonsStart = m_logo.IsOk() ?
+            GetTopBorder() + (2 * GetLabelPaddingHeight()) +
+            std::max(appNameHeight, GetAppLogoSize().GetHeight()) :
+            GetTopBorder() + (2 * GetLabelPaddingHeight()) + appNameHeight;
+        }
+    }
+
+//---------------------------------------------------
 void wxStartPage::OnResize(wxSizeEvent& WXUNUSED(event))
     {
     wxClientDC dc(this);
@@ -99,10 +122,9 @@ void wxStartPage::OnResize(wxSizeEvent& WXUNUSED(event))
         wxDCFontChanger fc(dc, m_logoFont);
         dc.GetTextExtent(wxTheApp->GetAppName(), &appNameWidth, &appNameHeight);
         }
-    m_buttonsStart = m_logo.IsOk() ?
-        GetTopBorder() + (2*GetLabelPaddingHeight()) +
-            std::max(appNameHeight, GetAppLogoSize().GetHeight()) :
-        GetTopBorder() + (2*GetLabelPaddingHeight()) + appNameHeight;
+    
+    CalcButtonStart();
+
     if (m_productDescription.length())
         {
         dc.GetTextExtent(m_productDescription, &appDescWidth, &appDescHeight);
@@ -179,6 +201,8 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     adc.Clear();
     wxGCDC dc(adc);
 
+    CalcButtonStart();
+
     // calculate the positions of the buttons in the files area
     const wxRect filesArea = wxRect(m_buttonWidth+(GetLeftBorder() * 2),
         0,
@@ -212,6 +236,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     dc.Clear();
 
     // draw the program logo
+    if (m_showAppHeader)
         {
         wxCoord appDescWidth{ 0 }, appDescHeight{ 0 };
         if (m_productDescription.length())
@@ -490,7 +515,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             }
         }
 
-    // draw the backstage button labels
+    // draw the custom button labels
         {
         const auto buttonIconSize = GetButtonSize();
         m_buttonHeight = buttonIconSize.GetHeight() + (2 * GetLabelPaddingHeight());

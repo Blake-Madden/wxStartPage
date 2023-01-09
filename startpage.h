@@ -134,6 +134,11 @@ public:
     /// @param style The style for the start page.
     void SetStyle(const wxStartPageStyle style) noexcept
         { m_style = style; }
+    /** @brief Shows or hides the application name and (optional) icon
+            above the custom buttons.
+        @param show @c true to show the application name.*/
+    void ShowAppHeader(const bool show) noexcept
+        { m_showAppHeader = show; }
     /// @returns The color of the left side of the start page.
     wxNODISCARD wxColour GetButtonAreaBackgroundColor() const noexcept
         { return m_buttonAreaBackgroundColor; }
@@ -249,6 +254,7 @@ private:
     wxNODISCARD const wxCoord GetMRUButtonHeight() const noexcept
         { return m_mruButtonHeight; }
     void DrawHighlight(wxDC& dc, const wxRect rect, const wxColour color) const;
+    void CalcButtonStart();
 
     wxCoord m_buttonWidth{ 0 };
     wxCoord m_buttonHeight{ 0 };
@@ -257,6 +263,7 @@ private:
     wxCoord m_mruButtonHeight{ 0 };
     wxWindowID m_activeButton{ wxNOT_FOUND };
     wxStartPageStyle m_style{ wxStartPageStyle::wxStartPageFlat };
+    bool m_showAppHeader{ true };
     wxFont m_logoFont;
     std::vector<wxStartPageButton> m_fileButtons;
     std::vector<wxStartPageButton> m_buttons;
