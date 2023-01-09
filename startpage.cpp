@@ -89,6 +89,44 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
     }
 
 //---------------------------------------------------
+wxString wxStartPage::FormatGreeting() const
+    {
+    if (m_greetingStyle == wxStartPageGreetingStyle::wxNoGreeting)
+        { return wxString{}; }
+    else if (m_greetingStyle == wxStartPageGreetingStyle::wxCustomGreeting)
+        { return m_customGreeting; }
+    else
+        {
+        const auto currentHour{ wxDateTime::Now().GetHour() };
+        return currentHour < 12 ?
+            _("Good morning") :
+            currentHour < 17 ?
+            _("Good afternoon") :
+            _("Good evening");
+        }
+    }
+
+//---------------------------------------------------
+void wxStartPage::CalcMRUColumnHeaderHeight()
+    {
+    wxClientDC dc(this);
+
+    wxDCFontChanger fc(dc, dc.GetFont().Larger().Larger().Bold());
+        m_fileColumnHeaderHeight = dc.GetTextExtent(_("Recent")).GetHeight() +
+            (2 * GetLabelPaddingHeight());
+
+    m_fileColumnHeaderHeight = dc.GetTextExtent(_("Recent")).GetHeight() +
+            (2 * GetLabelPaddingHeight());
+
+    const auto greeting{ FormatGreeting() };
+    if (greeting.length())
+        {
+        m_fileColumnHeaderHeight += dc.GetTextExtent(greeting).GetHeight() +
+            (2 * GetLabelPaddingHeight());
+        }
+    }
+
+//---------------------------------------------------
 void wxStartPage::CalcButtonStart()
     {
     wxClientDC dc(this);
@@ -124,6 +162,7 @@ void wxStartPage::OnResize(wxSizeEvent& WXUNUSED(event))
         }
     
     CalcButtonStart();
+    CalcMRUColumnHeaderHeight();
 
     if (m_productDescription.length())
         {
@@ -175,8 +214,6 @@ void wxStartPage::OnResize(wxSizeEvent& WXUNUSED(event))
     // calculate MRU info
         {
         wxDCFontChanger fc(dc, dc.GetFont().Larger());
-        m_fileColumnHeight = dc.GetTextExtent(_("Recent")).GetHeight() +
-            (2 * GetLabelPaddingHeight());
         if (m_fileButtons.size())
             {
             wxDCFontChanger fc2(dc, wxFont(dc.GetFont()).MakeSmaller());
@@ -202,27 +239,39 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     wxGCDC dc(adc);
 
     CalcButtonStart();
+    CalcMRUColumnHeaderHeight();
 
     // calculate the positions of the buttons in the files area
-    const wxRect filesArea = wxRect(m_buttonWidth+(GetLeftBorder() * 2),
+    const wxRect filesArea = wxRect(m_buttonWidth + (GetLeftBorder() * 2),
         0,
-        GetClientSize().GetWidth() - (m_buttonWidth+(GetLeftBorder() * 2)),
+        GetClientSize().GetWidth() - (m_buttonWidth + (GetLeftBorder() * 2)),
         GetClientSize().GetHeight());
 
-    wxRect fileColumnHeader =
+    const wxRect fileColumnHeader =
         wxRect(filesArea.GetLeft(), 0,
-               filesArea.GetWidth(), m_fileColumnHeight).Deflate(1);
+               filesArea.GetWidth(), m_fileColumnHeaderHeight);
+    wxRect greetingRect{ fileColumnHeader }, recentRect{ fileColumnHeader };
+
+    const auto greeting{ FormatGreeting() };
+    if (greeting.length())
+        {
+        greetingRect.SetHeight(fileColumnHeader.GetHeight()/2);
+        recentRect.SetTop(greetingRect.GetBottom());
+        recentRect.SetHeight(fileColumnHeader.GetHeight()/2);
+        }
+    else
+        { greetingRect.SetSize(wxSize(0, 0)); }
 
     for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
         {
         m_fileButtons[i].m_rect =
             wxRect(filesArea.GetLeft() + 1,
-                   m_fileColumnHeight+(i * GetMRUButtonHeight()),
+                   m_fileColumnHeaderHeight + (i * GetMRUButtonHeight()),
                    filesArea.GetWidth() - 2,
                    GetMRUButtonHeight());
         }
 
-    // update the buttons' rects
+    // update the custom buttons' rects
     for (size_t i = 0; i < m_buttons.size(); ++i)
         {
         m_buttons[i].m_rect = wxRect(GetLeftBorder(),
@@ -302,24 +351,41 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         wxDCBrushChanger bc(dc, GetMRUBackgroundColor());
         dc.DrawRectangle(filesArea);
         }
+    // draw the greeting
+        {
+        wxDCFontChanger fc(dc, dc.GetFont().Larger().Larger().Bold());
+        wxDCTextColourChanger tcc(dc, GetMRUFontColor());
+        wxDCPenChanger pc(dc, *wxLIGHT_GREY_PEN);
+        dc.SetClippingRegion(greetingRect);
+        dc.DrawLabel(greeting,
+            wxRect(greetingRect).Deflate(GetLabelPaddingWidth()),
+            wxALIGN_LEFT);
+        dc.DestroyClippingRegion();
+        dc.DrawLine(greetingRect.GetLeftBottom(),
+                    greetingRect.GetRightBottom());
+        }
     // draw MRU column header
         {
         wxDCFontChanger fc(dc, dc.GetFont().Larger());
         wxDCTextColourChanger tcc(dc, GetMRUFontColor());
-        wxDCPenChanger pc(dc, GetMRUFontColor());
-        dc.SetClippingRegion(fileColumnHeader);
+        wxDCPenChanger pc(dc, wxPen(GetMRUFontColor(), FromDIP(2)));
+        dc.SetClippingRegion(recentRect);
         dc.DrawLabel(_("Recent"),
-            wxRect(fileColumnHeader).Deflate(GetLabelPaddingWidth()),
+            wxRect(recentRect).Deflate(GetLabelPaddingWidth()),
             wxALIGN_CENTRE);
         dc.DestroyClippingRegion();
-        dc.DrawLine(fileColumnHeader.GetLeftBottom() +
-                        wxSize((fileColumnHeader.GetWidth()/10), 0),
-                    fileColumnHeader.GetRightBottom() -
-                        wxSize((fileColumnHeader.GetWidth()/10), 0));
+        auto midPoint = recentRect.GetLeftBottom();
+        midPoint.x += (recentRect.GetRightBottom().x -
+                       recentRect.GetLeftBottom().x) / 2;
+        const wxSize recentTextSz{ dc.GetTextExtent(_("Recent")) };
+        dc.DrawLine(midPoint -
+                        wxSize((recentTextSz.GetWidth()/2), 0),
+                    midPoint +
+                        wxSize((recentTextSz.GetWidth()/2), 0));
         }
 
     const wxString currentToolTip = m_toolTip;
-    // highlight the active MRU file or backstage button
+    // highlight the active MRU file or custom button
     if (m_activeButton != wxNOT_FOUND)
         {
         wxRect buttonBorderRect;
@@ -438,7 +504,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 const wxRect fileLabelRect =
                     wxRect{ m_fileButtons[i].m_rect }.Deflate(GetLabelPaddingHeight());
                 dc.SetClippingRegion(m_fileButtons[i].m_rect);
-                // if the "clear all" button
+                // if the "clear file list" button
                 if (i == GetMRUFileAndClearButtonCount() - 1)
                     {
                     wxDCPenChanger pc(dc, *wxLIGHT_GREY_PEN);

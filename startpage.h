@@ -23,6 +23,20 @@ wxDECLARE_EVENT(wxEVT_STARTPAGE_CLICKED, wxCommandEvent);
 #define EVT_STARTPAGE_CLICKED(winid, fn) \
     wx__DECLARE_EVT1(wxEVT_STARTPAGE_CLICKED, winid, wxCommandEventHandler(fn))
 
+/// @brief The appearance of the buttons on the start page.
+enum class wxStartPageStyle
+    {
+    wxStartPageFlat, /*!<Flat button appearance.*/
+    wxStartPage3D    /*!<3D button appearance.*/
+    };
+/// @brief Which type of greeting to show in the start page banner.
+enum class wxStartPageGreetingStyle
+    {
+    wxDynamicGreeting, /*!<Greeting based on the time of day.*/
+    wxCustomGreeting,  /*!<User-defined greeting.*/
+    wxNoGreeting       /*!<No greeting.*/
+    };
+
 /** @brief A wxWidgets landing page for an application.
 
     It displays an MRU list on the right side (up to 10 files) and a list of
@@ -45,12 +59,6 @@ wxDECLARE_EVENT(wxEVT_STARTPAGE_CLICKED, wxCommandEvent);
 class wxStartPage final : public wxWindow
     {
 public:
-    /// @brief The appearance of the buttons on the start page.
-    enum class wxStartPageStyle
-        {
-        wxStartPageFlat, /*!<Flat button appearance.*/
-        wxStartPage3D    /*!<3D button appearance.*/
-        };
     /** @brief Constructor.
         @param parent The parent window.
         @param id The start page's ID.
@@ -134,6 +142,18 @@ public:
     /// @param style The style for the start page.
     void SetStyle(const wxStartPageStyle style) noexcept
         { m_style = style; }
+    /// @brief Sets which type of greeting (if any) to display.
+    /// @param style The greeting style for the start page.
+    /// @sa SetCustomGreeting().
+    void SetGreetingStyle(const wxStartPageGreetingStyle style) noexcept
+        { m_greetingStyle = style; }
+    /// @brief Sets a custom greeting to display.
+    /// @param greeting The custom greeting to use.
+    void SetCustomGreeting(const wxString& greeting)
+        {
+        m_customGreeting = greeting;
+        m_greetingStyle = wxStartPageGreetingStyle::wxCustomGreeting;
+        }
     /** @brief Shows or hides the application name and (optional) icon
             above the custom buttons.
         @param show @c true to show the application name.*/
@@ -243,7 +263,8 @@ private:
     /// @returns The size for the app logo
     wxNODISCARD const wxSize GetAppLogoSize() const
         { return FromDIP(wxSize(64, 64)); }
-    /// @returns The button size, which will be smaller if there are numerous buttons.
+    /// @returns The button size, which will be smaller if there
+    ///     are numerous buttons.
     wxNODISCARD const wxSize GetButtonSize() const
         {
         return FromDIP(m_buttons.size() > MAX_BUTTONS_SMALL_SIZE ?
@@ -255,14 +276,19 @@ private:
         { return m_mruButtonHeight; }
     void DrawHighlight(wxDC& dc, const wxRect rect, const wxColour color) const;
     void CalcButtonStart();
+    void CalcMRUColumnHeaderHeight();
+    wxNODISCARD wxString FormatGreeting() const;
 
     wxCoord m_buttonWidth{ 0 };
     wxCoord m_buttonHeight{ 0 };
     wxCoord m_buttonsStart{ 0 };
-    wxCoord m_fileColumnHeight{ 0 };
+    wxCoord m_fileColumnHeaderHeight{ 0 };
     wxCoord m_mruButtonHeight{ 0 };
     wxWindowID m_activeButton{ wxNOT_FOUND };
     wxStartPageStyle m_style{ wxStartPageStyle::wxStartPageFlat };
+    wxStartPageGreetingStyle m_greetingStyle
+        { wxStartPageGreetingStyle::wxDynamicGreeting };
+    wxString m_customGreeting;
     bool m_showAppHeader{ true };
     wxFont m_logoFont;
     std::vector<wxStartPageButton> m_fileButtons;
