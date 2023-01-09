@@ -718,6 +718,7 @@ void wxStartPage::OnMouseClick(wxMouseEvent& event)
             {
             wxCommandEvent cevent(wxEVT_STARTPAGE_CLICKED, GetId());
             cevent.SetId(button.m_id);
+            cevent.SetInt(button.m_id);
             cevent.SetEventObject(this);
             GetEventHandler()->ProcessEvent(cevent);
             break;
@@ -742,6 +743,7 @@ void wxStartPage::OnMouseClick(wxMouseEvent& event)
                     // from their doc manager and whatnot
                     wxCommandEvent cevent(wxEVT_STARTPAGE_CLICKED, GetId());
                     cevent.SetId(START_PAGE_FILE_LIST_CLEAR);
+                    cevent.SetInt(START_PAGE_FILE_LIST_CLEAR);
                     cevent.SetEventObject(this);
                     GetEventHandler()->ProcessEvent(cevent);
                     break;
@@ -753,6 +755,7 @@ void wxStartPage::OnMouseClick(wxMouseEvent& event)
                 // client calls IsFileId() on this ID to see
                 // if a file button was clicked
                 cevent.SetId(m_fileButtons[i].m_id);
+                cevent.SetInt(m_fileButtons[i].m_id);
                 // selected file path
                 cevent.SetString(m_fileButtons[i].m_label);
                 cevent.SetEventObject(this);
