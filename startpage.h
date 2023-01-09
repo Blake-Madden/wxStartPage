@@ -40,7 +40,7 @@ wxDECLARE_EVENT(wxEVT_STARTPAGE_CLICKED, wxCommandEvent);
     - Calling IsFileId() to see if a file button was clicked.
       If @c true, then you can get the selected file path from the event's
       string value.
-    - Calling IsFileListClearId() to see if the "Clear File List" button was clicked.
+    - Calling IsFileListClearId() to see if the "Clear file list" button was clicked.
 */
 class wxStartPage final : public wxWindow
     {
@@ -74,6 +74,21 @@ public:
     wxStartPage& operator=(const wxStartPage&) = delete;
     /// @private
     wxStartPage& operator=(wxStartPage&&) = delete;
+
+    /// @brief Sets the list of files to be shown in the
+    ///     "most-recently-used" list on the right side.
+    /// @param mruFiles The list of file names.
+    /// @note Files that can't be found will be filtered out,
+    ///     although they will remain in the parent application's MRU list.\n
+    ///     That way, if a user is disconnected from their network,
+    ///     then any network files won't appear, but may appear next time
+    ///     if they are then connected to the network.
+    void SetMRUList(const wxArrayString& mruFiles);
+
+    /// @name Button Functions
+    /// @brief Functions for adding buttons and handling their events.
+    /// @{
+
     /// @brief Adds a feature button on the left side.
     /// @details A feature button can be something like
     ///     "Read the Help" or "Create a New Project."
@@ -90,15 +105,15 @@ public:
             wxNOT_FOUND :
             m_buttons[buttonIndex].m_id;
         }
-    /// @brief Sets the list of files to be shown in the
-    ///     "most-recently-used" list on the right side.
-    /// @param mruFiles The list of file names.
-    /// @note Files that can't be found will be filtered out,
-    ///     although they will remain in the parent application's MRU list.\n
-    ///     That way, if a user is disconnected from their network,
-    ///     then any network files won't appear, but may appear next time
-    ///     if they are then connected to the network.
-    void SetMRUList(const wxArrayString& mruFiles);
+
+    /// @returns @c true if @c Id is and ID for one of the custom buttons on the left.
+    /// @param Id The ID from an @c EVT_STARTPAGE_CLICKED event after a
+    ///     user clicks a button on the start page.
+    wxNODISCARD bool IsCustomButtonId(const wxWindowID Id) const noexcept
+        {
+        return (Id >= ID_BUTTON_ID_START &&
+                static_cast<size_t>(Id) < ID_BUTTON_ID_START + m_buttons.size());
+        }
     /// @returns @c true if @c Id is an ID within the MRU list.
     /// @param Id The ID from an @c EVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
@@ -109,46 +124,44 @@ public:
     ///     user clicks a button on the start page.
     wxNODISCARD constexpr bool IsFileListClearId(const wxWindowID Id) const noexcept
         { return (Id == START_PAGE_FILE_LIST_CLEAR); }
-    /// @returns @c true if @c Id is and ID for one of the custom buttons on the left.
-    /// @param Id The ID from an @c EVT_STARTPAGE_CLICKED event after a
-    ///     user clicks a button on the start page.
-    wxNODISCARD bool IsCustomButtonId(const wxWindowID Id) const noexcept
-        {
-        return (Id >= ID_BUTTON_ID_START &&
-                static_cast<size_t>(Id) < ID_BUTTON_ID_START + m_buttons.size());
-        }
+    /// @}
+
+    /// @name Style Functions
+    /// @brief Functions for customizing the start page's visual appearance.
+    /// @{
+
     /// @brief Sets the appearance of the start page.
     /// @param style The style for the start page.
     void SetStyle(const wxStartPageStyle style) noexcept
         { m_style = style; }
     /// @returns The color of the left side of the start page.
-    wxNODISCARD wxColour GetBackstageBackgroundColor() const noexcept
-        { return m_backstageBackgroundColor; }
+    wxNODISCARD wxColour GetButtonAreaBackgroundColor() const noexcept
+        { return m_buttonAreaBackgroundColor; }
     /// @brief Sets the color of the left side of the start page.
     /// @param color The color to use.
-    void SetBackstageBackgroundColor(const wxColour& color) noexcept
-        { m_backstageBackgroundColor = color; }
+    void SetButtonAreaBackgroundColor(const wxColour& color) noexcept
+        { m_buttonAreaBackgroundColor = color; }
     /// @returns The font color of the left side of the start page.
-    wxNODISCARD wxColour GetBackstageFontColor() const noexcept
-        { return m_backstageFontColor; }
+    wxNODISCARD wxColour GetButtonAreaFontColor() const noexcept
+        { return m_buttonAreaFontColor; }
     /// @brief Sets the font color of the left side of the start page.
     /// @param color The color to use.
-    void SetBackstageFontColor(const wxColour& color) noexcept
-        { m_backstageFontColor = color; }
+    void SetButtonAreaFontColor(const wxColour& color) noexcept
+        { m_buttonAreaFontColor = color; }
     /// @returns The color of the right side of the start page.
-    wxNODISCARD wxColour GetDetailBackgroundColor() const noexcept
-        { return m_detailBackgroundColor; }
+    wxNODISCARD wxColour GetMRUBackgroundColor() const noexcept
+        { return m_MRUBackgroundColor; }
     /// @brief Sets the color of the right side of the start page.
     /// @param color The color to use.
-    void SetDetailBackgroundColor(const wxColour& color) noexcept
-        { m_detailBackgroundColor = color; }
+    void SetMRUBackgroundColor(const wxColour& color) noexcept
+        { m_MRUBackgroundColor = color; }
     /// @returns The font color of the right side of the start page.
-    wxNODISCARD wxColour GetDetailFontColor() const noexcept
-        { return m_detailFontColor; }
+    wxNODISCARD wxColour GetMRUFontColor() const noexcept
+        { return m_MRUFontColor; }
     /// @brief Sets the font color of the right side of the start page.
     /// @param color The color to use.
-    void SetDetailFontColor(const wxColour& color) noexcept
-        { m_detailFontColor = color; }
+    void SetMRUFontColor(const wxColour& color) noexcept
+        { m_MRUFontColor = color; }
     /// @returns The color of buttons when they are hovered over.
     wxNODISCARD wxColour GetHoverColor() const noexcept
         { return m_hoverColor; }
@@ -163,6 +176,7 @@ public:
     /// @param color The color to use.
     void SetHoverFontColor(const wxColour& color) noexcept
         { m_hoverFontColor = color; }
+    /// @}
 private:
     struct wxStartPageButton
         {
@@ -249,10 +263,10 @@ private:
     wxBitmapBundle m_logo;
     wxString m_toolTip;
     wxString m_productDescription;
-    wxColour m_backstageBackgroundColor{ 145, 168, 208 };
-    wxColour m_backstageFontColor{ *wxWHITE };
-    wxColour m_detailBackgroundColor{ *wxWHITE };
-    wxColour m_detailFontColor{ *wxBLACK };
+    wxColour m_buttonAreaBackgroundColor{ 145, 168, 208 };
+    wxColour m_buttonAreaFontColor{ *wxWHITE };
+    wxColour m_MRUBackgroundColor{ *wxWHITE };
+    wxColour m_MRUFontColor{ *wxBLACK };
     wxColour m_hoverColor{ 100, 140, 250 };
     wxColour m_hoverFontColor{ *wxBLACK  };
     };

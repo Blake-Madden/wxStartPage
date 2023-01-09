@@ -208,7 +208,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         }
 
     // fill the background
-    dc.SetBackground(GetBackstageBackgroundColor());
+    dc.SetBackground(GetButtonAreaBackgroundColor());
     dc.Clear();
 
     // draw the program logo
@@ -219,8 +219,8 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             dc.GetTextExtent(m_productDescription, &appDescWidth, &appDescHeight);
             appDescHeight += (2 * GetLabelPaddingHeight());
             }
-        wxDCTextColourChanger cc(dc, GetBackstageFontColor());
-        wxDCPenChanger pc(dc, GetBackstageFontColor());
+        wxDCTextColourChanger cc(dc, GetButtonAreaFontColor());
+        wxDCPenChanger pc(dc, GetButtonAreaFontColor());
         wxCoord textWidth{ 0 }, textHeight{ 0 };
         wxBitmap appLogo = m_logo.GetBitmap(GetAppLogoSize());
         if (appLogo.IsOk())
@@ -274,14 +274,14 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     // draw the MRU files area
         {
         wxDCPenChanger pc(dc, *wxTRANSPARENT_PEN);
-        wxDCBrushChanger bc(dc, GetDetailBackgroundColor());
+        wxDCBrushChanger bc(dc, GetMRUBackgroundColor());
         dc.DrawRectangle(filesArea);
         }
     // draw MRU column header
         {
         wxDCFontChanger fc(dc, dc.GetFont().Larger());
-        wxDCTextColourChanger tcc(dc, GetDetailFontColor());
-        wxDCPenChanger pc(dc, GetDetailFontColor());
+        wxDCTextColourChanger tcc(dc, GetMRUFontColor());
+        wxDCPenChanger pc(dc, GetMRUFontColor());
         dc.SetClippingRegion(fileColumnHeader);
         dc.DrawLabel(_("Recent"),
             wxRect(fileColumnHeader).Deflate(GetLabelPaddingWidth()),
@@ -398,9 +398,9 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         // set file path font color to be slightly ligher/darker
         // than file name color
         const wxColour filePathColor =
-            (GetDetailFontColor().GetLuminance() < 0.5f) ?
-                GetDetailFontColor().ChangeLightness(160) :
-                GetDetailFontColor().ChangeLightness(40);
+            (GetMRUFontColor().GetLuminance() < 0.5f) ?
+                GetMRUFontColor().ChangeLightness(160) :
+                GetMRUFontColor().ChangeLightness(40);
         // begin drawing them
         wxBitmap fileIcon = m_logo.GetBitmap(FromDIP(wxSize(16, 16)));
         for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
@@ -409,7 +409,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 {
                 wxDCTextColourChanger tcc(dc,
                     m_activeButton == m_fileButtons[i].m_id ?
-                    GetHoverFontColor() : GetDetailFontColor());
+                    GetHoverFontColor() : GetMRUFontColor());
                 const wxRect fileLabelRect =
                     wxRect{ m_fileButtons[i].m_rect }.Deflate(GetLabelPaddingHeight());
                 dc.SetClippingRegion(m_fileButtons[i].m_rect);
@@ -503,7 +503,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 {
                 wxDCTextColourChanger cc(dc,
                     m_activeButton == button.m_id ?
-                    GetHoverFontColor() : GetBackstageFontColor());
+                    GetHoverFontColor() : GetButtonAreaFontColor());
 
                 // draw it
                 dc.SetClippingRegion(button.m_rect);
