@@ -84,7 +84,7 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
             { break; }
         }
     m_fileButtons[buttonCount].m_id = START_PAGE_FILE_LIST_CLEAR;
-    m_fileButtons[buttonCount++].m_label = _("Clear file list...");
+    m_fileButtons[buttonCount++].m_label = _(L"Clear file list...");
     m_fileButtons.resize(buttonCount);
     }
 
@@ -99,10 +99,10 @@ wxString wxStartPage::FormatGreeting() const
         {
         const auto currentHour{ wxDateTime::Now().GetHour() };
         return currentHour < 12 ?
-            _("Good morning") :
+            _(L"Good morning") :
             currentHour < 17 ?
-            _("Good afternoon") :
-            _("Good evening");
+            _(L"Good afternoon") :
+            _(L"Good evening");
         }
     }
 
@@ -112,10 +112,10 @@ void wxStartPage::CalcMRUColumnHeaderHeight()
     wxClientDC dc(this);
 
     wxDCFontChanger fc(dc, dc.GetFont().Larger().Larger().Bold());
-        m_fileColumnHeaderHeight = dc.GetTextExtent(_("Recent")).GetHeight() +
+        m_fileColumnHeaderHeight = dc.GetTextExtent(_(L"Recent")).GetHeight() +
             (2 * GetLabelPaddingHeight());
 
-    m_fileColumnHeaderHeight = dc.GetTextExtent(_("Recent")).GetHeight() +
+    m_fileColumnHeaderHeight = dc.GetTextExtent(_(L"Recent")).GetHeight() +
             (2 * GetLabelPaddingHeight());
 
     const auto greeting{ FormatGreeting() };
@@ -241,6 +241,19 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     CalcButtonStart();
     CalcMRUColumnHeaderHeight();
 
+    const wxColour buttonAreaFontColor =
+        BlackOrWhiteContrast(GetButtonAreaBackgroundColor());
+    const wxColour mruFontColor =
+        BlackOrWhiteContrast(GetMRUBackgroundColor());
+    const wxColour buttonAreaHoverColor =
+        ShadeOrTint(GetButtonAreaBackgroundColor());
+    const wxColour mruHoverColor =
+        ShadeOrTint(GetMRUBackgroundColor());
+    const wxColour buttonAreaHoverFontColor =
+        BlackOrWhiteContrast(buttonAreaHoverColor);
+    const wxColour mruFontHoverColor =
+        BlackOrWhiteContrast(mruHoverColor);
+
     // calculate the positions of the buttons in the files area
     const wxRect filesArea = wxRect(m_buttonWidth + (GetLeftBorder() * 2),
         0,
@@ -293,8 +306,8 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             dc.GetTextExtent(m_productDescription, &appDescWidth, &appDescHeight);
             appDescHeight += (2 * GetLabelPaddingHeight());
             }
-        wxDCTextColourChanger cc(dc, GetButtonAreaFontColor());
-        wxDCPenChanger pc(dc, GetButtonAreaFontColor());
+        wxDCTextColourChanger cc(dc, buttonAreaFontColor);
+        wxDCPenChanger pc(dc, buttonAreaFontColor);
         wxCoord textWidth{ 0 }, textHeight{ 0 };
         wxBitmap appLogo = m_logo.GetBitmap(GetAppLogoSize());
         if (appLogo.IsOk())
@@ -354,7 +367,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     // draw the greeting
         {
         wxDCFontChanger fc(dc, dc.GetFont().Larger().Larger().Bold());
-        wxDCTextColourChanger tcc(dc, GetMRUFontColor());
+        wxDCTextColourChanger tcc(dc, mruFontColor);
         wxDCPenChanger pc(dc, *wxLIGHT_GREY_PEN);
         dc.SetClippingRegion(greetingRect);
         dc.DrawLabel(greeting,
@@ -367,17 +380,21 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     // draw MRU column header
         {
         wxDCFontChanger fc(dc, dc.GetFont().Larger());
-        wxDCTextColourChanger tcc(dc, GetMRUFontColor());
-        wxDCPenChanger pc(dc, wxPen(GetMRUFontColor(), FromDIP(2)));
+        wxDCTextColourChanger tcc(dc, mruFontColor);
+        // add a little bit of color by using the left side's background
+        // color as the underline under "Recent"
+        wxDCPenChanger pc(dc,
+            wxPen(wxPenInfo(GetButtonAreaBackgroundColor(),
+                            FromDIP(2)).Cap(wxPenCap::wxCAP_BUTT)));
         dc.SetClippingRegion(recentRect);
-        dc.DrawLabel(_("Recent"),
+        dc.DrawLabel(_(L"Recent"),
             wxRect(recentRect).Deflate(GetLabelPaddingWidth()),
             wxALIGN_CENTRE);
         dc.DestroyClippingRegion();
         auto midPoint = recentRect.GetLeftBottom();
         midPoint.x += (recentRect.GetRightBottom().x -
                        recentRect.GetLeftBottom().x) / 2;
-        const wxSize recentTextSz{ dc.GetTextExtent(_("Recent")) };
+        const wxSize recentTextSz{ dc.GetTextExtent(_(L"Recent")) };
         dc.DrawLine(midPoint -
                         wxSize((recentTextSz.GetWidth()/2), 0),
                     midPoint +
@@ -389,6 +406,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     if (m_activeButton != wxNOT_FOUND)
         {
         wxRect buttonBorderRect;
+        bool isInButtonArea{ false };
         for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
             {
             if (m_fileButtons[i].IsOk() &&
@@ -396,6 +414,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 {
                 m_toolTip = m_fileButtons[i].m_label;
                 buttonBorderRect = m_fileButtons[i].m_rect;
+                isInButtonArea = false;
                 break;
                 }
             }
@@ -405,12 +424,15 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 {
                 buttonBorderRect = button.m_rect;
                 m_toolTip.clear();
+                isInButtonArea = true;
                 break;
                 }
             }
         if (!buttonBorderRect.IsEmpty())
             {
-            DrawHighlight(dc, buttonBorderRect, GetHoverColor());
+            DrawHighlight(dc, buttonBorderRect,
+                isInButtonArea ?
+                buttonAreaHoverColor : mruHoverColor);
             }
         }
     else
@@ -441,7 +463,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 // round the minutes
                 timeDiff.GetMinutes() < 30 ? 0 : 1);
             }
-            // named day if accessed sometime this week
+        // named day if accessed sometime this week
         else if (currentTime.GetYear() == dt.GetYear() &&
             currentTime.GetMonth() == dt.GetMonth() &&
             currentTime.GetWeekOfMonth() == dt.GetWeekOfMonth())
@@ -512,9 +534,9 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         // set file path font color to be slightly ligher/darker
         // than file name color
         const wxColour filePathColor =
-            (GetMRUFontColor().GetLuminance() < 0.5f) ?
-                GetMRUFontColor().ChangeLightness(160) :
-                GetMRUFontColor().ChangeLightness(40);
+            (mruFontColor.GetLuminance() < 0.5f) ?
+                mruFontColor.ChangeLightness(160) :
+                mruFontColor.ChangeLightness(40);
         // begin drawing them
         wxBitmap fileIcon = m_logo.GetBitmap(FromDIP(wxSize(16, 16)));
         for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
@@ -523,7 +545,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 {
                 wxDCTextColourChanger tcc(dc,
                     m_activeButton == m_fileButtons[i].m_id ?
-                    GetHoverFontColor() : GetMRUFontColor());
+                    mruFontHoverColor : mruFontColor);
                 const wxRect fileLabelRect =
                     wxRect{ m_fileButtons[i].m_rect }.Deflate(GetLabelPaddingHeight());
                 dc.SetClippingRegion(m_fileButtons[i].m_rect);
@@ -617,7 +639,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 {
                 wxDCTextColourChanger cc(dc,
                     m_activeButton == button.m_id ?
-                    GetHoverFontColor() : GetButtonAreaFontColor());
+                    buttonAreaHoverFontColor : buttonAreaFontColor);
 
                 // draw it
                 dc.SetClippingRegion(button.m_rect);
@@ -756,8 +778,8 @@ void wxStartPage::OnMouseClick(wxMouseEvent& event)
             if (i == GetMRUFileAndClearButtonCount() - 1)
                 {
                 if (wxMessageBox(
-                        _("Do you wish to clear the list of recent files?"),
-                        _("Clear File List"), wxYES_NO|wxICON_QUESTION) == wxYES)
+                        _(L"Do you wish to clear the list of recent files?"),
+                        _(L"Clear File List"), wxYES_NO|wxICON_QUESTION) == wxYES)
                     {
                     SetMRUList(wxArrayString());
                     Refresh();
