@@ -517,10 +517,10 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                     wxDateTime accessTime, modTime, createTime;
                     if (fn.GetTimes(&accessTime, &modTime, &createTime))
                         {
-                        const wxString accessTimeStr =
-                            formatFileDateTime(accessTime);
+                        const wxString modTimeStr =
+                            formatFileDateTime(modTime);
                         const wxSize timeStringSize =
-                            dc.GetTextExtent(accessTimeStr);
+                            dc.GetTextExtent(modTimeStr);
                         if (timeLabelWidth < timeStringSize.GetWidth())
                             { timeLabelWidth = timeStringSize.GetWidth(); }
                         }
@@ -600,11 +600,11 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                             wxDateTime accessTime, modTime, createTime;
                             if (fn.GetTimes(&accessTime, &modTime, &createTime))
                                 {
-                                const wxString accessTimeStr =
-                                    formatFileDateTime(accessTime);
+                                const wxString modTimeStr =
+                                    formatFileDateTime(modTime);
                                 const wxSize timeStringSize =
-                                    dc.GetTextExtent(accessTimeStr);
-                                dc.DrawText(accessTimeStr,
+                                    dc.GetTextExtent(modTimeStr);
+                                dc.DrawText(modTimeStr,
                                     fileLabelRect.GetRight() -
                                         (timeLabelWidth+GetLabelPaddingHeight()),
                                     fileLabelRect.GetTop() +
