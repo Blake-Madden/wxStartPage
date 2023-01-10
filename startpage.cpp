@@ -270,7 +270,7 @@ void wxStartPage::OnResize(wxSizeEvent& WXUNUSED(event))
         wxDCFontChanger fc(dc, dc.GetFont().Larger());
         if (m_fileButtons.size())
             {
-            wxDCFontChanger fc2(dc, wxFont(dc.GetFont()).MakeSmaller());
+            wxDCFontChanger fc2(dc, wxFont(dc.GetFont()));
             wxCoord textWidth{ 0 }, textHeight{ 0 };
             dc.GetTextExtent(m_fileButtons[0].m_label, &textWidth, &textHeight);
             // enough space for the text (label and path) height
@@ -307,6 +307,8 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         BlackOrWhiteContrast(buttonAreaHoverColor);
     const wxColour mruFontHoverColor =
         BlackOrWhiteContrast(mruHoverColor);
+    const wxColour mruSeparatorlineColor =
+        ShadeOrTint(GetMRUBackgroundColor());
 
     // calculate the positions of the buttons in the files area
     const wxRect filesArea = wxRect(m_buttonWidth + (GetLeftBorder() * 2),
@@ -422,7 +424,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         {
         wxDCFontChanger fc(dc, dc.GetFont().Larger().Larger().Bold());
         wxDCTextColourChanger tcc(dc, mruFontColor);
-        wxDCPenChanger pc(dc, *wxLIGHT_GREY_PEN);
+        wxDCPenChanger pc(dc, mruSeparatorlineColor);
         dc.SetClippingRegion(greetingRect);
         dc.DrawLabel(greeting,
             wxRect(greetingRect).Deflate(GetLabelPaddingWidth()),
@@ -519,7 +521,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 // round the minutes
                 timeDiff.GetMinutes() < 30 ? 0 : 1);
             }
-        // named day if accessed sometime this week
+        // named day if modified sometime this week
         else if (currentTime.GetYear() == dt.GetYear() &&
             currentTime.GetMonth() == dt.GetMonth() &&
             currentTime.GetWeekOfMonth() == dt.GetWeekOfMonth())
@@ -545,7 +547,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             }
         else
             {
-            // only show year if accessed last year
+            // only show year if modified last year
             const wxString dateFormatStr =
                 (wxDateTime::Now().GetYear() == dt.GetYear()) ?
                     L"%B %d " :
@@ -558,13 +560,13 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
 
     // file labels
         {
-        // Get the widest file access time label so that we can draw 
+        // Get the widest file modified time label so that we can draw 
         // them ragged right. Also, get the longest file path to make
         // sure the time and path don't overlap.
         decltype(wxSize::x) filePathLabelWidth{ 0 };
         decltype(wxSize::x) timeLabelWidth{ 0 };
             {
-            wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeSmaller());
+            wxDCFontChanger fc(dc, wxFont(dc.GetFont()));
             for (size_t i = 0; i < GetMRUFileCount(); ++i)
                 {
                 if (m_fileButtons[i].IsOk())
@@ -587,12 +589,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                     }
                 }
             }
-        // set file path font color to be slightly ligher/darker
-        // than file name color
-        const wxColour filePathColor =
-            (mruFontColor.GetLuminance() < 0.5f) ?
-                mruFontColor.ChangeLightness(160) :
-                mruFontColor.ChangeLightness(40);
+
         // begin drawing them
         wxBitmap fileIcon = m_logo.GetBitmap(FromDIP(wxSize(16, 16)));
         for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
@@ -617,7 +614,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 else
                     {
                     // show the files
-                    const wxFileName fn(m_fileButtons[i].m_label);
+                    const wxFileName fn(m_fileButtons[i].m_fullFilePath);
                     if (fileIcon.IsOk())
                         {
                         dc.DrawBitmap(fileIcon,
@@ -835,7 +832,7 @@ void wxStartPage::OnMouseClick(wxMouseEvent& event)
                 {
                 if (wxMessageBox(
                         _(L"Do you wish to clear the list of recent files?"),
-                        _(L"Clear File List"), wxYES_NO|wxICON_QUESTION) == wxYES)
+                        _(L"Clear File List"), wxYES_NO | wxICON_QUESTION) == wxYES)
                     {
                     SetMRUList(wxArrayString());
                     Refresh();
