@@ -422,25 +422,48 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     const auto formatFileDateTime = [](const auto& dt)
         {
         wxString dateStr, timeStr;
-        if (wxDateTime::Now().GetYear() == dt.GetYear() &&
-            wxDateTime::Now().GetMonth() == dt.GetMonth() &&
-            wxDateTime::Now().GetWeekOfMonth() == dt.GetWeekOfMonth())
+        const auto currentTime{ wxDateTime::Now() };
+        const wxTimeSpan timeDiff = wxDateTime::Now().Subtract(dt);
+        if (timeDiff.GetHours() < 1)
             {
-            // named day if accessed sometime this week
-            if (wxDateTime::Now().GetDay() == dt.GetDay())
-                { dateStr = _("Today"); }
-            else if (wxDateTime::Now().GetDay() - 1 == dt.GetDay())
-                { dateStr = _("Yesterday"); }
+            if (timeDiff.GetMinutes() < 10)
+                { dateStr = _(L"Just now"); }
             else
-                { dateStr = wxDateTime::GetWeekDayName(dt.GetWeekDay()); }
+                {
+                dateStr = wxString::Format(_(L"%d minutes ago"),
+                    timeDiff.GetMinutes());
+                }
+            }
+        else if (timeDiff.GetHours() <= 8)
+            {
+            dateStr = wxString::Format(_(L"%d hours ago"),
+                timeDiff.GetHours() +
+                // round the minutes
+                timeDiff.GetMinutes() < 30 ? 0 : 1);
+            }
+            // named day if accessed sometime this week
+        else if (currentTime.GetYear() == dt.GetYear() &&
+            currentTime.GetMonth() == dt.GetMonth() &&
+            currentTime.GetWeekOfMonth() == dt.GetWeekOfMonth())
+            {
+            if (currentTime.GetDay() == dt.GetDay())
+                { dateStr = _(L"Today at "); }
+            else if (currentTime.GetDay() - 1 == dt.GetDay())
+                { dateStr = _(L"Yesterday at "); }
+            else
+                {
+                dateStr = wxString::Format(_(L"%s at "),
+                    wxDateTime::GetWeekDayName(dt.GetWeekDay(),
+                                               wxDateTime::NameFlags::Name_Abbr));
+                }
 
             // include time also, in the local clock format
             wxString am, pm;
             wxDateTime::GetAmPmStrings(&am, &pm);
             if (am.length() && pm.length())
-                { timeStr = dt.Format(L"  %I:%M %p").MakeUpper(); }
+                { timeStr = dt.Format(L"%I:%M %p").MakeUpper(); }
             else
-                { timeStr = dt.Format(L"  %H:%M"); }
+                { timeStr = dt.Format(L"%H:%M"); }
             }
         else
             {
