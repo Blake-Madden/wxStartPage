@@ -77,6 +77,35 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
     m_fileButtons.resize(mruFiles.GetCount() + 1);
     if (mruFiles.GetCount() == 0)
         { return; }
+
+    const auto simplifyFilePath = [](auto path)
+        {
+        path = wxFileName(path).GetPath();
+        // shorten standard user paths
+        path.Replace(
+            wxStandardPaths::Get().GetUserDir(wxStandardPathsBase::Dir::Dir_Documents),
+            _(L"Documents"));
+        path.Replace(
+            wxStandardPaths::Get().GetUserDir(wxStandardPathsBase::Dir::Dir_Desktop),
+            _(L"Desktop"));
+        path.Replace(
+            wxStandardPaths::Get().GetUserDir(wxStandardPathsBase::Dir::Dir_Pictures),
+            _(L"Pictures"));
+        path.Replace(
+            wxStandardPaths::Get().GetUserDir(wxStandardPathsBase::Dir::Dir_Videos),
+            _(L"Videos"));
+        path.Replace(
+            wxStandardPaths::Get().GetUserDir(wxStandardPathsBase::Dir::Dir_Music),
+            _(L"Music"));
+        path.Replace(
+            wxStandardPaths::Get().GetUserDir(wxStandardPathsBase::Dir::Dir_Downloads),
+            _(L"Downloads"));
+        // replace slashes with guillemets (makes it look fancier)
+        path.Replace(wxFileName::GetPathSeparator(), L" \x00BB ", true);
+        return path;
+        };
+
+    // load files that can be found
     size_t buttonCount{ 0 };
     for (const auto& file: mruFiles)
         {
