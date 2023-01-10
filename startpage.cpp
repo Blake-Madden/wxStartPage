@@ -456,6 +456,8 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                     timeDiff.GetMinutes());
                 }
             }
+        else if (timeDiff.GetMinutes() < 90)
+            { dateStr = _(L"1 hour ago"); }
         else if (timeDiff.GetHours() <= 8)
             {
             dateStr = wxString::Format(_(L"%d hours ago"),
