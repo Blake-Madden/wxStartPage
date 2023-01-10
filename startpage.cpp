@@ -107,19 +107,38 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
 
     // load files that can be found
     size_t buttonCount{ 0 };
+    std::vector<wxString> files;
     for (const auto& file: mruFiles)
         {
         if (wxFileName::FileExists(file))
-            {
-            m_fileButtons[buttonCount].m_id = ID_FILE_ID_START + buttonCount;
-            m_fileButtons[buttonCount++].m_label = file;
-            }
+            { files.push_back(file); }
         // no more than 10 items here, not enough real estate
         if (buttonCount == MAX_FILE_BUTTONS)
             { break; }
         }
+
+    std::sort(files.begin(), files.end(),
+        [](const auto& lhv, const auto& rhv)
+        {
+        const wxFileName fn1(lhv), fn2(rhv);
+        wxDateTime accessTime1, modTime1, createTime1,
+                   accessTime2, modTime2, createTime2;
+        fn1.GetTimes(&accessTime1, &modTime1, &createTime1);
+        fn2.GetTimes(&accessTime2, &modTime2, &createTime2);
+        // going in reverse, most recently modified goes to the front
+        return modTime1 > modTime2;
+        });
+
+    // connect the file paths to the buttons in the MRU list
+    for (buttonCount = 0; buttonCount < files.size(); ++buttonCount)
+        {
+        m_fileButtons[buttonCount].m_id = ID_FILE_ID_START + buttonCount;
+        m_fileButtons[buttonCount].m_fullFilePath = files[buttonCount];
+        m_fileButtons[buttonCount].m_label = simplifyFilePath(files[buttonCount]);
+        }
+
     m_fileButtons[buttonCount].m_id = START_PAGE_FILE_LIST_CLEAR;
-    m_fileButtons[buttonCount++].m_label = _(L"Clear file list...");
+    m_fileButtons[buttonCount++].m_label = GetClearFileListLabel();
     m_fileButtons.resize(buttonCount);
     }
 
