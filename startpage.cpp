@@ -331,13 +331,25 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     else
         { greetingRect.SetSize(wxSize(0, 0)); }
 
-    for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
+    if (GetMRUFileAndClearButtonCount() > 0)
         {
-        m_fileButtons[i].m_rect =
-            wxRect(filesArea.GetLeft() + 1,
-                   m_fileColumnHeaderHeight + (i * GetMRUButtonHeight()),
-                   filesArea.GetWidth() - 2,
-                   GetMRUButtonHeight());
+        // update the rects for the file buttons
+        for (size_t i = 0; i < GetMRUFileAndClearButtonCount() - 1; ++i)
+            {
+            m_fileButtons[i].m_rect =
+                wxRect(filesArea.GetLeft() + FromDIP(1),
+                       m_fileColumnHeaderHeight + (i * GetMRUButtonHeight()),
+                       filesArea.GetWidth() - FromDIP(2),
+                       GetMRUButtonHeight());
+            }
+        // the "clear file list" button
+        const auto clearButtonSize = dc.GetTextExtent(GetClearFileListLabel());
+        m_fileButtons[GetMRUFileAndClearButtonCount() - 1].m_rect =
+            wxRect(filesArea.GetLeft() + FromDIP(1),
+                m_fileColumnHeaderHeight +
+                    ((GetMRUFileAndClearButtonCount() - 1) * GetMRUButtonHeight()),
+                clearButtonSize.GetWidth() + (GetLabelPaddingHeight() * 2),
+                GetMRUButtonHeight());
         }
 
     // update the custom buttons' rects
@@ -462,15 +474,22 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     if (m_activeButton != wxNOT_FOUND)
         {
         wxRect buttonBorderRect;
-        bool isInButtonArea{ false };
+        ActiveButtonType activeButton{ ActiveButtonType::CustomButton };
         for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
             {
             if (m_fileButtons[i].IsOk() &&
                 m_activeButton == m_fileButtons[i].m_id)
                 {
-                m_toolTip = m_fileButtons[i].m_label;
+                // show either full path, the label, or nothing
+                // (if a button under the MRU list)
+                m_toolTip = (i == (GetMRUFileAndClearButtonCount() -1 )) ?
+                    wxString{} :
+                    m_fileButtons[i].m_fullFilePath.length() ?
+                    m_fileButtons[i].m_fullFilePath : m_fileButtons[i].m_label;
                 buttonBorderRect = m_fileButtons[i].m_rect;
-                isInButtonArea = false;
+                activeButton = (i == (GetMRUFileAndClearButtonCount() - 1)) ?
+                    ActiveButtonType::FileActionButton :
+                    ActiveButtonType::FileButton;
                 break;
                 }
             }
@@ -480,15 +499,26 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 {
                 buttonBorderRect = button.m_rect;
                 m_toolTip.clear();
-                isInButtonArea = true;
+                activeButton = ActiveButtonType::CustomButton;
                 break;
                 }
             }
         if (!buttonBorderRect.IsEmpty())
             {
-            DrawHighlight(dc, buttonBorderRect,
-                isInButtonArea ?
-                buttonAreaHoverColor : mruHoverColor);
+            if (activeButton == ActiveButtonType::FileActionButton)
+                {
+                // highlight just the border so that it looks like a UI button
+                wxDCBrushChanger bdc(dc, *wxTRANSPARENT_BRUSH);
+                wxDCPenChanger pdc(dc,
+                    wxPen(ShadeOrTint(GetMRUBackgroundColor(), 0.4), FromDIP(2)));
+                dc.DrawRectangle(buttonBorderRect);
+                }
+            else
+                {
+                DrawHighlight(dc, buttonBorderRect,
+                    (activeButton == ActiveButtonType::CustomButton) ?
+                    buttonAreaHoverColor : mruHoverColor);
+                }
             }
         }
     else
@@ -571,7 +601,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 {
                 if (m_fileButtons[i].IsOk())
                     {
-                    const wxFileName fn(m_fileButtons[i].m_label);
+                    const wxFileName fn(m_fileButtons[i].m_fullFilePath);
                     wxDateTime accessTime, modTime, createTime;
                     if (fn.GetTimes(&accessTime, &modTime, &createTime))
                         {
@@ -605,9 +635,6 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 // if the "clear file list" button
                 if (i == GetMRUFileAndClearButtonCount() - 1)
                     {
-                    wxDCPenChanger pc(dc, *wxLIGHT_GREY_PEN);
-                    dc.DrawLine(m_fileButtons[i].m_rect.GetLeftTop(),
-                                m_fileButtons[i].m_rect.GetRightTop());
                     dc.DrawLabel(m_fileButtons[i].m_label, fileLabelRect,
                                  wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL);
                     }
@@ -622,22 +649,25 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                                     fileLabelRect.GetTop() +
                                         (fileLabelRect.GetHeight() -
                                          fileIcon.GetHeight(), 2)));
+                        int nameHeight{ 0 };
                         // draw the filename
-                        const auto nameHeight =
-                            dc.GetTextExtent(fn.GetFullName()).GetHeight();
-                        dc.DrawText(fn.GetFullName(),
-                            wxPoint(fileLabelRect.GetLeft() +
-                                    GetLabelPaddingWidth() + fileIcon.GetWidth(),
-                                    fileLabelRect.GetTop()));
-                        wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeSmaller());
+                            {
+                            wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeBold());
+                            nameHeight =
+                                dc.GetTextExtent(fn.GetFullName()).GetHeight();
+                            dc.DrawText(fn.GetFullName(),
+                                wxPoint(fileLabelRect.GetLeft() +
+                                        GetLabelPaddingWidth() + fileIcon.GetWidth(),
+                                        fileLabelRect.GetTop()));
+                            }
                         // draw the filepath
                             {
-                            wxDCTextColourChanger cc(dc, filePathColor);
+                            wxDCTextColourChanger cc(dc, mruFontColor);
                             dc.DrawText(
                                 // truncate the path is necessary
-                                (fn.GetPath().length() <= 75) ?
-                                fn.GetPath() :
-                                (fn.GetPath().substr(0,75) + L"..."),
+                                (m_fileButtons[i].m_label.length() <= 75) ?
+                                m_fileButtons[i].m_label :
+                                (m_fileButtons[i].m_label.substr(0,75) + L"..."),
                                 wxPoint(fileLabelRect.GetLeft() +
                                         GetLabelPaddingWidth() +
                                         fileIcon.GetWidth(),
@@ -673,6 +703,9 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                         dc.DrawLabel(fn.GetFullName(), fileLabelRect,
                                      wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL);
                         }
+                    wxDCPenChanger pc(dc, mruSeparatorlineColor);
+                    dc.DrawLine(m_fileButtons[i].m_rect.GetLeftBottom(),
+                        m_fileButtons[i].m_rect.GetRightBottom());
                     }
                 dc.DestroyClippingRegion();
                 }

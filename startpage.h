@@ -17,7 +17,9 @@
 #include <wx/dcgraph.h>
 #include <wx/artprov.h>
 #include <wx/settings.h>
+#include <wx/stdpaths.h>
 #include <vector>
+#include <algorithm>
 
 #ifndef wxNODISCARD
     #define wxNODISCARD
@@ -191,7 +193,15 @@ private:
         wxRect m_rect;
         wxBitmapBundle m_icon;
         wxString m_label;
+        wxString m_fullFilePath;
         wxWindowID m_id{ wxNOT_FOUND };
+        };
+
+    enum class ActiveButtonType
+        {
+        CustomButton,
+        FileButton,
+        FileActionButton
         };
 
     /// @returns The number of items in the MRU list.
@@ -222,7 +232,7 @@ private:
     static constexpr int START_PAGE_FILE_LIST_CLEAR =
         wxID_HIGHEST + MAX_FILE_BUTTONS;
     /// @returns The number of items in the MRU list
-    ///     (including the "clear list" button).
+    ///     (including the "clear file list" button).
     wxNODISCARD const size_t GetMRUFileAndClearButtonCount() const noexcept
         { return m_fileButtons.size(); }
     /// @returns The padding height around the labels.
@@ -251,6 +261,8 @@ private:
     ///     with label padding above and below it.
     wxNODISCARD const wxCoord GetMRUButtonHeight() const noexcept
         { return m_mruButtonHeight; }
+    wxNODISCARD wxString GetClearFileListLabel() const
+        { return _(L"Clear file list..."); }
     void DrawHighlight(wxDC& dc, const wxRect rect, const wxColour color) const;
     void CalcButtonStart();
     void CalcMRUColumnHeaderHeight();
