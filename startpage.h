@@ -19,6 +19,10 @@
 #include <wx/settings.h>
 #include <vector>
 
+#ifndef wxNODISCARD
+    #define wxNODISCARD
+#endif
+
 wxDECLARE_EVENT(wxEVT_STARTPAGE_CLICKED, wxCommandEvent);
 
 #define EVT_STARTPAGE_CLICKED(winid, fn) \
