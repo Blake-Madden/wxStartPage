@@ -525,7 +525,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                             { timeLabelWidth = timeStringSize.GetWidth(); }
                         }
                     const wxSize filePathStringSize =
-                        dc.GetTextExtent(fn.GetFullPath());
+                        dc.GetTextExtent(fn.GetPath());
                     if (filePathLabelWidth < filePathStringSize.GetWidth())
                         { filePathLabelWidth = filePathStringSize.GetWidth(); }
                     }
@@ -582,9 +582,9 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                             wxDCTextColourChanger cc(dc, filePathColor);
                             dc.DrawText(
                                 // truncate the path is necessary
-                                (fn.GetFullPath().length() <= 75) ?
-                                fn.GetFullPath() :
-                                (fn.GetFullPath().substr(0,75) + L"..."),
+                                (fn.GetPath().length() <= 75) ?
+                                fn.GetPath() :
+                                (fn.GetPath().substr(0,75) + L"..."),
                                 wxPoint(fileLabelRect.GetLeft() +
                                         GetLabelPaddingWidth() +
                                         fileIcon.GetWidth(),
