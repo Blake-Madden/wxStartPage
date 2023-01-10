@@ -16,6 +16,7 @@
 #include <wx/dcbuffer.h>
 #include <wx/dcgraph.h>
 #include <wx/artprov.h>
+#include <wx/settings.h>
 #include <vector>
 
 wxDECLARE_EVENT(wxEVT_STARTPAGE_CLICKED, wxCommandEvent);
