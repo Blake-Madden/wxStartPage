@@ -519,7 +519,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             dateStr = wxString::Format(_(L"%d hours ago"),
                 timeDiff.GetHours() +
                 // round the minutes
-                timeDiff.GetMinutes() < 30 ? 0 : 1);
+                ((timeDiff.GetMinutes() - (60 * timeDiff.GetHours())) < 30 ? 0 : 1));
             }
         // named day if modified sometime this week
         else if (currentTime.GetYear() == dt.GetYear() &&
