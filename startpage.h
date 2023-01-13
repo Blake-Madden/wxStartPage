@@ -46,7 +46,7 @@ enum class wxStartPageGreetingStyle
 
 /** @brief A wxWidgets landing page for an application.
 
-    It displays an MRU list on the right side (up to 10 files) and a list of
+    It displays an MRU list on the right side (up to 9 files) and a list of
     customizable buttons on the left.
 
     The events of a user clicking on a file or button can be handled via
@@ -221,8 +221,8 @@ private:
     void OnMouseClick(wxMouseEvent& event);
     void OnMouseLeave(wxMouseEvent& WXUNUSED(event));
     static constexpr int MAX_BUTTONS_SMALL_SIZE = 8;
-    static constexpr int MAX_FILE_BUTTONS = 10;
-    // supports 10 MRU file buttons
+    static constexpr int MAX_FILE_BUTTONS = 9;
+    // supports 9 MRU file buttons
     static constexpr int ID_FILE_ID_START = wxID_HIGHEST;
     static constexpr int ID_BUTTON_ID_START =
         wxID_HIGHEST + MAX_FILE_BUTTONS + 1;

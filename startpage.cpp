@@ -20,7 +20,7 @@ wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
           m_logo(logo),
           m_logoFont(wxFontInfo(
               wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).
-              GetFractionalPointSize() * 1.75)),
+              GetFractionalPointSize() * 1.5)),
           m_productDescription(productDescription)
     {
     // Size of an icon scaled to 32x32, with label padding above and below it.
@@ -112,7 +112,7 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
         {
         if (wxFileName::FileExists(file))
             { files.push_back(file); }
-        // no more than 10 items here, not enough real estate
+        // no more than 9 items here, not enough real estate
         if (buttonCount == MAX_FILE_BUTTONS)
             { break; }
         }
@@ -275,13 +275,14 @@ void wxStartPage::OnResize(wxSizeEvent& WXUNUSED(event))
         wxDCFontChanger fc(dc, dc.GetFont().Larger());
         if (m_fileButtons.size())
             {
-            wxDCFontChanger fc2(dc, wxFont(dc.GetFont()));
-            wxCoord textWidth{ 0 }, textHeight{ 0 };
-            dc.GetTextExtent(m_fileButtons[0].m_label, &textWidth, &textHeight);
+            auto line2TextSz = dc.GetTextExtent(m_fileButtons[0].m_label);
+            wxDCFontChanger fc2(dc, wxFont(dc.GetFont()).MakeLarger());
+            auto line1TextSz = dc.GetTextExtent(m_fileButtons[0].m_label);
+            
             // enough space for the text (label and path) height
             // (or icon, whichever is larger) and some padding around it
             m_mruButtonHeight =
-                std::max(textHeight*2,
+                std::max(line1TextSz.GetHeight() + line2TextSz.GetHeight(),
                          buttonIconSize.GetHeight()) +
                     (2*GetLabelPaddingHeight()) +
                     // line space between file name and path
@@ -657,7 +658,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                         int nameHeight{ 0 };
                         // draw the filename
                             {
-                            wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeBold());
+                            wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeLarger());
                             nameHeight =
                                 dc.GetTextExtent(fn.GetFullName()).GetHeight();
                             dc.DrawText(fn.GetFullName(),
