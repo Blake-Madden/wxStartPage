@@ -200,6 +200,11 @@ void wxStartPage::CalcButtonStart()
             GetTopBorder() + (2 * GetLabelPaddingHeight()) +
             std::max(appNameHeight, GetAppLogoSize().GetHeight()) :
             GetTopBorder() + (2 * GetLabelPaddingHeight()) + appNameHeight;
+        if (m_productDescription.length())
+            {
+            dc.GetTextExtent(m_productDescription, &appDescWidth, &appDescHeight);
+            m_buttonsStart += appDescHeight + (2 * GetLabelPaddingHeight());
+            }
         }
     }
 
@@ -221,7 +226,7 @@ void wxStartPage::OnResize(wxSizeEvent& WXUNUSED(event))
     if (m_productDescription.length())
         {
         dc.GetTextExtent(m_productDescription, &appDescWidth, &appDescHeight);
-        m_buttonsStart += appDescHeight+(2*GetLabelPaddingHeight());
+        m_buttonsStart += appDescHeight + (2 * GetLabelPaddingHeight());
         }
     // calculate how wide the buttons/top label need to be fit their content
     const auto buttonIconSize = GetButtonSize();
@@ -349,7 +354,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 m_fileColumnHeaderHeight +
                     ((GetMRUFileAndClearButtonCount() - 1) * GetMRUButtonHeight()),
                 clearButtonSize.GetWidth() + (GetLabelPaddingHeight() * 2),
-                GetMRUButtonHeight());
+                clearButtonSize.GetHeight() + (GetLabelPaddingHeight() * 2));
         }
 
     // update the custom buttons' rects
@@ -621,7 +626,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             }
 
         // begin drawing them
-        wxBitmap fileIcon = m_logo.GetBitmap(FromDIP(wxSize(16, 16)));
+        wxBitmap fileIcon = m_logo.GetBitmap(FromDIP(wxSize(32, 32)));
         for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
             {
             if (m_fileButtons[i].IsOk())
@@ -888,7 +893,7 @@ void wxStartPage::OnMouseClick(wxMouseEvent& event)
                 cevent.SetId(m_fileButtons[i].m_id);
                 cevent.SetInt(m_fileButtons[i].m_id);
                 // selected file path
-                cevent.SetString(m_fileButtons[i].m_label);
+                cevent.SetString(m_fileButtons[i].m_fullFilePath);
                 cevent.SetEventObject(this);
                 GetEventHandler()->ProcessEvent(cevent);
                 break;
