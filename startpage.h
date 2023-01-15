@@ -73,7 +73,9 @@ enum class wxStartPageAppHeaderStyle
     ID of the button that was clicked. This ID can be checked by:
     - Calling IsCustomButtonId() to see if a custom button was clicked.\n
       If so, then compare the event's ID against the button IDs that were
-      returned from AddButton().
+      returned from AddButton(). (GetButtonID() can also be called in your
+      @c wxEVT_STARTPAGE_CLICKED handler to use the ID from buttons based
+      on their index.)
     - Calling IsFileId() to see if a file button was clicked.\n
       If @c true, then you can get the selected file path from the event's
       string value.
@@ -287,8 +289,8 @@ private:
     wxNODISCARD wxString GetClearFileListLabel() const
         { return _(L"Clear file list..."); }
     void DrawHighlight(wxDC& dc, const wxRect rect, const wxColour color) const;
-    void CalcButtonStart();
-    void CalcMRUColumnHeaderHeight();
+    void CalcButtonStart(wxDC& dc);
+    void CalcMRUColumnHeaderHeight(wxDC& dc);
     wxNODISCARD wxString FormatGreeting() const;
     /// @brief Determines whether a color is dark.
     /// @details "Dark" is defined as luminance being less than 50% and

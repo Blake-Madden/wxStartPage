@@ -161,10 +161,8 @@ wxString wxStartPage::FormatGreeting() const
     }
 
 //---------------------------------------------------
-void wxStartPage::CalcMRUColumnHeaderHeight()
+void wxStartPage::CalcMRUColumnHeaderHeight(wxDC& dc)
     {
-    wxClientDC dc(this);
-
     wxDCFontChanger fc(dc, dc.GetFont().Larger().Larger().Bold());
         m_fileColumnHeaderHeight = dc.GetTextExtent(_(L"Recent")).GetHeight() +
             (2 * GetLabelPaddingHeight());
@@ -181,10 +179,8 @@ void wxStartPage::CalcMRUColumnHeaderHeight()
     }
 
 //---------------------------------------------------
-void wxStartPage::CalcButtonStart()
+void wxStartPage::CalcButtonStart(wxDC& dc)
     {
-    wxClientDC dc(this);
-
     wxCoord appNameWidth{ 0 }, appNameHeight{ 0 },
             appDescWidth{ 0 }, appDescHeight{ 0 };
         {
@@ -222,8 +218,8 @@ void wxStartPage::OnResize(wxSizeEvent& WXUNUSED(event))
         dc.GetTextExtent(wxTheApp->GetAppName(), &appNameWidth, &appNameHeight);
         }
     
-    CalcButtonStart();
-    CalcMRUColumnHeaderHeight();
+    CalcButtonStart(dc);
+    CalcMRUColumnHeaderHeight(dc);
 
     if (m_productDescription.length())
         {
@@ -300,8 +296,8 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     adc.Clear();
     wxGCDC dc(adc);
 
-    CalcButtonStart();
-    CalcMRUColumnHeaderHeight();
+    CalcButtonStart(dc);
+    CalcMRUColumnHeaderHeight(dc);
 
     const wxColour buttonAreaFontColor =
         BlackOrWhiteContrast(GetButtonAreaBackgroundColor());
