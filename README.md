@@ -11,7 +11,7 @@ A [wxWidgets](https://github.com/wxWidgets/wxWidgets) landing page for an applic
 It displays a most-recently-used file list on the right side (up to 9 files) and a list of
 customizable buttons on the left.
 
-- Users clicking on these buttons can be handled via a @c wxEVT_STARTPAGE_CLICKED event.
+- Users clicking on these buttons can be handled via a `wxEVT_STARTPAGE_CLICKED` event.
 - Modified dates are shown next to each file in the MRU list.\n
   These dates are shown in a human readable format (e.g., "Just now", "12 minutes ago",
   "Yesterday", "Tues at 1:07 PM").
