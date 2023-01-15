@@ -37,7 +37,13 @@ Button hover 3D effect:
 Building
 =============================
 
-Include `startpage.h` and `startpage.cpp` in your project to use them.
+Download the repository:
+
+```
+git clone https://github.com/Blake-Madden/wxStartPage.git
+```
+
+Then, include `startpage.h` and `startpage.cpp` in your project.
 
 To build the demo, build `demo/CMakeLists.txt` with CMake and your compiler of choice.
 
