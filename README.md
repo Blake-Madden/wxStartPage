@@ -21,6 +21,7 @@ customizable buttons on the left.
 - A dynamic greeting is shown above the MRU list (which is also customizable).
 - Customizable theming.
 - Supports dark mode.
+- Supports HiDPI displays.
 
 Dark theme:
 
