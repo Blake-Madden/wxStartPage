@@ -109,17 +109,14 @@ MyFrame::MyFrame(const wxString& title)
     // Add some custom buttons to appear on the left side.
     // Note that we capture the IDs of the buttons as we add them;
     // we will use this in our wxEVT_STARTPAGE_CLICKED handler.
-    m_fileOpenButtonID = m_startPage->AddButton(
-        wxArtProvider::GetBitmapBundle(wxART_FILE_OPEN), _(L"Open File"));
-    m_wxWebsiteButtonID = m_startPage->AddButton(
-        wxArtProvider::GetBitmapBundle(wxART_WX_LOGO),
-            _(L"Visit the wxWidgets Website"));
+    m_fileOpenButtonID = m_startPage->AddButton(wxART_FILE_OPEN, _(L"Open File"));
+    m_wxWebsiteButtonID = m_startPage->AddButton(wxART_WX_LOGO,
+        _(L"Visit the wxWidgets Website"));
     m_aboutButtonID = m_startPage->AddButton(
         wxBitmapBundle::FromSVGFile(appDir + L"/res/jean_victor_balin_unknown_green.svg",
                                     FromDIP(wxSize(64, 64))),
         _(L"About"));
-    m_exitButtonID = m_startPage->AddButton(
-        wxArtProvider::GetBitmapBundle(wxART_QUIT), _(L"Exit"));
+    m_exitButtonID = m_startPage->AddButton(wxART_QUIT, _(L"Exit"));
 
     /* By default, a greeting such as "Good morning" or "Good evening"
        will be displayed. (This is determined by the time of day).

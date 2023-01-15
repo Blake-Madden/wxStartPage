@@ -137,6 +137,24 @@ public:
         m_buttons.push_back(wxStartPageButton(bmp, label));
         return ID_BUTTON_ID_START + (m_buttons.size() - 1);
         }
+    /// @brief Adds a feature button on the left side.
+    /// @details A feature button can be something like
+    ///     "Read the Help" or "Create a New Project."
+    /// @param artId The stock art ID to use for the button's icon.
+    /// @param label The label on the button.
+    /// @returns The ID assigned to the button. This should be used in your
+    ///     @c wxEVT_STARTPAGE_CLICKED handler.
+    wxNODISCARD wxWindowID AddButton(const wxArtID artId, const wxString& label)
+        {
+        wxVector<wxBitmap> bmps;
+        bmps.push_back(
+            wxArtProvider::GetBitmap(artId, wxART_BUTTON, FromDIP(wxSize(16, 16))));
+        bmps.push_back(
+            wxArtProvider::GetBitmap(artId, wxART_BUTTON, FromDIP(wxSize(32, 32))));
+        m_buttons.push_back(wxStartPageButton(
+            wxBitmapBundle::FromBitmaps(bmps), label));
+        return ID_BUTTON_ID_START + (m_buttons.size() - 1);
+        }
     /// @returns The ID of the given index into the custom button list,
     ///     or @c wxNOT_FOUND if an invalid index is given.
     /// @param buttonIndex The index into the custom button list.
