@@ -1,4 +1,5 @@
-/** @date 2015-2023
+/** @addtogroup Controls
+    @date 2015-2023
     @copyright Blake Madden
     @author Blake Madden
     @details This program is free software; you can redistribute it and/or modify
@@ -33,13 +34,14 @@ wxDECLARE_EVENT(wxEVT_STARTPAGE_CLICKED, wxCommandEvent);
 /// @brief The appearance of the buttons on the start page.
 enum class wxStartPageStyle
     {
-    wxStartPageFlat, /*!<Flat button appearance.*/
+    wxStartPageFlat, /*!<Flat button appearance. (This is the default.)*/
     wxStartPage3D    /*!<3D button appearance.*/
     };
 /// @brief Which type of greeting to show in the start page banner.
 enum class wxStartPageGreetingStyle
     {
-    wxDynamicGreeting, /*!<Greeting based on the time of day (e.g., "Good morning").*/
+    wxDynamicGreeting, /*!<Greeting based on the time of day (e.g., "Good morning").
+                           (This is the default.)*/
     wxCustomGreeting,  /*!<User-defined greeting.*/
     wxNoGreeting       /*!<No greeting.*/
     };
@@ -48,7 +50,7 @@ enum class wxStartPageAppHeaderStyle
     {
     wxStartPageAppNameAndLogo, /*!<The application name & logo. (This is the default.)*/
     wxStartPageAppName,        /*!<The application name.*/
-    wxStartPageNoHeader        /*!<No app header.*/
+    wxStartPageNoHeader        /*!<No application header.*/
     };
 
 /** @brief A wxWidgets landing page for an application.
@@ -73,9 +75,9 @@ enum class wxStartPageAppHeaderStyle
     ID of the button that was clicked. This ID can be checked by:
     - Calling IsCustomButtonId() to see if a custom button was clicked.\n
       If so, then compare the event's ID against the button IDs that were
-      returned from AddButton(). (GetButtonID() can also be called in your
-      @c wxEVT_STARTPAGE_CLICKED handler to use the ID from buttons based
-      on their index.)
+      returned from AddButton().\n
+      (GetButtonID() can also be called in your @c wxEVT_STARTPAGE_CLICKED handler
+      to use the ID from buttons based on their index.)
     - Calling IsFileId() to see if a file button was clicked.\n
       If @c true, then you can get the selected file path from the event's
       string value.
@@ -92,7 +94,8 @@ public:
         @param logo A logo image of the program to show on the left side,
             as well as the files in the MRU list.
         @param productDescription An optional description of the application to
-            show on the left side (under the application's name).*/
+            show on the left side (under the application's name).
+        @sa SetAppHeaderStyle().*/
     explicit wxStartPage(wxWindow* parent, wxWindowID id = wxID_ANY,
         const wxArrayString& mruFiles = wxArrayString{},
         const wxBitmapBundle& logo = wxBitmapBundle{},
@@ -134,7 +137,15 @@ public:
         m_buttons.push_back(wxStartPageButton(bmp, label));
         return ID_BUTTON_ID_START + (m_buttons.size() - 1);
         }
-
+    /// @returns The ID of the given index into the custom button list,
+    ///     or @c wxNOT_FOUND if an invalid index is given.
+    /// @param buttonIndex The index into the custom button list.
+    wxNODISCARD const wxWindowID GetButtonID(const size_t buttonIndex) const noexcept
+        {
+        return buttonIndex > m_buttons.size() ?
+            wxNOT_FOUND :
+            m_buttons[buttonIndex].m_id;
+        }
     /// @returns @c true if @c Id is and ID for one of the custom buttons on the left.
     /// @param Id The ID from an @c wxEVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
@@ -143,21 +154,12 @@ public:
         return (Id >= ID_BUTTON_ID_START &&
                 static_cast<size_t>(Id) < ID_BUTTON_ID_START + m_buttons.size());
         }
-    /// @returns The ID of the given index into the custom button list,
-    ///     or returns @c wxNOT_FOUND if an invalid index is given.
-    /// @param buttonIndex The index into the custom button list.
-    wxNODISCARD const int GetButtonID(const size_t buttonIndex) const noexcept
-        {
-        return buttonIndex > m_buttons.size() ?
-            wxNOT_FOUND :
-            m_buttons[buttonIndex].m_id;
-        }
     /// @returns @c true if @c Id is an ID within the MRU list.
     /// @param Id The ID from an @c wxEVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
     wxNODISCARD constexpr bool IsFileId(const wxWindowID Id) const noexcept
         { return (Id >= ID_FILE_ID_START && Id < START_PAGE_FILE_LIST_CLEAR); }
-    /// @returns @c true if @c Id is the "Clear File List" button.
+    /// @returns @c true if @c Id is the "Clear file list" button.
     /// @param Id The ID from an @c wxEVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
     wxNODISCARD constexpr bool IsFileListClearId(const wxWindowID Id) const noexcept
@@ -229,10 +231,10 @@ private:
 
     /// @returns The number of items in the MRU list.
     /// @note This is the number of files in the list,
-    ///     not including the "clear all" button.
+    ///     not including the "clear file list" button.
     wxNODISCARD const size_t GetMRUFileCount() const noexcept
         {
-        // the last item is the "clear list" button, so don't count that
+        // the last item is the "clear file list" button, so don't count that
         return m_fileButtons.size() > 0 ?
             m_fileButtons.size() - 1 :
             0;
@@ -288,6 +290,8 @@ private:
         { return m_mruButtonHeight; }
     wxNODISCARD wxString GetClearFileListLabel() const
         { return _(L"Clear file list..."); }
+    wxNODISCARD wxString GetRecentLabel() const
+        { return _(L"Recent"); }
     void DrawHighlight(wxDC& dc, const wxRect rect, const wxColour color) const;
     void CalcButtonStart(wxDC& dc);
     void CalcMRUColumnHeaderHeight(wxDC& dc);

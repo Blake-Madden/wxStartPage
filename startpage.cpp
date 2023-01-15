@@ -164,10 +164,10 @@ wxString wxStartPage::FormatGreeting() const
 void wxStartPage::CalcMRUColumnHeaderHeight(wxDC& dc)
     {
     wxDCFontChanger fc(dc, dc.GetFont().Larger().Larger().Bold());
-        m_fileColumnHeaderHeight = dc.GetTextExtent(_(L"Recent")).GetHeight() +
+        m_fileColumnHeaderHeight = dc.GetTextExtent(GetRecentLabel()).GetHeight() +
             (2 * GetLabelPaddingHeight());
 
-    m_fileColumnHeaderHeight = dc.GetTextExtent(_(L"Recent")).GetHeight() +
+    m_fileColumnHeaderHeight = dc.GetTextExtent(GetRecentLabel()).GetHeight() +
             (2 * GetLabelPaddingHeight());
 
     const auto greeting{ FormatGreeting() };
@@ -463,14 +463,14 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             wxPen(wxPenInfo(mruSeparatorlineColor,
                             FromDIP(2)).Cap(wxPenCap::wxCAP_BUTT)));
         dc.SetClippingRegion(recentRect);
-        dc.DrawLabel(_(L"Recent"),
+        dc.DrawLabel(GetRecentLabel(),
             wxRect(recentRect).Deflate(GetLabelPaddingWidth()),
             wxALIGN_CENTRE);
         dc.DestroyClippingRegion();
         auto midPoint = recentRect.GetLeftBottom();
         midPoint.x += (recentRect.GetRightBottom().x -
                        recentRect.GetLeftBottom().x) / 2;
-        const wxSize recentTextSz{ dc.GetTextExtent(_(L"Recent")) };
+        const wxSize recentTextSz{ dc.GetTextExtent(GetRecentLabel()) };
         dc.DrawLine(midPoint -
                         wxSize((recentTextSz.GetWidth()/2), 0),
                     midPoint +
