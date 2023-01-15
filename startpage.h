@@ -39,9 +39,16 @@ enum class wxStartPageStyle
 /// @brief Which type of greeting to show in the start page banner.
 enum class wxStartPageGreetingStyle
     {
-    wxDynamicGreeting, /*!<Greeting based on the time of day.*/
+    wxDynamicGreeting, /*!<Greeting based on the time of day (e.g., "Good morning").*/
     wxCustomGreeting,  /*!<User-defined greeting.*/
     wxNoGreeting       /*!<No greeting.*/
+    };
+/// @brief How to display in the application header (above the custom buttons)
+enum class wxStartPageAppHeaderStyle
+    {
+    wxStartPageAppNameAndLogo, /*!<The application name & logo. (This is the default.)*/
+    wxStartPageAppName,        /*!<The application name.*/
+    wxStartPageNoHeader        /*!<No app header.*/
     };
 
 /** @brief A wxWidgets landing page for an application.
@@ -49,16 +56,25 @@ enum class wxStartPageGreetingStyle
     It displays an MRU list on the right side (up to 9 files) and a list of
     customizable buttons on the left.
 
+    Modified dates are shown next to each file in the MRU list. These dates
+    are shown in a human readable format
+    (e.g., "Just now", "12 minutes ago", "Yesterday", "Tues at 1:07 PM").
+    Times are included for dates within the current week;
+    otherwise, only the date is shown. The year is only shown if the date
+    is from a previous year.
+
+    The application name & logo can be shown above the custom buttons.
+    A greeting is also shown above the MRU list (which is customizable).
+
     The events of a user clicking on a file or button can be handled via
     an @c EVT_STARTPAGE_CLICKED message map or bound to @c wxEVT_STARTPAGE_CLICKED.
     (This should be bound to a function accepting a @c wxCommandEvent object.)
     Calling the `wxCommandEvent`'s @c GetId() method in your handler will return the
     ID of the button that was clicked. This ID can be checked by:
-    - Calling IsCustomButtonId() to see if a custom button was clicked.
-      If so, then call GetButtonID() to see which button it was. For example,
-      If you have 5 buttons, then you can call `GetButtonID(0)`-`GetButtonID(4)`
-      and compare the event's ID against that to see which button it was.
-    - Calling IsFileId() to see if a file button was clicked.
+    - Calling IsCustomButtonId() to see if a custom button was clicked.\n
+      If so, then compare the event's ID against the button IDs that were
+      returned from AddButton().
+    - Calling IsFileId() to see if a file button was clicked.\n
       If @c true, then you can get the selected file path from the event's
       string value.
     - Calling IsFileListClearId() to see if the "Clear file list" button was clicked.
@@ -109,8 +125,22 @@ public:
     ///     "Read the Help" or "Create a New Project."
     /// @param bmp The image for the button.
     /// @param label The label on the button.
-    void AddButton(const wxBitmapBundle& bmp, const wxString& label)
-        { m_buttons.push_back(wxStartPageButton(bmp, label)); }
+    /// @returns The ID assigned to the button. This should be used in your
+    ///     @c wxEVT_STARTPAGE_CLICKED handler.
+    wxNODISCARD wxWindowID AddButton(const wxBitmapBundle& bmp, const wxString& label)
+        {
+        m_buttons.push_back(wxStartPageButton(bmp, label));
+        return ID_BUTTON_ID_START + (m_buttons.size() - 1);
+        }
+
+    /// @returns @c true if @c Id is and ID for one of the custom buttons on the left.
+    /// @param Id The ID from an @c wxEVT_STARTPAGE_CLICKED event after a
+    ///     user clicks a button on the start page.
+    wxNODISCARD bool IsCustomButtonId(const wxWindowID Id) const noexcept
+        {
+        return (Id >= ID_BUTTON_ID_START &&
+                static_cast<size_t>(Id) < ID_BUTTON_ID_START + m_buttons.size());
+        }
     /// @returns The ID of the given index into the custom button list,
     ///     or returns @c wxNOT_FOUND if an invalid index is given.
     /// @param buttonIndex The index into the custom button list.
@@ -120,22 +150,13 @@ public:
             wxNOT_FOUND :
             m_buttons[buttonIndex].m_id;
         }
-
-    /// @returns @c true if @c Id is and ID for one of the custom buttons on the left.
-    /// @param Id The ID from an @c EVT_STARTPAGE_CLICKED event after a
-    ///     user clicks a button on the start page.
-    wxNODISCARD bool IsCustomButtonId(const wxWindowID Id) const noexcept
-        {
-        return (Id >= ID_BUTTON_ID_START &&
-                static_cast<size_t>(Id) < ID_BUTTON_ID_START + m_buttons.size());
-        }
     /// @returns @c true if @c Id is an ID within the MRU list.
-    /// @param Id The ID from an @c EVT_STARTPAGE_CLICKED event after a
+    /// @param Id The ID from an @c wxEVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
     wxNODISCARD constexpr bool IsFileId(const wxWindowID Id) const noexcept
         { return (Id >= ID_FILE_ID_START && Id < START_PAGE_FILE_LIST_CLEAR); }
     /// @returns @c true if @c Id is the "Clear File List" button.
-    /// @param Id The ID from an @c EVT_STARTPAGE_CLICKED event after a
+    /// @param Id The ID from an @c wxEVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
     wxNODISCARD constexpr bool IsFileListClearId(const wxWindowID Id) const noexcept
         { return (Id == START_PAGE_FILE_LIST_CLEAR); }
@@ -161,11 +182,11 @@ public:
         m_customGreeting = greeting;
         m_greetingStyle = wxStartPageGreetingStyle::wxCustomGreeting;
         }
-    /** @brief Shows or hides the application name and (optional) icon
+    /** @brief How to display the application name and icon
             above the custom buttons.
-        @param show @c true to show the application name.*/
-    void ShowAppHeader(const bool show) noexcept
-        { m_showAppHeader = show; }
+        @param style The style to use.*/
+    void SetAppHeaderStyle(const wxStartPageAppHeaderStyle style) noexcept
+        { m_appHeaderStyle = style; }
     /// @returns The color of the left side of the start page.
     wxNODISCARD wxColour GetButtonAreaBackgroundColor() const noexcept
         { return m_buttonAreaBackgroundColor; }
@@ -220,6 +241,7 @@ private:
     void OnMouseChange(wxMouseEvent& event);
     void OnMouseClick(wxMouseEvent& event);
     void OnMouseLeave(wxMouseEvent& WXUNUSED(event));
+
     static constexpr int MAX_BUTTONS_SMALL_SIZE = 8;
     static constexpr int MAX_FILE_BUTTONS = 9;
     // supports 9 MRU file buttons
@@ -228,9 +250,10 @@ private:
         wxID_HIGHEST + MAX_FILE_BUTTONS + 1;
     /// @brief ID returned when the "Clear file list" button is clicked.
     /// @details Client code can check for this in their @c wxEVT_STARTPAGE_CLICKED
-    ///     code and clear the application's file history.
+    ///     handler and clear the application's file history.
     static constexpr int START_PAGE_FILE_LIST_CLEAR =
         wxID_HIGHEST + MAX_FILE_BUTTONS;
+
     /// @returns The number of items in the MRU list
     ///     (including the "clear file list" button).
     wxNODISCARD const size_t GetMRUFileAndClearButtonCount() const noexcept
@@ -277,7 +300,7 @@ private:
     /// @returns @c true if the color is dark.
     wxNODISCARD static bool IsDark(const wxColour& color)
         {
-        wxASSERT_MSG(color.IsOk(), L"Invalid color passed to IsDark().");
+        wxASSERT_MSG(color.IsOk(), L"Invalid color passed to IsDark()!");
         return (color.IsOk() &&
                 color.Alpha() > 32 &&
                 color.GetLuminance() < 0.5);
@@ -294,8 +317,8 @@ private:
                                             const double shadeOrTintValue = 0.2)
         {
         return (IsDark(color) ?
-            color.ChangeLightness(100 + static_cast<int>(shadeOrTintValue*100)) :
-            color.ChangeLightness(100 - static_cast<int>(shadeOrTintValue*100)));
+            color.ChangeLightness(100 + static_cast<int>(shadeOrTintValue * 100)) :
+            color.ChangeLightness(100 - static_cast<int>(shadeOrTintValue * 100)));
         }
     /// @brief Returns either black or white, depending on which better contrasts
     ///     against the specified color.
@@ -314,7 +337,8 @@ private:
     wxStartPageGreetingStyle m_greetingStyle
         { wxStartPageGreetingStyle::wxDynamicGreeting };
     wxString m_customGreeting;
-    bool m_showAppHeader{ true };
+    wxStartPageAppHeaderStyle m_appHeaderStyle
+        { wxStartPageAppHeaderStyle::wxStartPageAppNameAndLogo };
     wxFont m_logoFont;
     std::vector<wxStartPageButton> m_fileButtons;
     std::vector<wxStartPageButton> m_buttons;

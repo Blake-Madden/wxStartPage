@@ -192,11 +192,13 @@ void wxStartPage::CalcButtonStart()
         dc.GetTextExtent(wxTheApp->GetAppName(), &appNameWidth, &appNameHeight);
         }
 
-    if (!m_showAppHeader)
+    if (m_appHeaderStyle == wxStartPageAppHeaderStyle::wxStartPageNoHeader)
         { m_buttonsStart = GetTopBorder(); }
     else
         {
-        m_buttonsStart = m_logo.IsOk() ?
+        m_buttonsStart =
+            (m_appHeaderStyle == wxStartPageAppHeaderStyle::wxStartPageAppNameAndLogo) &&
+             m_logo.IsOk() ?
             GetTopBorder() + (2 * GetLabelPaddingHeight()) +
             std::max(appNameHeight, GetAppLogoSize().GetHeight()) :
             GetTopBorder() + (2 * GetLabelPaddingHeight()) + appNameHeight;
@@ -321,6 +323,9 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         0,
         GetClientSize().GetWidth() - (m_buttonWidth + (GetLeftBorder() * 2)),
         GetClientSize().GetHeight());
+    const wxRect buttonsArea =
+        wxRect(wxSize(GetClientSize().GetWidth() - filesArea.GetWidth(),
+                      GetClientSize().GetHeight()));
 
     const wxRect fileColumnHeader =
         wxRect(filesArea.GetLeft(), 0,
@@ -340,7 +345,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     if (GetMRUFileAndClearButtonCount() > 0)
         {
         // update the rects for the file buttons
-        for (size_t i = 0; i < GetMRUFileAndClearButtonCount() - 1; ++i)
+        for (size_t i = 0; i < GetMRUFileCount(); ++i)
             {
             m_fileButtons[i].m_rect =
                 wxRect(filesArea.GetLeft() + FromDIP(1),
@@ -372,7 +377,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     dc.Clear();
 
     // draw the program logo
-    if (m_showAppHeader)
+    if (m_appHeaderStyle != wxStartPageAppHeaderStyle::wxStartPageNoHeader)
         {
         wxCoord appDescWidth{ 0 }, appDescHeight{ 0 };
         if (m_productDescription.length())
@@ -384,7 +389,8 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         wxDCPenChanger pc(dc, buttonAreaFontColor);
         wxCoord textWidth{ 0 }, textHeight{ 0 };
         wxBitmap appLogo = m_logo.GetBitmap(GetAppLogoSize());
-        if (appLogo.IsOk())
+        if (m_appHeaderStyle == wxStartPageAppHeaderStyle::wxStartPageAppNameAndLogo &&
+            appLogo.IsOk())
             {
             dc.DrawBitmap(appLogo, GetLeftBorder(), GetTopBorder());
             // draw with larger font
@@ -414,14 +420,16 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 {
                 wxDCFontChanger fc(dc, m_logoFont);
                 dc.GetTextExtent(wxTheApp->GetAppName(), &textWidth, &textHeight);
-                dc.DrawText(wxTheApp->GetAppName(), GetLeftBorder(),
-                            GetTopBorder()+GetLabelPaddingHeight());
+                // centering looks better when there is no logo
+                dc.DrawText(wxTheApp->GetAppName(),
+                            (buttonsArea.GetWidth() - textWidth) * 0.5,
+                            GetTopBorder() + GetLabelPaddingHeight());
                 }
             if (m_productDescription.length())
                 {
                 dc.DrawText(m_productDescription,
                            (GetLeftBorder())+((m_buttonWidth/2) - (appDescWidth/2)),
-                           GetTopBorder()+textHeight+GetLabelPaddingHeight());
+                           GetTopBorder() + textHeight + GetLabelPaddingHeight());
                 }
             dc.DrawLine(wxPoint((2*GetLeftBorder()),
                                 GetTopBorder() + textHeight +
