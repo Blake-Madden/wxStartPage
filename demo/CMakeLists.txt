@@ -36,14 +36,14 @@ SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Request the required wxWidgets libs
 # Find wxWidgets and select its components
-FIND_PACKAGE(wxWidgets 3.2 REQUIRED core base adv html ribbon xml xrc qa propgrid OPTIONAL_COMPONENTS net)
+FIND_PACKAGE(wxWidgets REQUIRED core base adv html ribbon xml xrc qa propgrid OPTIONAL_COMPONENTS net)
 # Include the wxWidgets use file to initialize various settings
 INCLUDE(${wxWidgets_USE_FILE})
 MESSAGE(STATUS "Adding wxWidgets libraries: ${wxWidgets_LIBRARIES}")
 MESSAGE(STATUS "Adding wxWidgets configuration file: ${wxWidgets_CONFIGURATION}/wx/setup.h")
 
 # Define a variable containing a list of source files for the project
-set(SRC_FILES
+SET(SRC_FILES
     startdemo.cpp
     ../startpage.cpp
     )
@@ -52,3 +52,9 @@ set(SRC_FILES
 ADD_EXECUTABLE(${PROJECT_NAME} WIN32 MACOSX_BUNDLE ${SRC_FILES})
 # Link required libraries to the executable
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${wxWidgets_LIBRARIES})
+
+MESSAGE(STATUS "Copying demo resources...")
+ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME}
+                   POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${CMAKE_SOURCE_DIR}/res $<TARGET_FILE_DIR:${PROJECT_NAME}>/res)

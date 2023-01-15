@@ -15,6 +15,7 @@
 #include <wx/wx.h>
 #include <wx/dir.h>
 #include <wx/stdpaths.h>
+#include <wx/bmpbndl.h>
 #include "../startpage.h"
 
 // Define a new application type, each program should derive a class from wxApp
@@ -34,6 +35,10 @@ public:
     void OnStartPageClick(wxCommandEvent& event);
 private:
     wxStartPage* m_startPage{ nullptr };
+    wxWindowID m_aboutButtonID{ wxID_ANY };
+    wxWindowID m_wxWebsiteButtonID{ wxID_ANY };
+    wxWindowID m_fileOpenButtonID{ wxID_ANY };
+    wxWindowID m_exitButtonID{ wxID_ANY };
 };
 
 wxIMPLEMENT_APP(MyApp);
@@ -73,6 +78,11 @@ MyFrame::MyFrame(const wxString& title)
 {
     SetSize(FromDIP(wxSize(900, 700)));
 
+    const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
+    SetIcon(
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/x-office-document.svg", wxSize(64, 64)).
+            GetIcon(wxSize(64, 64)));
+
     wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 
     // build and show our start page
@@ -88,17 +98,48 @@ MyFrame::MyFrame(const wxString& title)
 
     // construct the start page with the file list and app logo
     m_startPage = new wxStartPage(this, wxID_ANY, mruFiles,
-       wxArtProvider::GetBitmapBundle(wxART_REPORT_VIEW));
-    // add some custom buttons to appear on the left side
-    m_startPage->AddButton(
-        wxArtProvider::GetBitmapBundle(wxART_REPORT_VIEW), L"About");
-    m_startPage->AddButton(
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/x-office-document.svg",
+                                    wxSize(64, 64)));
+
+    // By default, the application name and its logo are shown on the left
+    // (above the custom buttons). Uncomment the following to turn this off:
+
+    // m_startPage->SetAppHeaderStyle(wxStartPageAppHeaderStyle::wxStartPageNoHeader);
+
+    // Add some custom buttons to appear on the left side.
+    // Note that we capture the IDs of the buttons as we add them;
+    // we will use this in our wxEVT_STARTPAGE_CLICKED handler.
+    m_fileOpenButtonID = m_startPage->AddButton(
         wxArtProvider::GetBitmapBundle(wxART_FILE_OPEN), L"Open File");
-    m_startPage->AddButton(
+    m_wxWebsiteButtonID = m_startPage->AddButton(
         wxArtProvider::GetBitmapBundle(wxART_WX_LOGO),
             L"Visit the wxWidgets Website");
-    m_startPage->AddButton(
+    m_aboutButtonID = m_startPage->AddButton(
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/jean_victor_balin_unknown_green.svg",
+                                    wxSize(64, 64)),
+        L"About");
+    m_exitButtonID = m_startPage->AddButton(
         wxArtProvider::GetBitmapBundle(wxART_QUIT), L"Exit");
+
+    /* By default, a greeting such as "Good morning" or "Good evening"
+       will be displayed. (This is determined by the time of day).
+       This can be changed (or turned off) via SetGreetingStyle()
+       and SetCustomGreeting(). Uncomment the following to see an example:*/
+
+    // m_startPage->SetCustomGreeting(_("Welcome to the Demonstration!"));
+
+    /* The visual effect when the buttons are moused over can also
+       be customized. Uncomment the following to use a glassy, 3D look
+       for the buttons:*/
+
+    // m_startPage->SetStyle(wxStartPageStyle::wxStartPage3D);
+
+    /* By default, the start page will use either a light blue & white
+       theme or a dark theme (depending on the app's settings).
+       Uncomment the following to apply a different theme:*/
+
+    // m_startPage->SetButtonAreaBackgroundColor(wxColour("#FF69B4"));
+    // m_startPage->SetMRUBackgroundColor(wxColour("#FFB6DA"));
 
     // bind our event handler to the start page's buttons
     Bind(wxEVT_STARTPAGE_CLICKED, &MyFrame::OnStartPageClick, this);
@@ -117,15 +158,13 @@ void MyFrame::OnStartPageClick(wxCommandEvent& event)
     // a custom button (on the left) was clicked
     if (m_startPage->IsCustomButtonId(event.GetId()))
     {
-        // the first button was clicked
-        if (m_startPage->GetButtonID(0) == event.GetId())
+        // the About button was clicked
+        if (m_aboutButtonID == event.GetId())
         {
             wxMessageBox(wxString::Format
                  (
-                    "Welcome to %s!\n"
-                    "\n"
-                    "This is the wxStartPage demo\n"
-                    "running under %s.",
+                    "Welcome to wxStartPage demo\n"
+                    "running with %s\nunder %s.",
                     wxVERSION_STRING,
                     wxGetOsDescription()
                  ),
@@ -133,8 +172,8 @@ void MyFrame::OnStartPageClick(wxCommandEvent& event)
                  wxOK | wxICON_INFORMATION,
                  this);
         }
-        // the second button was clicked
-        else if (m_startPage->GetButtonID(1) == event.GetId())
+        // the file open button was clicked
+        else if (m_fileOpenButtonID == event.GetId())
         {
             wxFileDialog fd(this, _("Open a File"));
             if (fd.ShowModal() == wxID_CANCEL)
@@ -148,11 +187,11 @@ void MyFrame::OnStartPageClick(wxCommandEvent& event)
                  wxOK | wxICON_INFORMATION,
                  this);
         }
-        else if (m_startPage->GetButtonID(2) == event.GetId())
+        else if (m_wxWebsiteButtonID == event.GetId())
         {
             wxLaunchDefaultBrowser("https://www.wxwidgets.org");
         }
-        else if (m_startPage->GetButtonID(3) == event.GetId())
+        else if (m_exitButtonID == event.GetId())
         {
             Close(true);
         }
