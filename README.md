@@ -1,7 +1,7 @@
 wxStartPage
 =============================
 
-<img src="RegularTheme.png" width="75%" />
+<img src="img/RegularTheme.png" width="75%" />
 
 About
 =============================
@@ -24,15 +24,15 @@ customizable buttons on the left.
 
 Dark theme:
 
-<img src="DarkTheme.png" width="75%" />
+<img src="img/DarkTheme.png" width="75%" />
 
 Button hover effect:
 
-<img src="HoverButton.png" width="250"/>
+<img src="img/HoverButton.png" width="150"/>
 
 Button hover 3D effect:
 
-<img src="HoverButton3D.png" width="250"/>
+<img src="img/HoverButton3D.png" width="150"/>
 
 Building
 =============================
