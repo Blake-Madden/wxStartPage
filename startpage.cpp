@@ -459,10 +459,8 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         {
         wxDCFontChanger fc(dc, dc.GetFont().Larger());
         wxDCTextColourChanger tcc(dc, mruFontColor);
-        // add a little bit of color by using the left side's background
-        // color as the underline under "Recent"
         wxDCPenChanger pc(dc,
-            wxPen(wxPenInfo(GetButtonAreaBackgroundColor(),
+            wxPen(wxPenInfo(mruSeparatorlineColor,
                             FromDIP(2)).Cap(wxPenCap::wxCAP_BUTT)));
         dc.SetClippingRegion(recentRect);
         dc.DrawLabel(_(L"Recent"),
