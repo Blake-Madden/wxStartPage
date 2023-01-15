@@ -99,7 +99,7 @@ MyFrame::MyFrame(const wxString& title)
     // construct the start page with the file list and app logo
     m_startPage = new wxStartPage(this, wxID_ANY, mruFiles,
         wxBitmapBundle::FromSVGFile(appDir + L"/res/x-office-document.svg",
-                                    wxSize(64, 64)));
+                                    FromDIP(wxSize(64, 64))));
 
     // By default, the application name and its logo are shown on the left
     // (above the custom buttons). Uncomment the following to turn this off:
@@ -110,16 +110,16 @@ MyFrame::MyFrame(const wxString& title)
     // Note that we capture the IDs of the buttons as we add them;
     // we will use this in our wxEVT_STARTPAGE_CLICKED handler.
     m_fileOpenButtonID = m_startPage->AddButton(
-        wxArtProvider::GetBitmapBundle(wxART_FILE_OPEN), L"Open File");
+        wxArtProvider::GetBitmapBundle(wxART_FILE_OPEN), _(L"Open File"));
     m_wxWebsiteButtonID = m_startPage->AddButton(
         wxArtProvider::GetBitmapBundle(wxART_WX_LOGO),
-            L"Visit the wxWidgets Website");
+            _(L"Visit the wxWidgets Website"));
     m_aboutButtonID = m_startPage->AddButton(
         wxBitmapBundle::FromSVGFile(appDir + L"/res/jean_victor_balin_unknown_green.svg",
-                                    wxSize(64, 64)),
-        L"About");
+                                    FromDIP(wxSize(64, 64))),
+        _(L"About"));
     m_exitButtonID = m_startPage->AddButton(
-        wxArtProvider::GetBitmapBundle(wxART_QUIT), L"Exit");
+        wxArtProvider::GetBitmapBundle(wxART_QUIT), _(L"Exit"));
 
     /* By default, a greeting such as "Good morning" or "Good evening"
        will be displayed. (This is determined by the time of day).
