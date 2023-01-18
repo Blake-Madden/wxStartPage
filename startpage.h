@@ -132,7 +132,8 @@ public:
     /// @param label The label on the button.
     /// @returns The ID assigned to the button. This should be used in your
     ///     @c wxEVT_STARTPAGE_CLICKED handler.
-    wxNODISCARD wxWindowID AddButton(const wxBitmapBundle& bmp, const wxString& label)
+    /// @sa GetButtonID().
+    wxWindowID AddButton(const wxBitmapBundle& bmp, const wxString& label)
         {
         m_buttons.push_back(wxStartPageButton(bmp, label));
         return ID_BUTTON_ID_START + (m_buttons.size() - 1);
@@ -144,7 +145,8 @@ public:
     /// @param label The label on the button.
     /// @returns The ID assigned to the button. This should be used in your
     ///     @c wxEVT_STARTPAGE_CLICKED handler.
-    wxNODISCARD wxWindowID AddButton(const wxArtID artId, const wxString& label)
+    /// @sa GetButtonID().
+    wxWindowID AddButton(const wxArtID artId, const wxString& label)
         {
         wxVector<wxBitmap> bmps;
         bmps.push_back(
