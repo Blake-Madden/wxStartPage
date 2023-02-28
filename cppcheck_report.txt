@@ -1,17 +1,2 @@
-startpage.cpp:507:17: style: Consider using std::find_if algorithm instead of a raw loop. [useStlAlgorithm]
-                {
-                ^
-startpage.cpp:758:17: style: Consider using std::find_if algorithm instead of a raw loop. [useStlAlgorithm]
-                {
-                ^
-startpage.cpp:778:13: style: Consider using std::find_if algorithm instead of a raw loop. [useStlAlgorithm]
-            {
-            ^
-startpage.cpp:826:17: style: Consider using std::find_if algorithm instead of a raw loop. [useStlAlgorithm]
-                {
-                ^
-startpage.cpp:857:13: style: Consider using std::find_if algorithm instead of a raw loop. [useStlAlgorithm]
-            {
-            ^
 nofile:0:0: information: Cppcheck cannot find all the include files (use --check-config for details) [missingIncludeSystem]
 
