@@ -30,7 +30,7 @@ class MyFrame : public wxFrame
 {
 public:
     // ctor(s)
-    MyFrame(const wxString& title);
+    explicit MyFrame(const wxString& title);
 
     void OnStartPageClick(wxCommandEvent& event);
 private:
