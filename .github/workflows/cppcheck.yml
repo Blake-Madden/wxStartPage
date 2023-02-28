@@ -1,4 +1,4 @@
-name: cppcheck-action-test
+name: cppcheck
 on: [push]
 
 jobs:
@@ -13,7 +13,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN}}
           inline_suppression: enable
-          enable: warning,performance,portability,information,unusedFunction,missingInclude
+          enable: all
         
       - name: publish report    
         uses: mikeal/publish-to-github-action@master
