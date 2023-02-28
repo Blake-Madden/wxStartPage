@@ -1,0 +1,29 @@
+demo/startdemo.cpp:33:5: style: Class 'MyFrame' has a constructor with 1 argument that is not explicit. [noExplicitConstructor]
+    MyFrame(const wxString& title);
+    ^
+startpage.h:368:12: style:inconclusive: Member variable 'wxStartPage::m_logoFont' is in the wrong place in the initializer list. [initializerList]
+    wxFont m_logoFont;
+           ^
+startpage.cpp:21:11: note: Member variable 'wxStartPage::m_logoFont' is in the wrong place in the initializer list.
+          m_logoFont(wxFontInfo(
+          ^
+startpage.h:368:12: note: Member variable 'wxStartPage::m_logoFont' is in the wrong place in the initializer list.
+    wxFont m_logoFont;
+           ^
+startpage.cpp:507:17: style: Consider using std::find_if algorithm instead of a raw loop. [useStlAlgorithm]
+                {
+                ^
+startpage.cpp:758:17: style: Consider using std::find_if algorithm instead of a raw loop. [useStlAlgorithm]
+                {
+                ^
+startpage.cpp:778:13: style: Consider using std::find_if algorithm instead of a raw loop. [useStlAlgorithm]
+            {
+            ^
+startpage.cpp:826:17: style: Consider using std::find_if algorithm instead of a raw loop. [useStlAlgorithm]
+                {
+                ^
+startpage.cpp:857:13: style: Consider using std::find_if algorithm instead of a raw loop. [useStlAlgorithm]
+            {
+            ^
+nofile:0:0: information: Cppcheck cannot find all the include files (use --check-config for details) [missingIncludeSystem]
+
