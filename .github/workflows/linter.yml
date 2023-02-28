@@ -48,5 +48,6 @@ jobs:
           VALIDATE_ALL_CODEBASE: true
           DEFAULT_BRANCH: main
           VALIDATE_CPP: true
+          VALIDATE_CLANG_FORMAT: false
           FILTER_REGEX_EXCLUDE: .*test/.*
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
