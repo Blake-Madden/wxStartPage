@@ -1,4 +1,5 @@
 /html/
+cppcheck_report.txt
 
 # Prerequisites
 *.d
