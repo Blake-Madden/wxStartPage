@@ -1,6 +1,3 @@
-demo/startdemo.cpp:33:5: style: Class 'MyFrame' has a constructor with 1 argument that is not explicit. [noExplicitConstructor]
-    MyFrame(const wxString& title);
-    ^
 startpage.h:368:12: style:inconclusive: Member variable 'wxStartPage::m_logoFont' is in the wrong place in the initializer list. [initializerList]
     wxFont m_logoFont;
            ^
