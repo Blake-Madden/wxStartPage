@@ -17,10 +17,10 @@ wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
                          const wxString productDescription /*= wxString{}*/) 
         : wxWindow(parent, id, wxDefaultPosition, wxDefaultSize,
                    wxFULL_REPAINT_ON_RESIZE, L"wxStartPage"),
-          m_logo(logo),
           m_logoFont(wxFontInfo(
               wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).
               GetFractionalPointSize() * 1.5)),
+          m_logo(logo),
           m_productDescription(productDescription)
     {
     // Size of an icon scaled to 32x32, with label padding above and below it.
