@@ -12,6 +12,8 @@ jobs:
         uses: deep5050/cppcheck-action@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN}}
+          inline_suppression: enable
+          enable: warning,performance,portability,information,unusedFunction,missingInclude
         
       - name: publish report    
         uses: mikeal/publish-to-github-action@master
