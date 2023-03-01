@@ -24,7 +24,7 @@ jobs:
             # filter innocuous warnings and write the remaining ones to another file
             echo here we go
             cat "$REPORTFILE" | \
-            sed 's/missingIncludeSystem//g; s/useStlAlgorithm//g' | \
+            rpl -w missingIncludeSystem | \
             grep -P '\[[a-zA-Z0-9]+\]' > warnings.txt
             
             echo here we go again
