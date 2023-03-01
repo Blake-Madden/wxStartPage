@@ -23,7 +23,7 @@ jobs:
           if test -f "$REPORTFILE"; then
             # filter innocuous warnings and write the remaining ones to another file
             cat "$REPORTFILE" | \
-            sed -e 's/\\[\(missingIncludeSystem\|useStlAlgorithm\)\\]//g' | \
+            sed -e 's/(missingIncludeSystem|useStlAlgorithm)//g' | \
             grep -P '\[[a-zA-Z0-9]+\]' > warnings.txt
             WARNINGCOUNT="$(wc -l < warnings.txt)"
             MAXWARNINGS=0
