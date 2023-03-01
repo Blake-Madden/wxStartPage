@@ -20,4 +20,4 @@ jobs:
           
       - name: check output
         run: |
-          grep "\[a-zA-Z0-9\]" cppcheck_report.txt
+          grep "\[[a-zA-Z0-9]+\]" cppcheck_report.txt
