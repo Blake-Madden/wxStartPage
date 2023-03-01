@@ -14,6 +14,10 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN}}
           std: c++17
           
+      - name: print output
+        run: |
+          cat cppcheck_report.txt
+          
       - name: publish report    
         uses: mikeal/publish-to-github-action@master
         env:
