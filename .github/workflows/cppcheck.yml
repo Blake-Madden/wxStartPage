@@ -25,8 +25,17 @@ jobs:
             # filter innocuous warnings and write the remaining ones to another file
             cat "$REPORTFILE" |
             rpl -w "missingIncludeSystem" "" |
-            rpl -w "useStlAlgorithmZZZ" "" |
-            { grep -P '\[[a-zA-Z0-9]+\]' || true; } > warnings.txt
+            rpl -w "useStlAlgorithmZZZ" "" > warnings.txt
+            
+            if grep -qP '\[[a-zA-Z0-9]+\]' warnings.txt
+              then 
+                 echo "Warnings detected";
+             else
+                exit 0;
+            fi
+            
+            cat  warnings.txt |
+            grep -P '\[[a-zA-Z0-9]+\]' > warnings.txt
             
             WARNINGCOUNT="$(wc -l < warnings.txt)"
             MAXWARNINGS=0
