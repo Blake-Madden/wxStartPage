@@ -24,8 +24,8 @@ jobs:
             # filter innocuous warnings and write the remaining ones to another file
             echo here we go
             cat "$REPORTFILE" | \
-            perl 's/missingIncludeSystem//g' | \
-            perl 's/useStlAlgorithm//g' | \
+            perl -e 's/missingIncludeSystem//g' | \
+            perl -e 's/useStlAlgorithm//g' | \
             grep -P '\[[a-zA-Z0-9]+\]' > warnings.txt
             
             echo here we go again
