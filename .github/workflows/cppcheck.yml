@@ -24,9 +24,9 @@ jobs:
           if test -f "$REPORTFILE"; then
             # filter innocuous warnings and write the remaining ones to another file
             echo here we go
-            cat "$REPORTFILE" | \
-            rpl -w "missingIncludeSystem" "" | \
-            rpl -w "useStlAlgorithm" "" > warnings.txt
+            cat "$REPORTFILE" > warnings.txt
+            rpl -w "missingIncludeSystem" "" warnings.txt
+            rpl -w "useStlAlgorithm" "" warnings.txt
             
             echo here we go agai1
             
