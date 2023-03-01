@@ -9,6 +9,6 @@ jobs:
       - uses: actions/checkout@v2
         with:
           packages: cppcheck
-      - name: cppcheck
+      - name: doxygen
         run: |
-          cppcheck ${{ github.workspace }}
+          doxygen ${{ github.workspace }}
