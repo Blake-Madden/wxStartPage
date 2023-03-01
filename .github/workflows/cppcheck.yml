@@ -25,7 +25,7 @@ jobs:
             echo here we go
             cat "$REPORTFILE" | \
             sed -e 's/missingIncludeSystem//g' | \
-            sed -e 's/missingIncludeSystem//g' | \
+            sed -e 's/useStlAlgorithm//g' | \
             grep -P '\[[a-zA-Z0-9]+\]' > warnings.txt
             
             echo here we go again
