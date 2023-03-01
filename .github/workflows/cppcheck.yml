@@ -13,11 +13,24 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN}}
           std: c++17
+          inline_suppression: enable
+          exclude_check: ./tests
+          output_file: cppcheck_report.txt
           
       - name: print output
         run: |
-          cat cppcheck_report.txt
-          
-      - name: check output
-        run: |
-          grep "\[[a-zA-Z0-9]+\]" cppcheck_report.txt
+          REPORTFILE=./cppcheck_report.txt
+          if test -f "$REPORTFILE"; then
+          # filter innocuous warnings and write the remaining ones to another file
+          sed 's/\[includeystem\]//g' "$REPORTFILE" | grep -P '\[[a-zA-Z0-9]+\]' > warnings.txt
+          WARNINGCOUNT="$(wc -l < warnings.txt)"
+          MAXWARNINGS=0
+          if [ "$WARNINGCOUNT" -gt "$MAXWARNINGS" ]; then
+          # print the warnings
+          echo Warnings Found:
+          echo ===============
+          cat warnings.txt
+          # fail the job
+          exit 1
+          fi
+          fi
