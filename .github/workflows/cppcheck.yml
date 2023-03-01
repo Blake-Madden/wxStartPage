@@ -24,6 +24,7 @@ jobs:
             # filter innocuous warnings and write the remaining ones to another file
             sed 's/\[missingIncludeSystem\]//g' "$REPORTFILE" | \
             sed 's/\[useStlAlgorithm\]//g' | \
+            # additional warnings can be ignored here
             grep -P '\[[a-zA-Z0-9]+\]' > warnings.txt
             WARNINGCOUNT="$(wc -l < warnings.txt)"
             MAXWARNINGS=0
@@ -36,3 +37,5 @@ jobs:
               exit 1
             fi
           fi
+          echo No warnings found
+          exit 0
