@@ -17,3 +17,7 @@ jobs:
       - name: print output
         run: |
           cat cppcheck_report.txt
+          
+      - name: check output
+        run: |
+          grep "\[a-zA-Z0-9\]" cppcheck_report.txt
