@@ -15,7 +15,6 @@ jobs:
           inline_suppression: enable
           enable: all
           exclude_check: ./tests
-          output_file: ./tests/cppcheck_report.txt
         
       - name: publish report    
         uses: mikeal/publish-to-github-action@master
