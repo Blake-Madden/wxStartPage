@@ -30,7 +30,7 @@ jobs:
             
             echo here we go agai1
             
-            cat warnings |
+            cat warnings.txt |
             grep -P '\[[a-zA-Z0-9]+\]' > warnings.txt
             
             echo here we go again2
