@@ -26,6 +26,7 @@ jobs:
             echo here we go
             cat "$REPORTFILE" | \
             rpl -w "missingIncludeSystem" "" | \
+            rpl -w "useStlAlgorithm" "" | \
             grep -P '\[[a-zA-Z0-9]+\]' > warnings.txt
             
             echo here we go again
