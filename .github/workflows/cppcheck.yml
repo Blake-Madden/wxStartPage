@@ -33,17 +33,17 @@ jobs:
             cat warnings.txt
             
             cat warnings.txt |
-            grep -P '\[[a-zA-Z0-9]+\]' > warnings.txt
+            grep -P '\[[a-zA-Z0-9]+\]' > warningsFiltered.txt
             
             echo here we go again2
             
-            WARNINGCOUNT="$(wc -l < warnings.txt)"
+            WARNINGCOUNT="$(wc -l < warningsFiltered.txt)"
             MAXWARNINGS=0
             if [ "$WARNINGCOUNT" -gt "$MAXWARNINGS" ]; then
               # print the warnings
               echo Warnings Found:
               echo ===============
-              cat warnings.txt
+              cat warningsFiltered.txt
               # fail the job
               exit 1
             fi
