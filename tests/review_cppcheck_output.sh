@@ -1,3 +1,5 @@
+#!/bin/bash
+
 REPORTFILE=./cppcheck_report.txt
 WARNINGSFILE=./warnings.txt
 if test -f "$REPORTFILE"; then
