@@ -19,4 +19,4 @@ jobs:
           
       - name: print output
         run: |
-          sudo ./tests/review_cppcheck_output.sh
+          ./tests/review_cppcheck_output.sh
