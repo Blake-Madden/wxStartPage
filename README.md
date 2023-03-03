@@ -3,6 +3,8 @@ wxStartPage
 
 <img src="img/RegularTheme.png" width="75%" />
 
+[![cppcheck](https://github.com/Blake-Madden/wxStartPage/actions/workflows/cppcheck.yml/badge.svg)](https://github.com/Blake-Madden/wxStartPage/actions/workflows/cppcheck.yml)
+
 About
 =============================
 
