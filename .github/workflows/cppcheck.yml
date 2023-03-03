@@ -19,6 +19,4 @@ jobs:
           
       - name: print output
         run: |
-          sudo apt-get install -y dos2unix
-          dos2unix -o ./tests/review_cppcheck_output.sh
-          ./tests/review_cppcheck_output.sh
+          ./.github/review_cppcheck_output.sh
