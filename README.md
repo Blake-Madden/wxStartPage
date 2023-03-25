@@ -5,6 +5,7 @@ wxStartPage
 
 [![cppcheck](https://github.com/Blake-Madden/wxStartPage/actions/workflows/cppcheck.yml/badge.svg)](https://github.com/Blake-Madden/wxStartPage/actions/workflows/cppcheck.yml)
 [![doxygen](https://github.com/Blake-Madden/wxStartPage/actions/workflows/doxygen.yml/badge.svg)](https://github.com/Blake-Madden/wxStartPage/actions/workflows/doxygen.yml)
+[![unix build](https://github.com/Blake-Madden/wxStartPage/actions/workflows/unix%20build.yml/badge.svg)](https://github.com/Blake-Madden/wxStartPage/actions/workflows/unix%20build.yml)
 
 About
 =============================
