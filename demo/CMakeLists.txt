@@ -1,17 +1,11 @@
 #############################################################################
 # Name:        CMakeListst.txt
-# Purpose:     Sample CMake file to show usage of cmake for wxWidgets users
-# Author:      Tobias Taschner
-# Created:     2016-10-23
-# Copyright:   (c) 2016 wxWidgets development team
-# Licence:     wxWindows licence
+# Purpose:     Demonstration project for wxStartPage
+# Author:      Blake Madden
+# Created:     2023-03-25
+# Copyright:   (c) 2023 Blake Madden
+# Licence:     BSD-3-Clause
 #############################################################################
-
-#
-# This file is just a sample to show using cmake from an application
-# If you want to build the minimal and other samples please use the
-# wxBUILD_SAMPLES option when using cmake on the library
-#
 
 # Declare the minimum required CMake version
 CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
