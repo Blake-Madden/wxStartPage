@@ -1,0 +1,35 @@
+name: unix build
+on: [push]
+
+jobs:
+  build:
+    name: ubuntu-build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      
+      - name: install wxwidgets
+        run: |
+             sudo apt install libgtk-3-dev cmake libtbb-dev
+             git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
+             cd wxWidgets
+             mkdir buildgtk
+             cd buildgtk
+             ../configure --with-gtk
+             make -j4
+             sudo make install
+             sudo ldconfig
+             cd ..
+             cd ..
+             cmake ./
+             make -j4
+
+      - name: build
+        run: |
+             cd ..
+             git clone https://github.com/catchorg/Catch2.git
+             cd wxStartPage/demo
+             cmake ./
+             make -j4
