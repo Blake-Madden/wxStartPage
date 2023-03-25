@@ -1,0 +1,21 @@
+name: i18n-check
+on: [push]
+
+jobs:
+  build:
+    name: i18n-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: install i18n-check
+        run: |
+             git clone https://github.com/Blake-Madden/i18n-check.git
+             cd i18n-check
+             cmake ./
+             make -j4
+
+      - name: analyze
+        run: |
+             cd ..
+             i18n-check ./ -o wxSPresults.txt
