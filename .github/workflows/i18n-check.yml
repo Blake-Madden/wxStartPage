@@ -20,4 +20,5 @@ jobs:
       - name: analyze
         run: |
              cd ..
-             i18n-check ./ -o wxSPresults.txt
+             ./i18n-check/bin/i18n-check ./ -o wxSPresults.txt
+             cat wxSPresults.txt
