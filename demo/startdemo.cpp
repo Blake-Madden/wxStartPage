@@ -58,10 +58,10 @@ bool MyApp::OnInit()
     if ( !wxApp::OnInit() )
         return false;
 
-    SetAppName("Start Page Demo");
+    SetAppName(_("Start Page Demo"));
 
     // create the main application window
-    MyFrame *frame = new MyFrame("Start Page Demo");
+    MyFrame *frame = new MyFrame(_("Start Page Demo"));
     frame->Show(true);
 
     return true;
@@ -160,12 +160,12 @@ void MyFrame::OnStartPageClick(wxCommandEvent& event)
         {
             wxMessageBox(wxString::Format
                  (
-                    "Welcome to wxStartPage demo\n"
-                    "running with %s\nunder %s.",
+                    _("Welcome to wxStartPage demo\n"
+                      "running with %s\nunder %s."),
                     wxVERSION_STRING,
                     wxGetOsDescription()
                  ),
-                 "About wxStartPage demo",
+                 _("About wxStartPage demo"),
                  wxOK | wxICON_INFORMATION,
                  this);
         }
@@ -177,10 +177,10 @@ void MyFrame::OnStartPageClick(wxCommandEvent& event)
                 { return; }
             wxMessageBox(wxString::Format
                  (
-                    "You selected '%s'.",
+                    _("You selected '%s'."),
                     fd.GetFilename()
                  ),
-                 "File Open",
+                 _("File Open"),
                  wxOK | wxICON_INFORMATION,
                  this);
         }
