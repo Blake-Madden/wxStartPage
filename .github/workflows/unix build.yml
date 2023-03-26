@@ -23,13 +23,9 @@ jobs:
              sudo ldconfig
              cd ..
              cd ..
-             cmake ./
-             make -j4
 
       - name: build
         run: |
-             cd ..
-             git clone https://github.com/catchorg/Catch2.git
              cd wxStartPage/demo
              cmake ./
              make -j4
