@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
-      
+
       - name: install i18n-check
         run: |
              git clone https://github.com/Blake-Madden/i18n-check.git
