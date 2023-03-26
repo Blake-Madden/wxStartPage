@@ -16,14 +16,13 @@ jobs:
              cd i18n-check
              cmake ./
              make -j4
-             ls
              cd bin
              ls
-             cd..
+             cd ..
 
       - name: analyze
         run: |
-            pwd
+             pwd
              cd ..
-             ./i18n-check/bin/i18n-check ./ -o wxSPresults.txt
+             /i18n-check/bin/i18n-check ./ -o wxSPresults.txt
              cat wxSPresults.txt
