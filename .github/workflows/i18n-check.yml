@@ -12,7 +12,7 @@ jobs:
 
       - name: install i18n-check
         run: |
-             git clone https://github.com/Blake-Madden/i18n-check.git
+             git clone https://github.com/Blake-Madden/i18n-check.git --recurse-submodules
              cd i18n-check
              cmake ./
              make -j4
