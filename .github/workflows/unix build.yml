@@ -26,6 +26,6 @@ jobs:
 
       - name: build
         run: |
-             cd wxStartPage/demo
+             cd demo
              cmake ./
              make -j4
