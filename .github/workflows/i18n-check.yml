@@ -16,12 +16,9 @@ jobs:
              cd i18n-check
              cmake ./
              make -j4
-             ls
-             echo "going up"
              cd ..
-             ls
 
       - name: analyze
         run: |
-             ./i18n-check/bin/i18n-check ./ -o wxSPresults.txt
+             ./i18n-check/bin/i18n-check ./ --ignore=i18n-check -q -o wxSPresults.txt
              cat wxSPresults.txt
