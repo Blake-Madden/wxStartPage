@@ -2,7 +2,7 @@
 // Name:        startpage.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2023 Blake Madden
-// Licence:     3-Clause BSD licence
+// License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -14,7 +14,7 @@ wxDEFINE_EVENT(wxEVT_STARTPAGE_CLICKED, wxCommandEvent);
 wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
                          const wxArrayString& mruFiles /*= wxArrayString{}*/,
                          const wxBitmapBundle& logo /*= wxBitmapBundle{}*/,
-                         const wxString productDescription /*= wxString{}*/) 
+                         const wxString productDescription /*= wxString{}*/)
         : wxWindow(parent, id, wxDefaultPosition, wxDefaultSize,
                    wxFULL_REPAINT_ON_RESIZE, L"wxStartPage"),
           m_logoFont(wxFontInfo(
@@ -217,7 +217,7 @@ void wxStartPage::OnResize(wxSizeEvent& WXUNUSED(event))
         wxDCFontChanger fc(dc, m_logoFont);
         dc.GetTextExtent(wxTheApp->GetAppName(), &appNameWidth, &appNameHeight);
         }
-    
+
     CalcButtonStart(dc);
     CalcMRUColumnHeaderHeight(dc);
 
@@ -276,7 +276,7 @@ void wxStartPage::OnResize(wxSizeEvent& WXUNUSED(event))
             auto line2TextSz = dc.GetTextExtent(m_fileButtons[0].m_label);
             wxDCFontChanger fc2(dc, wxFont(dc.GetFont()).MakeLarger());
             auto line1TextSz = dc.GetTextExtent(m_fileButtons[0].m_label);
-            
+
             // enough space for the text (label and path) height
             // (or icon, whichever is larger) and some padding around it
             m_mruButtonHeight =
@@ -311,7 +311,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         BlackOrWhiteContrast(buttonAreaHoverColor);
     const wxColour mruFontHoverColor =
         BlackOrWhiteContrast(mruHoverColor);
-    const wxColour mruSeparatorlineColor =
+    const wxColour mruSeparatorLineColor =
         ShadeOrTint(GetMRUBackgroundColor());
 
     // calculate the positions of the buttons in the files area
@@ -446,7 +446,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         {
         wxDCFontChanger fc(dc, dc.GetFont().Larger().Larger().Bold());
         wxDCTextColourChanger tcc(dc, mruFontColor);
-        wxDCPenChanger pc(dc, mruSeparatorlineColor);
+        wxDCPenChanger pc(dc, mruSeparatorLineColor);
         dc.SetClippingRegion(greetingRect);
         dc.DrawLabel(greeting,
             wxRect(greetingRect).Deflate(GetLabelPaddingWidth()),
@@ -460,7 +460,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         wxDCFontChanger fc(dc, dc.GetFont().Larger());
         wxDCTextColourChanger tcc(dc, mruFontColor);
         wxDCPenChanger pc(dc,
-            wxPen(wxPenInfo(mruSeparatorlineColor,
+            wxPen(wxPenInfo(mruSeparatorLineColor,
                             FromDIP(2)).Cap(wxPenCap::wxCAP_BUTT)));
         dc.SetClippingRegion(recentRect);
         dc.DrawLabel(GetRecentLabel(),
@@ -711,7 +711,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                         dc.DrawLabel(fn.GetFullName(), fileLabelRect,
                                      wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL);
                         }
-                    wxDCPenChanger pc(dc, mruSeparatorlineColor);
+                    wxDCPenChanger pc(dc, mruSeparatorLineColor);
                     dc.DrawLine(m_fileButtons[i].m_rect.GetLeftBottom(),
                         m_fileButtons[i].m_rect.GetRightBottom());
                     }
