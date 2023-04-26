@@ -20,7 +20,7 @@ jobs:
 
       - name: analyze
         run: |
-             ./i18n-check/bin/i18n-check ./ --ignore=i18n-check -q -o wxSPresults.txt
+             ./i18n-check/bin/i18n-check ./ --ignore=i18n-check -q --enable=allI18N,allCodeFormatting -o wxSPresults.txt
              cat wxSPresults.txt
              
       - name: print output
