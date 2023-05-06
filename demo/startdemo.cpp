@@ -58,10 +58,10 @@ bool MyApp::OnInit()
     if ( !wxApp::OnInit() )
         return false;
 
-    SetAppName(_("Start Page Demo"));
+    SetAppName(_(L"Start Page Demo"));
 
     // create the main application window
-    MyFrame *frame = new MyFrame(_("Start Page Demo"));
+    MyFrame *frame = new MyFrame(_(L"Start Page Demo"));
     frame->Show(true);
 
     return true;
@@ -123,7 +123,7 @@ MyFrame::MyFrame(const wxString& title)
        This can be changed (or turned off) via SetGreetingStyle()
        and SetCustomGreeting(). Uncomment the following to see an example:*/
 
-    // m_startPage->SetCustomGreeting(_("Welcome to the Demonstration!"));
+    // m_startPage->SetCustomGreeting(_(L"Welcome to the Demonstration!"));
 
     /* The visual effect when the buttons are moused over can also
        be customized. Uncomment the following to use a glassy, 3D look
@@ -160,27 +160,27 @@ void MyFrame::OnStartPageClick(wxCommandEvent& event)
         {
             wxMessageBox(wxString::Format
                  (
-                    _("Welcome to wxStartPage demo\n"
-                      "running with %s\nunder %s."),
+                    _(L"Welcome to wxStartPage demo\n"
+                       "running with %s\nunder %s."),
                     wxVERSION_STRING,
                     wxGetOsDescription()
                  ),
-                 _("About wxStartPage demo"),
+                 _(L"About wxStartPage demo"),
                  wxOK | wxICON_INFORMATION,
                  this);
         }
         // the file open button was clicked
         else if (m_fileOpenButtonID == event.GetId())
         {
-            wxFileDialog fd(this, _("Open a File"));
+            wxFileDialog fd(this, _(L"Open a File"));
             if (fd.ShowModal() == wxID_CANCEL)
                 { return; }
             wxMessageBox(wxString::Format
                  (
-                    _("You selected '%s'."),
+                    _(L"You selected '%s'."),
                     fd.GetFilename()
                  ),
-                 _("File Open"),
+                 _(L"File Open"),
                  wxOK | wxICON_INFORMATION,
                  this);
         }
