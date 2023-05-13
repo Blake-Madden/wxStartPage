@@ -1,0 +1,38 @@
+name: Windows Build
+on: [push]
+
+jobs:
+  build:
+    name: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'true'
+      - name: Installing vcpkg (windows)
+        run: |
+          cd ..
+          git clone https://github.com/Microsoft/vcpkg.git
+          cd vcpkg
+          git checkout
+          .\bootstrap-vcpkg.bat
+          .\vcpkg.exe install cppzmq:x64-windows
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v1.1.3
+        with:
+            vs-prerelease: true
+      - name: Build wxwidgets
+        run: |
+             git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
+             cd wxWidgets\build\msw
+             dir
+             msbuild wx_vc17.sln
+      - name: Build
+        run: |
+             cd ${{ github.workspace }}
+             pwd
+             dir
+             cmake ./ -DwxWidgets_ROOT_DIR=wxWidgets
+      - name: Build Solution (windows)
+        run: |
+             msbuild startpagedemo.sln
