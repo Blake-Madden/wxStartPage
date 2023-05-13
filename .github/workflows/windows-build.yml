@@ -25,14 +25,12 @@ jobs:
         run: |
              git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
              cd wxWidgets\build\msw
-             dir
              msbuild wx_vc17.sln
       - name: Build
         run: |
-             cd ${{ github.workspace }}
-             pwd
-             dir
-             cmake ./ -DwxWidgets_ROOT_DIR=wxWidgets
+             echo '${{ github.workspace }}\wxWidgets'
+             cd ${{ github.workspace }}\demo
+             cmake ./ -DwxWidgets_ROOT_DIR=${{ github.workspace }}\wxWidgets
       - name: Build Solution (windows)
         run: |
              msbuild startpagedemo.sln
