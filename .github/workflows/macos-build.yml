@@ -1,0 +1,30 @@
+name: macOS Build
+on: [push]
+
+jobs:
+  build:
+    name: ubuntu-build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: install wxwidgets
+        run: |
+             brew install cmake libtbb-dev
+             git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
+             cd wxWidgets
+             mkdir build-cocoa
+             cd build-cocoa
+             ../configure --enable-debug
+             make -j4
+             sudo make install
+             cd ..
+             cd ..
+
+      - name: build
+        run: |
+             cd demo
+             cmake ./
+             make -j4
