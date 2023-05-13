@@ -1,4 +1,4 @@
-name: unix build
+name: Linux Build
 on: [push]
 
 jobs:
