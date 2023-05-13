@@ -3,7 +3,7 @@ on: [push]
 
 jobs:
   build:
-    name: ubuntu-build
+    name: macos-build
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
@@ -12,7 +12,7 @@ jobs:
 
       - name: install wxwidgets
         run: |
-             brew install cmake libtbb-dev
+             brew install cmake tbb
              git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
              cd wxWidgets
              mkdir build-cocoa
