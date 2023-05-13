@@ -655,8 +655,8 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                         dc.DrawBitmap(fileIcon,
                             wxPoint(fileLabelRect.GetLeft(),
                                     fileLabelRect.GetTop() +
-                                        (fileLabelRect.GetHeight() -
-                                         fileIcon.GetHeight(), 2)));
+                                        ((fileLabelRect.GetHeight() - fileIcon.GetHeight()) / 2)
+                                    ));
                         int nameHeight{ 0 };
                         // draw the filename
                             {
