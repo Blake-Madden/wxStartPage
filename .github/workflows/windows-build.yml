@@ -29,7 +29,7 @@ jobs:
       - name: Build
         run: |
              set wxWidgets_ROOT_DIR='${{ github.workspace }}\wxWidgets'
-             dir %wxWidgets_ROOT_DIR%
+             dir '${{ github.workspace }}\wxWidgets'
              cd ${{ github.workspace }}\demo
              cmake -DwxWidgets_ROOT_DIR=${{ github.workspace }}\wxWidgets -B ${{ github.workspace }}\demo\build
       #- name: Build Solution (windows)
