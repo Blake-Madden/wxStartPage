@@ -12,6 +12,9 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
 SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_CXX_STANDARD_REQUIRED True)
 
+ADD_COMPILE_OPTIONS("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+ADD_COMPILE_OPTIONS("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
 if(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
     # If no deployment target has been set default to the minimum supported
     # OS version (this has to be set before the first project() call)
@@ -41,6 +44,17 @@ SET(SRC_FILES
 
 # Define the build target for the executable
 ADD_EXECUTABLE(${PROJECT_NAME} WIN32 MACOSX_BUNDLE ${SRC_FILES})
+
+# set up compiler flags
+IF(MSVC)
+  TARGET_COMPILE_OPTIONS(${CMAKE_PROJECT_NAME} PRIVATE /Zc:__cplusplus /MP /W3 /WX
+                         $<$<CONFIG:Debug>:/Od> $<$<CONFIG:Release>:/O2>)
+  TARGET_COMPILE_DEFINITIONS(${CMAKE_PROJECT_NAME} PRIVATE -D_CRT_SECURE_NO_WARNINGS)
+ELSE()
+  TARGET_COMPILE_OPTIONS(${CMAKE_PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Wshadow -Werror
+                         $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
+ENDIF()
+
 # Link required libraries to the executable
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${wxWidgets_LIBRARIES})
 
