@@ -30,7 +30,7 @@ jobs:
         run: |
              echo '${{ github.workspace }}\wxWidgets'
              cd ${{ github.workspace }}\demo
-             cmake ./ -DwxWidgets_ROOT_DIR=${{ github.workspace }}\wxWidgets
-      - name: Build Solution (windows)
-        run: |
-             msbuild startpagedemo.sln
+             cmake -B ${{ github.workspace }}\demo\build -DwxWidgets_ROOT_DIR=${{ github.workspace }}\wxWidgets
+      #- name: Build Solution (windows)
+      #  run: |
+     #      msbuild startpagedemo.sln
