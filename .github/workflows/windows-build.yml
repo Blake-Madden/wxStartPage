@@ -28,7 +28,7 @@ jobs:
              msbuild wx_vc17.sln
       - name: Build
         run: |
-             echo '${{ github.workspace }}\wxWidgets'
+             set wxWidgets_ROOT_DIR='${{ github.workspace }}\wxWidgets'
              cd ${{ github.workspace }}\demo
              cmake -B ${{ github.workspace }}\demo\build -DwxWidgets_ROOT_DIR=${{ github.workspace }}\wxWidgets
       #- name: Build Solution (windows)
