@@ -31,7 +31,7 @@ jobs:
              set wxWidgets_ROOT_DIR='${{ github.workspace }}\wxWidgets'
              dir '${{ github.workspace }}\wxWidgets'
              cd ${{ github.workspace }}\demo
-             cmake -DwxWidgets_ROOT_DIR=${{ github.workspace }}\wxWidgets -B ${{ github.workspace }}\demo\build
+             cmake -DwxWidgets_ROOT_DIR:PATH=${{ github.workspace }}\wxWidgets -B ${{ github.workspace }}\demo\build
       #- name: Build Solution (windows)
       #  run: |
      #      msbuild startpagedemo.sln
