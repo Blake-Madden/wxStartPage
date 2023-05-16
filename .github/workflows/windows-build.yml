@@ -29,8 +29,6 @@ jobs:
       - name: Build
         run: |
              cd ${{ github.workspace }}\demo
-             dir ..\wxWidgets
              cmake ./ -DwxWidgets_ROOT_DIR=..\wxWidgets
-      - name: Build Solution (windows)
-        run: |
+             dir
              msbuild startpagedemo.sln
