@@ -23,13 +23,14 @@ jobs:
             vs-prerelease: true
       - name: Build wxwidgets
         run: |
+             cd ..
              git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
              cd wxWidgets\build\msw
              msbuild wx_vc17.sln
       - name: Build
         run: |
              cd ${{ github.workspace }}\demo
-             cmake ${{ github.workspace }}\demo -DwxWidgets_ROOT_DIR=..\wxWidgets
+             cmake ${{ github.workspace }}\demo\CMakeLists.txt -DwxWidgets_ROOT_DIR=..\..\wxWidgets
              $baseDir = (Get-Item -Path ".\" -Verbose).FullName
              $items = Get-ChildItem -Path $baseDir -Include *.sln -Recurse
              foreach ($item in $items){
