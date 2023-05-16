@@ -29,5 +29,6 @@ jobs:
       - name: Build
         run: |
              cd ${{ github.workspace }}\demo
-             cmake ./ -DwxWidgets_ROOT_DIR=..\wxWidgets -B /build
+             cmake ./ -DwxWidgets_ROOT_DIR=..\wxWidgets -B '${{ github.workspace }}\demo\build'
              dir
+             dir '${{ github.workspace }}\demo\build'
