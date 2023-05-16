@@ -29,7 +29,7 @@ jobs:
       - name: Build
         run: |
              cd ${{ github.workspace }}\demo
-             cmake ./ -DwxWidgets_ROOT_DIR=..\wxWidgets
+             cmake ${{ github.workspace }}\demo -DwxWidgets_ROOT_DIR=${{ github.workspace }}\wxWidgets
              $baseDir = (Get-Item -Path ".\" -Verbose).FullName
              $items = Get-ChildItem -Path $baseDir -Include *.sln -Recurse
              foreach ($item in $items){
