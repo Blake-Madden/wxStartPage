@@ -99,7 +99,7 @@ public:
     explicit wxStartPage(wxWindow* parent, wxWindowID id = wxID_ANY,
         const wxArrayString& mruFiles = wxArrayString{},
         const wxBitmapBundle& logo = wxBitmapBundle{},
-        const wxString productDescription = wxString{});
+        const wxString& productDescription = wxString{});
     /// @private
     wxStartPage() = delete;
     /// @private
@@ -146,7 +146,7 @@ public:
     /// @returns The ID assigned to the button. This should be used in your
     ///     @c wxEVT_STARTPAGE_CLICKED handler.
     /// @sa GetButtonID().
-    wxWindowID AddButton(const wxArtID artId, const wxString& label)
+    wxWindowID AddButton(const wxArtID& artId, const wxString& label)
         {
         wxVector<wxBitmap> bmps;
         bmps.push_back(

@@ -14,7 +14,7 @@ wxDEFINE_EVENT(wxEVT_STARTPAGE_CLICKED, wxCommandEvent);
 wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
                          const wxArrayString& mruFiles /*= wxArrayString{}*/,
                          const wxBitmapBundle& logo /*= wxBitmapBundle{}*/,
-                         const wxString productDescription /*= wxString{}*/)
+                         const wxString& productDescription /*= wxString{}*/)
         : wxWindow(parent, id, wxDefaultPosition, wxDefaultSize,
                    wxFULL_REPAINT_ON_RESIZE, L"wxStartPage"),
           m_logoFont(wxFontInfo(
