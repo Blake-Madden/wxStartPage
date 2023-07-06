@@ -105,11 +105,7 @@ public:
     /// @private
     wxStartPage(const wxStartPage&) = delete;
     /// @private
-    wxStartPage(wxStartPage&&) = delete;
-    /// @private
     wxStartPage& operator=(const wxStartPage&) = delete;
-    /// @private
-    wxStartPage& operator=(wxStartPage&&) = delete;
 
     /// @brief Sets the list of files to be shown in the
     ///     "most-recently-used" list on the right side.
