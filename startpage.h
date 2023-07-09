@@ -156,7 +156,7 @@ public:
     /// @returns The ID of the given index into the custom button list,
     ///     or @c wxNOT_FOUND if an invalid index is given.
     /// @param buttonIndex The index into the custom button list.
-    wxNODISCARD const wxWindowID GetButtonID(const size_t buttonIndex) const noexcept
+    wxNODISCARD wxWindowID GetButtonID(const size_t buttonIndex) const noexcept
         {
         return buttonIndex > m_buttons.size() ?
             wxNOT_FOUND :
@@ -248,7 +248,7 @@ private:
     /// @returns The number of items in the MRU list.
     /// @note This is the number of files in the list,
     ///     not including the "clear file list" button.
-    wxNODISCARD const size_t GetMRUFileCount() const noexcept
+    wxNODISCARD size_t GetMRUFileCount() const noexcept
         {
         // the last item is the "clear file list" button, so don't count that
         return m_fileButtons.size() > 0 ?
@@ -276,33 +276,33 @@ private:
 
     /// @returns The number of items in the MRU list
     ///     (including the "clear file list" button).
-    wxNODISCARD const size_t GetMRUFileAndClearButtonCount() const noexcept
+    wxNODISCARD size_t GetMRUFileAndClearButtonCount() const noexcept
         { return m_fileButtons.size(); }
     /// @returns The padding height around the labels.
-    wxNODISCARD const wxCoord GetLabelPaddingHeight() const
+    wxNODISCARD wxCoord GetLabelPaddingHeight() const
         { return wxSizerFlags::GetDefaultBorder(); }
     /// @returns The padding width around the labels.
-    wxNODISCARD const wxCoord GetLabelPaddingWidth() const
+    wxNODISCARD wxCoord GetLabelPaddingWidth() const
         { return wxSizerFlags::GetDefaultBorder(); }
     /// @returns The padding at the top of the control.
-    wxNODISCARD const wxCoord GetTopBorder() const
+    wxNODISCARD wxCoord GetTopBorder() const
         { return wxSizerFlags::GetDefaultBorder() * 4; }
     /// @returns The left border around the icons/labels.
-    wxNODISCARD const wxCoord GetLeftBorder() const
+    wxNODISCARD wxCoord GetLeftBorder() const
         { return wxSizerFlags::GetDefaultBorder() * 4; }
     /// @returns The size for the app logo
-    wxNODISCARD const wxSize GetAppLogoSize() const
+    wxNODISCARD wxSize GetAppLogoSize() const
         { return FromDIP(wxSize(64, 64)); }
     /// @returns The button size, which will be smaller if there
     ///     are numerous buttons.
-    wxNODISCARD const wxSize GetButtonSize() const
+    wxNODISCARD wxSize GetButtonSize() const
         {
         return FromDIP(m_buttons.size() > MAX_BUTTONS_SMALL_SIZE ?
                        wxSize(16, 16) : wxSize(32, 32));
         }
     /// @returns The size of an icon scaled to 16x16,
     ///     with label padding above and below it.
-    wxNODISCARD const wxCoord GetMRUButtonHeight() const noexcept
+    wxNODISCARD wxCoord GetMRUButtonHeight() const noexcept
         { return m_mruButtonHeight; }
     wxNODISCARD wxString GetClearFileListLabel() const
         { return _(L"Clear file list..."); }
