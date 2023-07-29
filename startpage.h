@@ -21,6 +21,7 @@
 #include <wx/stdpaths.h>
 #include <vector>
 #include <algorithm>
+#include <cassert>
 
 #ifndef wxNODISCARD
     #define wxNODISCARD
@@ -322,7 +323,7 @@ private:
     /// @returns @c true if the color is dark.
     wxNODISCARD static bool IsDark(const wxColour& color)
         {
-        wxASSERT_MSG(color.IsOk(), L"Invalid color passed to IsDark()!");
+        assert(color.IsOk() && L"Invalid color passed to IsDark()!");
         return (color.IsOk() &&
                 color.Alpha() > 32 &&
                 color.GetLuminance() < 0.5);
