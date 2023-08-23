@@ -384,7 +384,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         wxDCTextColourChanger cc(dc, buttonAreaFontColor);
         wxDCPenChanger pc(dc, buttonAreaFontColor);
         wxCoord textWidth{ 0 }, textHeight{ 0 };
-        wxBitmap appLogo = m_logo.GetBitmap(GetAppLogoSize());
+        wxBitmap appLogo = m_logo.GetBitmap(GetAppLogoSize()).ConvertToImage();
         if (m_appHeaderStyle == wxStartPageAppHeaderStyle::wxStartPageAppNameAndLogo &&
             appLogo.IsOk())
             {
@@ -737,7 +737,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
 
                 // draw it
                 dc.SetClippingRegion(button.m_rect);
-                dc.DrawLabel(button.m_label, button.m_icon.GetBitmap(buttonIconSize),
+                dc.DrawLabel(button.m_label, button.m_icon.GetBitmap(buttonIconSize).ConvertToImage(),
                     wxRect(button.m_rect).Deflate(GetLabelPaddingWidth()));
                 dc.DestroyClippingRegion();
                 }
