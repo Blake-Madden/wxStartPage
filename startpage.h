@@ -147,9 +147,17 @@ public:
         {
         wxVector<wxBitmap> bmps;
         bmps.push_back(
-            wxArtProvider::GetBitmap(artId, wxART_BUTTON, FromDIP(wxSize(16, 16))));
+            wxArtProvider::GetBitmap(artId, wxART_BUTTON, FromDIP(wxSize(16, 16))).
+            ConvertToImage());
         bmps.push_back(
-            wxArtProvider::GetBitmap(artId, wxART_BUTTON, FromDIP(wxSize(32, 32))));
+            wxArtProvider::GetBitmap(artId, wxART_BUTTON, FromDIP(wxSize(32, 32))).
+            ConvertToImage());
+        bmps.push_back(
+            wxArtProvider::GetBitmap(artId, wxART_BUTTON, FromDIP(wxSize(64, 64))).
+            ConvertToImage());
+        bmps.push_back(
+            wxArtProvider::GetBitmap(artId, wxART_BUTTON, FromDIP(wxSize(128, 128))).
+            ConvertToImage());
         m_buttons.push_back(wxStartPageButton(
             wxBitmapBundle::FromBitmaps(bmps), label));
         return ID_BUTTON_ID_START + (m_buttons.size() - 1);
