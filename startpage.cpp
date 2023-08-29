@@ -149,6 +149,16 @@ wxString wxStartPage::FormatGreeting() const
         { return wxString{}; }
     else if (m_greetingStyle == wxStartPageGreetingStyle::wxCustomGreeting)
         { return m_customGreeting; }
+    else if (m_greetingStyle == wxStartPageGreetingStyle::wxDynamicGreetingWithUserName &&
+        m_userName.length())
+        {
+        const auto currentHour{ wxDateTime::Now().GetHour() };
+        return currentHour < 12 ?
+            wxString::Format(_(L"Good morning, %s"), m_userName) :
+            currentHour < 17 ?
+            wxString::Format(_(L"Good afternoon, %s"), m_userName) :
+            wxString::Format(_(L"Good evening, %s"), m_userName);
+        }
     else
         {
         const auto currentHour{ wxDateTime::Now().GetHour() };

@@ -41,10 +41,11 @@ enum class wxStartPageStyle
 /// @brief Which type of greeting to show in the start page banner.
 enum class wxStartPageGreetingStyle
     {
-    wxDynamicGreeting, /*!<Greeting based on the time of day (e.g., "Good morning").
-                           (This is the default.)*/
-    wxCustomGreeting,  /*!<User-defined greeting.*/
-    wxNoGreeting       /*!<No greeting.*/
+    wxDynamicGreeting,             /*!<Greeting based on the time of day (e.g., "Good morning").
+                                   (This is the default.)*/
+    wxDynamicGreetingWithUserName, /* Same as wxDynamicGreeting, but shows the user name also.*/
+    wxCustomGreeting,              /*!<User-defined greeting.*/
+    wxNoGreeting                   /*!<No greeting.*/
     };
 /// @brief How to display in the application header (above the custom buttons)
 enum class wxStartPageAppHeaderStyle
@@ -206,11 +207,15 @@ public:
         { m_greetingStyle = style; }
     /// @brief Sets a custom greeting to display.
     /// @param greeting The custom greeting to use.
-    void SetCustomGreeting(const wxString& greeting)
+    void SetCustomGreeting(wxString greeting)
         {
-        m_customGreeting = greeting;
+        m_customGreeting = std::move(greeting);
         m_greetingStyle = wxStartPageGreetingStyle::wxCustomGreeting;
         }
+    /// @brief Sets the name to display when style is set to @c wxDynamicGreetingWithUserName.
+    /// @param name The user name to use.
+    void SetUserName(wxString name)
+        { m_userName = std::move(name); }
     /** @brief How to display the application name and icon
             above the custom buttons.
         @param style The style to use.*/
@@ -366,7 +371,7 @@ private:
     wxWindowID m_activeButton{ wxNOT_FOUND };
     wxStartPageStyle m_style{ wxStartPageStyle::wxStartPageFlat };
     wxStartPageGreetingStyle m_greetingStyle
-        { wxStartPageGreetingStyle::wxDynamicGreeting };
+        { wxStartPageGreetingStyle::wxDynamicGreetingWithUserName };
     wxString m_customGreeting;
     wxStartPageAppHeaderStyle m_appHeaderStyle
         { wxStartPageAppHeaderStyle::wxStartPageAppNameAndLogo };
@@ -378,6 +383,7 @@ private:
     wxString m_productDescription;
     wxColour m_buttonAreaBackgroundColor{ 145, 168, 208 };
     wxColour m_MRUBackgroundColor{ *wxWHITE };
+    wxString m_userName{ wxGetUserName() };
     };
 
 /** @}*/
