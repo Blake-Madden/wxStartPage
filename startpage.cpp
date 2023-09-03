@@ -639,7 +639,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             }
 
         // begin drawing them
-        wxBitmap fileIcon = m_logo.GetBitmap(FromDIP(wxSize(32, 32)));
+        wxBitmap fileIcon = m_logo.GetBitmap(FromDIP(wxSize(32, 32))).ConvertToImage();
         for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
             {
             if (m_fileButtons[i].IsOk())
