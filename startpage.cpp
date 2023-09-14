@@ -470,7 +470,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         }
     // draw MRU column header
         {
-        wxDCFontChanger fc(dc, dc.GetFont().Larger());
+        wxDCFontChanger fc(dc, dc.GetFont().Larger().Larger());
         wxDCTextColourChanger tcc(dc, mruFontColor);
         wxDCPenChanger pc(dc,
             wxPen(wxPenInfo(mruSeparatorLineColor,
