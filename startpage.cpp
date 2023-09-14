@@ -362,14 +362,14 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         // the "clear file list" button
             {
             wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeLarger().MakeLarger());
-        const auto clearButtonSize = dc.GetTextExtent(GetClearFileListLabel());
-        m_fileButtons[GetMRUFileAndClearButtonCount() - 1].m_rect =
-            wxRect(filesArea.GetLeft() + FromDIP(1),
-                m_fileColumnHeaderHeight +
-                    ((GetMRUFileAndClearButtonCount() - 1) * GetMRUButtonHeight()),
-                clearButtonSize.GetWidth() + (GetLabelPaddingHeight() * 2),
-                clearButtonSize.GetHeight() + (GetLabelPaddingHeight() * 2));
-        }
+            const auto clearButtonSize = dc.GetTextExtent(GetClearFileListLabel());
+            m_fileButtons[GetMRUFileAndClearButtonCount() - 1].m_rect =
+                wxRect(filesArea.GetLeft() + FromDIP(1),
+                    m_fileColumnHeaderHeight +
+                        ((GetMRUFileAndClearButtonCount() - 1) * GetMRUButtonHeight()),
+                    clearButtonSize.GetWidth() + (GetLabelPaddingHeight() * 2),
+                    clearButtonSize.GetHeight() + (GetLabelPaddingHeight() * 2));
+            }
         }
 
     // update the custom buttons' rects
@@ -725,9 +725,13 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                         dc.DrawLabel(fn.GetFullName(), fileLabelRect,
                                      wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL);
                         }
-                    wxDCPenChanger pc(dc, mruSeparatorLineColor);
-                    dc.DrawLine(m_fileButtons[i].m_rect.GetLeftBottom(),
-                        m_fileButtons[i].m_rect.GetRightBottom());
+                    // draw separator line, unless this button is highlighted
+                    if (m_activeButton != m_fileButtons[i].m_id)
+                        {
+                        wxDCPenChanger pc(dc, mruSeparatorLineColor);
+                        dc.DrawLine(m_fileButtons[i].m_rect.GetLeftBottom(),
+                            m_fileButtons[i].m_rect.GetRightBottom());
+                        }
                     }
                 dc.DestroyClippingRegion();
                 }
