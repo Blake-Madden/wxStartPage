@@ -319,7 +319,7 @@ private:
     wxNODISCARD wxCoord GetMRUButtonHeight() const noexcept
         { return m_mruButtonHeight; }
     wxNODISCARD wxString GetClearFileListLabel() const
-        { return _(L"Clear file list..."); }
+        { return _(L"\u267B Clear file list..."); }
     wxNODISCARD wxString GetRecentLabel() const
         { return _(L"Recent"); }
     void DrawHighlight(wxDC& dc, const wxRect rect, const wxColour color) const;
