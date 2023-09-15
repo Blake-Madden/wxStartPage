@@ -788,6 +788,7 @@ void wxStartPage::OnMouseChange(wxMouseEvent& event)
             }
         }
 
+    const auto previouslyActiveButton{ m_activeButton };
     m_activeButton = wxNOT_FOUND;
     for (const auto& button : m_buttons)
         {
@@ -795,7 +796,10 @@ void wxStartPage::OnMouseChange(wxMouseEvent& event)
             button.m_rect.Contains(event.GetX(), event.GetY()) )
             {
             m_activeButton = button.m_id;
-            // just refresh the current and previous (if applicable) highlighted areas
+            // if its the same active button from before, then don't bother refreshing
+            if (previouslyActiveButton == m_activeButton)
+                { return; }
+            // ...otherwise, just refresh the current and previous (if applicable) highlighted areas
             currentRect = button.m_rect;
             wxRect refreshRect = previousRect.IsEmpty() ?
                 currentRect :
@@ -812,6 +816,8 @@ void wxStartPage::OnMouseChange(wxMouseEvent& event)
             m_fileButtons[i].m_rect.Contains(event.GetX(), event.GetY()) )
             {
             m_activeButton = m_fileButtons[i].m_id;
+            if (previouslyActiveButton == m_activeButton)
+                { return; }
             currentRect = m_fileButtons[i].m_rect;
             wxRect refreshRect = previousRect.IsEmpty() ?
                 currentRect :
