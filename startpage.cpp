@@ -545,8 +545,11 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     else
         { m_toolTip.clear(); }
 
+// don't use tooltips with GTK, they only appear randomly and cause painting issues
+#ifndef __WXGTK__
     if (currentToolTip != m_toolTip)
         { SetToolTip(m_toolTip); }
+#endif
 
     const auto formatFileDateTime = [](const auto& dt)
         {
