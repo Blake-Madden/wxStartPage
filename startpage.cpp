@@ -361,7 +361,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             }
         // the "clear file list" button
             {
-            wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeLarger().MakeLarger());
+            wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeLarger());
             const auto clearButtonSize = dc.GetTextExtent(GetClearFileListLabel());
             m_fileButtons[GetMRUFileAndClearButtonCount() - 1].m_rect =
                 wxRect(filesArea.GetLeft() + FromDIP(1),
@@ -659,7 +659,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 // if the "clear file list" button
                 if (i == GetMRUFileAndClearButtonCount() - 1)
                     {
-                    wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeLarger().MakeLarger());
+                    wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeLarger());
                     dc.DrawLabel(m_fileButtons[i].m_label, fileLabelRect,
                                  wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL);
                     }
