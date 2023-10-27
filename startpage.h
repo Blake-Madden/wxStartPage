@@ -227,14 +227,20 @@ public:
     /// @brief Sets the color of the left side of the start page.
     /// @param color The color to use.
     void SetButtonAreaBackgroundColor(const wxColour& color) noexcept
-        { m_buttonAreaBackgroundColor = color; }
+        {
+        if (color.IsOk())
+            { m_buttonAreaBackgroundColor = color; }
+        }
     /// @returns The color of the right side of the start page.
     wxNODISCARD wxColour GetMRUBackgroundColor() const noexcept
         { return m_MRUBackgroundColor; }
     /// @brief Sets the color of the right side of the start page.
     /// @param color The color to use.
     void SetMRUBackgroundColor(const wxColour& color) noexcept
-        { m_MRUBackgroundColor = color; }
+        {
+        if (color.IsOk())
+            { m_MRUBackgroundColor = color; }
+        }
     /// @}
 private:
     struct wxStartPageButton
