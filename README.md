@@ -20,13 +20,14 @@ It displays a most-recently-used file list on the right side (up to 9 files) and
 customizable buttons on the left.
 
 - Users clicking on these buttons can be handled via a `wxEVT_STARTPAGE_CLICKED` event.
-- Modified dates are shown next to each file in the MRU list.\n
+- Modified dates are shown next to each file in the MRU list.
   These dates are shown in a human readable format (e.g., "Just now", "12 minutes ago",
   "Yesterday", "Tues at 1:07 PM").
 - Human readable file paths are shown below the files (e.g., "Documents » Invoices")
 - Includes a "Clear file list" button beneath the MRU list.
 - The application name & logo can be shown above the custom buttons.
-- A dynamic greeting is shown above the MRU list (which is also customizable).
+- A dynamic greeting (based on the time of day) is shown above the MRU list.
+  This greeting is also customizable (e.g., can optionally include the user's name).
 - Customizable theming.
 - Supports dark mode.
 - Supports HiDPI displays.
