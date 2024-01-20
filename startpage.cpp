@@ -116,6 +116,11 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
         if (buttonCount == MAX_FILE_BUTTONS)
             { break; }
         }
+    // no files, so no need for file buttons or the clear all button
+    if (files.empty())
+        {
+        return;
+        }
 
     std::sort(files.begin(), files.end(),
         [](const auto& lhv, const auto& rhv)
@@ -348,7 +353,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     else
         { greetingRect.SetSize(wxSize(0, 0)); }
 
-    if (GetMRUFileAndClearButtonCount() > 0)
+    if (GetMRUFileCount() > 0)
         {
         // update the rects for the file buttons
         for (size_t i = 0; i < GetMRUFileCount(); ++i)
@@ -902,7 +907,7 @@ void wxStartPage::OnMouseClick(wxMouseEvent& event)
                         _(L"Do you wish to clear the list of recent files?"),
                         _(L"Clear File List"), wxYES_NO | wxICON_QUESTION) == wxYES)
                     {
-                    SetMRUList(wxArrayString());
+                    SetMRUList(wxArrayString{});
                     Refresh();
                     Update();
                     // give the caller a change to clear the file history
