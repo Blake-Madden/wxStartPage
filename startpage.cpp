@@ -632,7 +632,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                     {
                     const wxFileName fn(m_fileButtons[i].m_fullFilePath);
                     wxDateTime accessTime, modTime, createTime;
-                    if (fn.GetTimes(&accessTime, &modTime, &createTime))
+                    if (fn.FileExists() && fn.GetTimes(&accessTime, &modTime, &createTime))
                         {
                         const wxString modTimeStr =
                             formatFileDateTime(modTime);
@@ -697,7 +697,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                                 // truncate the path is necessary
                                 (m_fileButtons[i].m_label.length() <= 75) ?
                                 m_fileButtons[i].m_label :
-                                (m_fileButtons[i].m_label.substr(0,75) + L"..."),
+                                (m_fileButtons[i].m_label.substr(0, 75) + L"..."),
                                 wxPoint(fileLabelRect.GetLeft() +
                                         GetLabelPaddingWidth() +
                                         fileIcon.GetWidth(),
@@ -711,7 +711,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                             fileLabelRect.GetWidth())
                             {
                             wxDateTime accessTime, modTime, createTime;
-                            if (fn.GetTimes(&accessTime, &modTime, &createTime))
+                            if (fn.FileExists() && fn.GetTimes(&accessTime, &modTime, &createTime))
                                 {
                                 const wxString modTimeStr =
                                     formatFileDateTime(modTime);
