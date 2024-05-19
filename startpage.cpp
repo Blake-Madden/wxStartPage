@@ -804,7 +804,7 @@ void wxStartPage::OnMouseChange(wxMouseEvent& event)
             button.m_rect.Contains(event.GetX(), event.GetY()) )
             {
             m_activeButton = button.m_id;
-            // if its the same active button from before, then don't bother refreshing
+            // if it's the same active button from before, then don't bother refreshing
             if (previouslyActiveButton == m_activeButton)
                 { return; }
             // ...otherwise, just refresh the current and previous (if applicable) highlighted areas

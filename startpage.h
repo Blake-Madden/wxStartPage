@@ -174,7 +174,7 @@ public:
             m_buttons[buttonIndex].m_id;
         }
     /// @returns @c true if @c Id is and ID for one of the custom buttons on the left.
-    /// @param Id The ID from an @c wxEVT_STARTPAGE_CLICKED event after a
+    /// @param Id The ID from a @c wxEVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
     wxNODISCARD
     bool IsCustomButtonId(const wxWindowID Id) const noexcept
@@ -183,13 +183,13 @@ public:
                 static_cast<size_t>(Id) < ID_BUTTON_ID_START + m_buttons.size());
         }
     /// @returns @c true if @c Id is an ID within the MRU list.
-    /// @param Id The ID from an @c wxEVT_STARTPAGE_CLICKED event after a
+    /// @param Id The ID from a @c wxEVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
     wxNODISCARD
     constexpr bool IsFileId(const wxWindowID Id) const noexcept
         { return (Id >= ID_FILE_ID_START && Id < START_PAGE_FILE_LIST_CLEAR); }
     /// @returns @c true if @c Id is the "Clear file list" button.
-    /// @param Id The ID from an @c wxEVT_STARTPAGE_CLICKED event after a
+    /// @param Id The ID from a @c wxEVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
     wxNODISCARD
     constexpr bool IsFileListClearId(const wxWindowID Id) const noexcept
