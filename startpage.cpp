@@ -459,6 +459,12 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         wxDCPenChanger pc(dc, *wxTRANSPARENT_PEN);
         wxDCBrushChanger bc(dc, GetMRUBackgroundColor());
         dc.DrawRectangle(filesArea);
+        // if areas have the same color, then draw a contrasting line between them
+        if (GetMRUBackgroundColor() == GetButtonAreaBackgroundColor())
+            {
+            wxDCPenChanger pc2(dc, ShadeOrTint(GetMRUBackgroundColor()));
+            dc.DrawLine(filesArea.GetTopLeft(), filesArea.GetBottomLeft());
+            }
         }
     // draw the greeting
         {
@@ -804,7 +810,7 @@ void wxStartPage::OnMouseChange(wxMouseEvent& event)
             button.m_rect.Contains(event.GetX(), event.GetY()) )
             {
             m_activeButton = button.m_id;
-            // if it's the same active button from before, then don't bother refreshing
+            // if its the same active button from before, then don't bother refreshing
             if (previouslyActiveButton == m_activeButton)
                 { return; }
             // ...otherwise, just refresh the current and previous (if applicable) highlighted areas
