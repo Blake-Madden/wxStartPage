@@ -142,7 +142,7 @@ MyFrame::MyFrame(const wxString& title)
     Bind(wxEVT_STARTPAGE_CLICKED, &MyFrame::OnStartPageClick, this);
 
     // finally, add the start page to the frame
-    sizer->Add(m_startPage, 1, wxEXPAND);
+    sizer->Add(m_startPage, wxSizerFlags{ 1 }.Expand());
     SetSizer(sizer);
 
     Centre();
