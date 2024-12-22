@@ -1,26 +1,26 @@
-name: i18n-check
+name: quneiform
 on: [push]
 
 jobs:
   build:
-    name: i18n-check
+    name: quneiform
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
 
-      - name: install i18n-check
+      - name: install quneiform
         run: |
-             git clone https://github.com/Blake-Madden/i18n-check.git --recurse-submodules
-             cd i18n-check
+             git clone https://github.com/Blake-Madden/quneiform.git --recurse-submodules
+             cd quneiform
              cmake ./
              make -j4
              cd ..
 
       - name: analyze
         run: |
-             ./i18n-check/bin/i18n-check ./ --ignore=i18n-check -q --enable=allI18N,allCodeFormatting -o wxSPresults.txt
+             ./quneiform/bin/quneiform ./ --ignore=quneiform -q --enable=allI18N,allCodeFormatting -o wxSPresults.txt
              cat wxSPresults.txt
              
       - name: print output
