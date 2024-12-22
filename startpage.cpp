@@ -564,7 +564,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
 
     const auto formatFileDateTime = [](const auto& dt)
         {
-        wxString dateStr, timeStr;
+        wxString dateStr;
         const auto currentTime{ wxDateTime::Now() };
         const wxTimeSpan timeDiff = wxDateTime::Now().Subtract(dt);
         if (timeDiff.GetHours() < 1)
@@ -591,24 +591,27 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             currentTime.GetMonth() == dt.GetMonth() &&
             currentTime.GetWeekOfMonth() == dt.GetWeekOfMonth())
             {
-            if (currentTime.GetDay() == dt.GetDay())
-                { dateStr = _(L"Today at "); }
-            else if (currentTime.GetDay() - 1 == dt.GetDay())
-                { dateStr = _(L"Yesterday at "); }
-            else
-                {
-                dateStr = wxString::Format(_(L"%s at "),
-                    wxDateTime::GetWeekDayName(dt.GetWeekDay(),
-                                               wxDateTime::NameFlags::Name_Abbr));
-                }
-
-            // include time also, in the local clock format
+            // include time, in the local clock format
             wxString am, pm;
             wxDateTime::GetAmPmStrings(&am, &pm);
+            wxString timeStr;
             if (am.length() && pm.length())
                 { timeStr = dt.Format(L"%I:%M %p").MakeUpper(); }
             else
                 { timeStr = dt.Format(L"%H:%M"); }
+
+            if (currentTime.GetDay() == dt.GetDay())
+                { dateStr = wxString::Format(_(L"Today at %s"), timeStr); }
+            else if (currentTime.GetDay() - 1 == dt.GetDay())
+                { dateStr = wxString::Format(_(L"Yesterday at %s"), timeStr); }
+            else
+                {
+                dateStr = wxString::Format(// TRANSLATORS: DAY at TIME OF DAY
+                                           _(L"%s at %s"),
+                    wxDateTime::GetWeekDayName(dt.GetWeekDay(),
+                                               wxDateTime::NameFlags::Name_Abbr),
+                    timeStr);
+                }
             }
         else
             {
@@ -620,7 +623,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             dateStr = dt.Format(dateFormatStr);
             }
 
-        return dateStr + timeStr;
+        return dateStr;
         };
 
     // file labels

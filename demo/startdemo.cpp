@@ -58,7 +58,7 @@ bool MyApp::OnInit()
     if ( !wxApp::OnInit() )
         return false;
 
-    SetAppName(_(L"Start Page Demo"));
+    SetAppName(L"Start Page Demo");
 
     // create the main application window
     MyFrame *frame = new MyFrame(_(L"Start Page Demo"));
