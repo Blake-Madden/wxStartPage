@@ -501,7 +501,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                         wxSize((recentTextSz.GetWidth()/2), 0));
         }
 
-    const wxString currentToolTip = m_toolTip;
+    [[maybe_unused]] const wxString currentToolTip = m_toolTip;
     // highlight the active MRU file or custom button
     if (m_activeButton != wxNOT_FOUND)
         {
