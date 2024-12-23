@@ -66,4 +66,4 @@ Dependencies
 =============================
 
 - [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.2 or higher
-- A C++14 compatible compiler
+- A C++17 compatible compiler

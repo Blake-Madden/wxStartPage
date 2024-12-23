@@ -3,13 +3,13 @@
 # Purpose:     Demonstration project for wxStartPage
 # Author:      Blake Madden
 # Created:     2023-03-25
-# Copyright:   (c) 2023 Blake Madden
+# Copyright:   (c) 2025 Blake Madden
 # Licence:     BSD-3-Clause
 #############################################################################
 
 # Declare the minimum required CMake version
 CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
-SET(CMAKE_CXX_STANDARD 14)
+SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED True)
 
 ADD_COMPILE_OPTIONS("$<$<C_COMPILER_ID:MSVC>:/utf-8>")

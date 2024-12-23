@@ -23,10 +23,6 @@
 #include <algorithm>
 #include <cassert>
 
-#ifndef wxNODISCARD
-    #define wxNODISCARD
-#endif
-
 wxDECLARE_EVENT(wxEVT_STARTPAGE_CLICKED, wxCommandEvent);
 
 #define EVT_STARTPAGE_CLICKED(winid, fn) \
@@ -166,7 +162,7 @@ public:
     /// @returns The ID of the given index into the custom button list,
     ///     or @c wxNOT_FOUND if an invalid index is given.
     /// @param buttonIndex The index into the custom button list.
-    wxNODISCARD
+    [[nodiscard]]
     wxWindowID GetButtonID(const size_t buttonIndex) const noexcept
         {
         return buttonIndex > m_buttons.size() ?
@@ -176,7 +172,7 @@ public:
     /// @returns @c true if @c Id is and ID for one of the custom buttons on the left.
     /// @param Id The ID from a @c wxEVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
-    wxNODISCARD
+    [[nodiscard]]
     bool IsCustomButtonId(const wxWindowID Id) const noexcept
         {
         return (Id >= ID_BUTTON_ID_START &&
@@ -185,13 +181,13 @@ public:
     /// @returns @c true if @c Id is an ID within the MRU list.
     /// @param Id The ID from a @c wxEVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
-    wxNODISCARD
+    [[nodiscard]]
     constexpr bool IsFileId(const wxWindowID Id) const noexcept
         { return (Id >= ID_FILE_ID_START && Id < START_PAGE_FILE_LIST_CLEAR); }
     /// @returns @c true if @c Id is the "Clear file list" button.
     /// @param Id The ID from a @c wxEVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
-    wxNODISCARD
+    [[nodiscard]]
     constexpr bool IsFileListClearId(const wxWindowID Id) const noexcept
         { return (Id == START_PAGE_FILE_LIST_CLEAR); }
     /// @}
@@ -226,7 +222,7 @@ public:
     void SetAppHeaderStyle(const wxStartPageAppHeaderStyle style) noexcept
         { m_appHeaderStyle = style; }
     /// @returns The color of the left side of the start page.
-    wxNODISCARD
+    [[nodiscard]]
     wxColour GetButtonAreaBackgroundColor() const noexcept
         { return m_buttonAreaBackgroundColor; }
     /// @brief Sets the color of the left side of the start page.
@@ -237,7 +233,7 @@ public:
             { m_buttonAreaBackgroundColor = color; }
         }
     /// @returns The color of the right side of the start page.
-    wxNODISCARD
+    [[nodiscard]]
     wxColour GetMRUBackgroundColor() const noexcept
         { return m_MRUBackgroundColor; }
     /// @brief Sets the color of the right side of the start page.
@@ -255,7 +251,7 @@ private:
             m_icon(icon), m_label(label)
             {}
         wxStartPageButton() = default;
-        wxNODISCARD
+        [[nodiscard]]
         bool IsOk() const
             { return m_label.length() > 0; }
         wxRect m_rect;
@@ -275,7 +271,7 @@ private:
     /// @returns The number of items in the MRU list.
     /// @note This is the number of files in the list,
     ///     not including the "clear file list" button.
-    wxNODISCARD
+    [[nodiscard]]
     size_t GetMRUFileCount() const noexcept
         {
         // the last item is the "clear file list" button, so don't count that
@@ -304,32 +300,32 @@ private:
 
     /// @returns The number of items in the MRU list
     ///     (including the "clear file list" button).
-    wxNODISCARD
+    [[nodiscard]]
     size_t GetMRUFileAndClearButtonCount() const noexcept
         { return m_fileButtons.size(); }
     /// @returns The padding height around the labels.
-    wxNODISCARD
+    [[nodiscard]]
     wxCoord GetLabelPaddingHeight() const
         { return wxSizerFlags::GetDefaultBorder(); }
     /// @returns The padding width around the labels.
-    wxNODISCARD
+    [[nodiscard]]
     wxCoord GetLabelPaddingWidth() const
         { return wxSizerFlags::GetDefaultBorder(); }
     /// @returns The padding at the top of the control.
-    wxNODISCARD
+    [[nodiscard]]
     wxCoord GetTopBorder() const
         { return wxSizerFlags::GetDefaultBorder() * 4; }
     /// @returns The left border around the icons/labels.
-    wxNODISCARD
+    [[nodiscard]]
     wxCoord GetLeftBorder() const
         { return wxSizerFlags::GetDefaultBorder() * 4; }
     /// @returns The size for the app logo
-    wxNODISCARD
+    [[nodiscard]]
     wxSize GetAppLogoSize() const
         { return FromDIP(wxSize(64, 64)); }
     /// @returns The button size, which will be smaller if there
     ///     are numerous buttons.
-    wxNODISCARD
+    [[nodiscard]]
     wxSize GetButtonSize() const
         {
         return FromDIP(m_buttons.size() > MAX_BUTTONS_SMALL_SIZE ?
@@ -337,19 +333,19 @@ private:
         }
     /// @returns The size of an icon scaled to 16x16,
     ///     with label padding above and below it.
-    wxNODISCARD
+    [[nodiscard]]
     wxCoord GetMRUButtonHeight() const noexcept
         { return m_mruButtonHeight; }
-    wxNODISCARD
+    [[nodiscard]]
     wxString GetClearFileListLabel() const
         { return _(L"\u267B Clear file list..."); }
-    wxNODISCARD
+    [[nodiscard]]
     wxString GetRecentLabel() const
         { return _(L"Recent"); }
     void DrawHighlight(wxDC& dc, const wxRect rect, const wxColour color) const;
     void CalcButtonStart(wxDC& dc);
     void CalcMRUColumnHeaderHeight(wxDC& dc);
-    wxNODISCARD
+    [[nodiscard]]
     wxString FormatGreeting() const;
     /// @brief Determines whether a color is dark.
     /// @details "Dark" is defined as luminance being less than 50% and
@@ -359,7 +355,7 @@ private:
     ///     be considered not dark.
     /// @param color The color to review.
     /// @returns @c true if the color is dark.
-    wxNODISCARD
+    [[nodiscard]]
     static bool IsDark(const wxColour& color)
         {
         assert(color.IsOk() && L"Invalid color passed to IsDark()!");
@@ -375,7 +371,7 @@ private:
     /// @param shadeOrTintValue How much to lighten or darken a color
     ///      (should be between @c 0.0 to @c 1.0.)
     /// @returns The shaded or tinted color.
-    wxNODISCARD
+    [[nodiscard]]
     static wxColour ShadeOrTint(const wxColour& color,
                                             const double shadeOrTintValue = 0.2)
         {
@@ -387,7 +383,7 @@ private:
     ///     against the specified color.
     /// @param color The color to contrast against to see if white or black should go on it.
     /// @returns Black or white; whichever contrasts better against @c color.
-    wxNODISCARD
+    [[nodiscard]]
     static wxColour BlackOrWhiteContrast(const wxColour& color)
         { return (IsDark(color) ? *wxWHITE : *wxBLACK); }
 
