@@ -16,6 +16,7 @@
 #include <wx/dir.h>
 #include <wx/stdpaths.h>
 #include <wx/bmpbndl.h>
+#include <wx/uilocale.h>
 #include "../startpage.h"
 
 // Define a new application type, each program should derive a class from wxApp
@@ -57,6 +58,8 @@ bool MyApp::OnInit()
 {
     if ( !wxApp::OnInit() )
         return false;
+
+    wxUILocale::UseDefault();
 
     SetAppName(L"Start Page Demo");
 
