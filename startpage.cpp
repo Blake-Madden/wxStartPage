@@ -101,7 +101,7 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
             wxStandardPaths::Get().GetUserDir(wxStandardPathsBase::Dir::Dir_Downloads),
             _(L"Downloads"));
         // replace slashes with guillemets (makes it look fancier)
-        path.Replace(wxFileName::GetPathSeparator(), L" \x00BB ", true);
+        path.Replace(wxFileName::GetPathSeparator(), L" \u00BB ", true);
         return path;
         };
 
