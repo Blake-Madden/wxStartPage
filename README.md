@@ -31,6 +31,7 @@ customizable buttons on the left.
 - Customizable theming.
 - Supports dark mode.
 - Supports HiDPI displays.
+- Fully internationalized (messages are available via *gettext*).
 
 Dark theme:
 
