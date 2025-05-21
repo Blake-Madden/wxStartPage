@@ -706,7 +706,8 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                                 // truncate the path is necessary
                                 (m_fileButtons[i].m_label.length() <= 75) ?
                                 m_fileButtons[i].m_label :
-                                (m_fileButtons[i].m_label.substr(0, 75) + L"..."),
+                                // TRANSLATORS: "..." implies a truncated file path.
+                                (m_fileButtons[i].m_label.substr(0, 75) + _(L"...")),
                                 wxPoint(fileLabelRect.GetLeft() +
                                         GetLabelPaddingWidth() +
                                         fileIcon.GetWidth(),
