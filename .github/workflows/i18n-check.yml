@@ -12,7 +12,7 @@ jobs:
 
       - name: install quneiform
         run: |
-             git clone https://github.com/Blake-Madden/quneiform.git --recurse-submodules
+             git clone https://github.com/eclipse-quneiform/quneiform.git --recurse-submodules
              cd quneiform
              cmake ./
              make -j4
@@ -22,7 +22,7 @@ jobs:
         run: |
              ./quneiform/bin/quneiform ./ --ignore=quneiform -q --enable=allI18N,allCodeFormatting -o wxSPresults.txt
              cat wxSPresults.txt
-             
+
       - name: print output
         run: |
              REPORTFILE=./wxSPresults.txt
