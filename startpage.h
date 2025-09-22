@@ -322,14 +322,14 @@ private:
     /// @returns The size for the app logo
     [[nodiscard]]
     wxSize GetAppLogoSize() const
-        { return FromDIP(wxSize(64, 64)); }
+        { return FromDIP(wxSize{ 64, 64 }); }
     /// @returns The button size, which will be smaller if there
     ///     are numerous buttons.
     [[nodiscard]]
     wxSize GetButtonSize() const
         {
         return FromDIP(m_buttons.size() > MAX_BUTTONS_SMALL_SIZE ?
-                       wxSize(16, 16) : wxSize(32, 32));
+            wxSize{ 16, 16 } : wxSize{ 32, 32 });
         }
     /// @returns The size of an icon scaled to 16x16,
     ///     with label padding above and below it.
@@ -373,7 +373,7 @@ private:
     /// @returns The shaded or tinted color.
     [[nodiscard]]
     static wxColour ShadeOrTint(const wxColour& color,
-                                            const double shadeOrTintValue = 0.2)
+                                const double shadeOrTintValue = 0.2)
         {
         return (IsDark(color) ?
             color.ChangeLightness(100 + static_cast<int>(shadeOrTintValue * 100)) :
@@ -385,7 +385,7 @@ private:
     /// @returns Black or white; whichever contrasts better against @c color.
     [[nodiscard]]
     static wxColour BlackOrWhiteContrast(const wxColour& color)
-        { return (IsDark(color) ? *wxWHITE : *wxBLACK); }
+        { return (IsDark(color) ? wxColour{ 255, 255, 255 } : wxColour{ 0, 0, 0 }); }
 
     wxCoord m_buttonWidth{ 0 };
     wxCoord m_buttonHeight{ 0 };
@@ -406,7 +406,7 @@ private:
     wxString m_toolTip;
     wxString m_productDescription;
     wxColour m_buttonAreaBackgroundColor{ 145, 168, 208 };
-    wxColour m_MRUBackgroundColor{ *wxWHITE };
+    wxColour m_MRUBackgroundColor{ 255, 255, 255 };
     wxString m_userName{ wxGetUserName() };
     };
 

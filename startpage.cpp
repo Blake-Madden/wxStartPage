@@ -48,7 +48,7 @@ wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
 void wxStartPage::DrawHighlight(wxDC& dc, const wxRect rect,
                                 const wxColour color) const
     {
-    wxDCPenChanger pc(dc, *wxLIGHT_GREY_PEN);
+    wxDCPenChanger pc{ dc, wxColour{ 211, 211, 211 } };
     if (m_style == wxStartPageStyle::wxStartPage3D)
         {
         // fill with the color
@@ -456,7 +456,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
 
     // draw the MRU files area
         {
-        wxDCPenChanger pc(dc, *wxTRANSPARENT_PEN);
+        wxDCPenChanger pc(dc, wxColour{ 0, 0, 0, 0 });
         wxDCBrushChanger bc(dc, GetMRUBackgroundColor());
         dc.DrawRectangle(filesArea);
         // if areas have the same color, then draw a contrasting line between them
@@ -540,7 +540,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             if (activeButton == ActiveButtonType::FileActionButton)
                 {
                 // highlight just the border so that it looks like a UI button
-                wxDCBrushChanger bdc(dc, *wxTRANSPARENT_BRUSH);
+                wxDCBrushChanger bdc(dc, wxColour{ 0, 0, 0, 0 });
                 wxDCPenChanger pdc(dc,
                     wxPen(ShadeOrTint(GetMRUBackgroundColor(), 0.4), FromDIP(2)));
                 dc.DrawRectangle(buttonBorderRect);
