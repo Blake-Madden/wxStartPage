@@ -56,7 +56,7 @@ wxIMPLEMENT_APP(MyApp);
 //---------------------------------------------------
 bool MyApp::OnInit()
 {
-    if ( !wxApp::OnInit() )
+    if (!wxApp::OnInit())
         return false;
 
     wxUILocale::UseDefault();
@@ -64,7 +64,7 @@ bool MyApp::OnInit()
     SetAppName(L"Start Page Demo");
 
     // create the main application window
-    MyFrame *frame = new MyFrame(_(L"Start Page Demo"));
+    MyFrame* frame = new MyFrame(_(L"Start Page Demo"));
     frame->Show(true);
 
     return true;
@@ -77,14 +77,14 @@ bool MyApp::OnInit()
 // frame constructor
 //---------------------------------------------------
 MyFrame::MyFrame(const wxString& title)
-       : wxFrame(nullptr, wxID_ANY, title)
+    : wxFrame(nullptr, wxID_ANY, title)
 {
     SetSize(FromDIP(wxSize(900, 700)));
 
     const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
     SetIcon(
         wxBitmapBundle::FromSVGFile(appDir + L"/res/x-office-document.svg", wxSize(64, 64)).
-            GetIcon(wxSize(64, 64)));
+        GetIcon(wxSize(64, 64)));
 
     wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 
@@ -97,12 +97,12 @@ MyFrame::MyFrame(const wxString& title)
     wxArrayString mruFiles;
     wxDir dir;
     dir.GetAllFiles(wxStandardPaths::Get().GetDocumentsDir(),
-                    &mruFiles, "*.pdf", wxDIR_FILES);
+        &mruFiles, "*.pdf", wxDIR_FILES);
 
     // construct the start page with the file list and app logo
     m_startPage = new wxStartPage(this, wxID_ANY, mruFiles,
         wxBitmapBundle::FromSVGFile(appDir + L"/res/x-office-document.svg",
-                                    FromDIP(wxSize(64, 64))));
+            FromDIP(wxSize(64, 64))));
 
     // By default, the application name and its logo are shown on the left
     // (above the custom buttons). Uncomment the following to turn this off:
@@ -117,7 +117,7 @@ MyFrame::MyFrame(const wxString& title)
         _(L"Visit the wxWidgets Website"));
     m_aboutButtonID = m_startPage->AddButton(
         wxBitmapBundle::FromSVGFile(appDir + L"/res/jean_victor_balin_unknown_green.svg",
-                                    FromDIP(wxSize(64, 64))),
+            FromDIP(wxSize(64, 64))),
         _(L"About"));
     m_exitButtonID = m_startPage->AddButton(wxART_QUIT, _(L"Exit"));
 
@@ -126,22 +126,22 @@ MyFrame::MyFrame(const wxString& title)
        This can be changed (or turned off) via SetGreetingStyle()
        and SetCustomGreeting(). Uncomment the following to see an example:*/
 
-    // m_startPage->SetCustomGreeting(_(L"Welcome to the Demonstration!"));
+       // m_startPage->SetCustomGreeting(_(L"Welcome to the Demonstration!"));
 
-    /* The visual effect when the buttons are moused over can also
-       be customized. Uncomment the following to use a glassy, 3D look
-       for the buttons:*/
+       /* The visual effect when the buttons are moused over can also
+          be customized. Uncomment the following to use a glassy, 3D look
+          for the buttons:*/
 
-    // m_startPage->SetStyle(wxStartPageStyle::wxStartPage3D);
+          // m_startPage->SetStyle(wxStartPageStyle::wxStartPage3D);
 
-    /* By default, the start page will use either a light blue & white
-       theme or a dark theme (depending on the app's settings).
-       Uncomment the following to apply a different theme:*/
+          /* By default, the start page will use either a light blue & white
+             theme or a dark theme (depending on the app's settings).
+             Uncomment the following to apply a different theme:*/
 
-    // m_startPage->SetButtonAreaBackgroundColor(wxColour("#FF69B4"));
-    // m_startPage->SetMRUBackgroundColor(wxColour("#FFB6DA"));
+             // m_startPage->SetButtonAreaBackgroundColor(wxColour("#FF69B4"));
+             // m_startPage->SetMRUBackgroundColor(wxColour("#FFB6DA"));
 
-    // bind our event handler to the start page's buttons
+             // bind our event handler to the start page's buttons
     Bind(wxEVT_STARTPAGE_CLICKED, &MyFrame::OnStartPageClick, this);
 
     // finally, add the start page to the frame
@@ -162,30 +162,32 @@ void MyFrame::OnStartPageClick(wxCommandEvent& event)
         if (m_aboutButtonID == event.GetId())
         {
             wxMessageBox(wxString::Format
-                 (
-                    _(L"Welcome to wxStartPage demo\n"
-                       "running with %s\nunder %s."),
-                    wxVERSION_STRING,
-                    wxGetOsDescription()
-                 ),
-                 _(L"About wxStartPage demo"),
-                 wxOK | wxICON_INFORMATION,
-                 this);
+            (
+                _(L"Welcome to wxStartPage demo\n"
+                    "running with %s\nunder %s."),
+                wxVERSION_STRING,
+                wxGetOsDescription()
+            ),
+                _(L"About wxStartPage demo"),
+                wxOK | wxICON_INFORMATION,
+                this);
         }
         // the file open button was clicked
         else if (m_fileOpenButtonID == event.GetId())
         {
             wxFileDialog fd(this, _(L"Open a File"));
             if (fd.ShowModal() == wxID_CANCEL)
-                { return; }
+            {
+                return;
+            }
             wxMessageBox(wxString::Format
-                 (
-                    _(L"You selected '%s'."),
-                    fd.GetFilename()
-                 ),
-                 _(L"File Open"),
-                 wxOK | wxICON_INFORMATION,
-                 this);
+            (
+                _(L"You selected '%s'."),
+                fd.GetFilename()
+            ),
+                _(L"File Open"),
+                wxOK | wxICON_INFORMATION,
+                this);
         }
         else if (m_wxWebsiteButtonID == event.GetId())
         {
