@@ -413,18 +413,18 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 const wxDCFontChanger fc(dc, m_logoFont);
                 dc.GetTextExtent(wxTheApp->GetAppName(), &textWidth, &textHeight);
                 dc.DrawText(wxTheApp->GetAppName(),
-                            GetLeftBorder()+appLogo.GetScaledWidth()+GetLabelPaddingWidth(),
-                            GetTopBorder()+((appLogo.GetScaledHeight()/2)-(textHeight/2)));
+                            GetLeftBorder()+appLogo.GetLogicalWidth()+GetLabelPaddingWidth(),
+                            GetTopBorder()+((appLogo.GetLogicalHeight()/2)-(textHeight/2)));
                 }
             if (!m_productDescription.empty())
                 {
                 dc.DrawText(m_productDescription,
                             (GetLeftBorder()) + ((m_buttonWidth/2) - (appDescWidth/2)),
-                            GetTopBorder() + std::max<wxCoord>(appLogo.GetScaledHeight(),textHeight) +
+                            GetTopBorder() + std::max<wxCoord>(appLogo.GetLogicalHeight(),textHeight) +
                             GetLabelPaddingHeight());
                 }
             const auto lineY = GetTopBorder() +
-                            std::max<wxCoord>(appLogo.GetScaledHeight(), textHeight) +
+                            std::max<wxCoord>(appLogo.GetLogicalHeight(), textHeight) +
                             appDescHeight + GetLabelPaddingWidth();
             dc.DrawLine(wxPoint((2*GetLeftBorder()),lineY),
                         wxPoint(m_buttonWidth, lineY));
