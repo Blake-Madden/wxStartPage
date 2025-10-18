@@ -8,20 +8,18 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WXSTART_PAGE_H__
-#define __WXSTART_PAGE_H__
+#ifndef WXSTART_PAGE_H
+#define  WXSTART_PAGE_H
 
-#include <wx/wx.h>
-#include <wx/window.h>
-#include <wx/filename.h>
-#include <wx/dcbuffer.h>
-#include <wx/dcgraph.h>
-#include <wx/artprov.h>
-#include <wx/settings.h>
-#include <wx/stdpaths.h>
-#include <vector>
 #include <algorithm>
 #include <cassert>
+#include <utility>
+#include <vector>
+#include <wx/artprov.h>
+#include <wx/dcgraph.h>
+#include <wx/filename.h>
+#include <wx/window.h>
+#include <wx/wx.h>
 
 wxDECLARE_EVENT(wxEVT_STARTPAGE_CLICKED, wxCommandEvent);
 
@@ -39,7 +37,7 @@ enum class wxStartPageGreetingStyle
     {
     wxDynamicGreeting,             /*!<Greeting based on the time of day (e.g., "Good morning").
                                    (This is the default.)*/
-    wxDynamicGreetingWithUserName, /* Same as wxDynamicGreeting, but shows the user name also.*/
+    wxDynamicGreetingWithUserName, /* Same as wxDynamicGreeting, but shows the username also.*/
     wxCustomGreeting,              /*!<User-defined greeting.*/
     wxNoGreeting                   /*!<No greeting.*/
     };
@@ -57,7 +55,7 @@ enum class wxStartPageAppHeaderStyle
     customizable buttons on the left.
 
     Modified dates are shown next to each file in the MRU list. These dates
-    are shown in a human readable format
+    are shown in a human-readable format
     (e.g., "Just now", "12 minutes ago", "Yesterday", "Tues at 1:07 PM").
     Times are included for dates within the current week;
     otherwise, only the date is shown. The year is only shown if the date
@@ -97,7 +95,7 @@ public:
     explicit wxStartPage(wxWindow* parent, wxWindowID id = wxID_ANY,
         const wxArrayString& mruFiles = wxArrayString{},
         const wxBitmapBundle& logo = wxBitmapBundle{},
-        const wxString& productDescription = wxString{});
+        wxString productDescription = wxString{});
     /// @private
     wxStartPage() = delete;
     /// @private
@@ -129,7 +127,7 @@ public:
     /// @sa GetButtonID().
     wxWindowID AddButton(const wxBitmapBundle& bmp, const wxString& label)
         {
-        m_buttons.push_back(wxStartPageButton(bmp, label));
+        m_buttons.emplace_back(bmp, label);
         return ID_BUTTON_ID_START + (m_buttons.size() - 1);
         }
     /// @brief Adds a feature button on the left side.
@@ -166,27 +164,27 @@ public:
             wxNOT_FOUND :
             m_buttons[buttonIndex].m_id;
         }
-    /// @returns @c true if @c Id is and ID for one of the custom buttons on the left.
-    /// @param Id The ID from a @c wxEVT_STARTPAGE_CLICKED event after a
+    /// @returns @c true if @c id is and ID for one of the custom buttons on the left.
+    /// @param id The ID from a @c wxEVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
     [[nodiscard]]
-    bool IsCustomButtonId(const wxWindowID Id) const noexcept
+    bool IsCustomButtonId(const wxWindowID id) const noexcept
         {
-        return (Id >= ID_BUTTON_ID_START &&
-                static_cast<size_t>(Id) < ID_BUTTON_ID_START + m_buttons.size());
+        return (id >= ID_BUTTON_ID_START &&
+                static_cast<size_t>(id) < ID_BUTTON_ID_START + m_buttons.size());
         }
-    /// @returns @c true if @c Id is an ID within the MRU list.
-    /// @param Id The ID from a @c wxEVT_STARTPAGE_CLICKED event after a
+    /// @returns @c true if @c id is an ID within the MRU list.
+    /// @param id The ID from a @c wxEVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
     [[nodiscard]]
-    constexpr bool IsFileId(const wxWindowID Id) const noexcept
-        { return (Id >= ID_FILE_ID_START && Id < START_PAGE_FILE_LIST_CLEAR); }
-    /// @returns @c true if @c Id is the "Clear file list" button.
-    /// @param Id The ID from a @c wxEVT_STARTPAGE_CLICKED event after a
+    constexpr static bool IsFileId(const wxWindowID id) noexcept
+        { return (id >= ID_FILE_ID_START && id < START_PAGE_FILE_LIST_CLEAR); }
+    /// @returns @c true if @c id is the "Clear file list" button.
+    /// @param id The ID from a @c wxEVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
     [[nodiscard]]
-    constexpr bool IsFileListClearId(const wxWindowID Id) const noexcept
-        { return (Id == START_PAGE_FILE_LIST_CLEAR); }
+    constexpr static bool IsFileListClearId(const wxWindowID id) noexcept
+        { return (id == START_PAGE_FILE_LIST_CLEAR); }
     /// @}
 
     /// @name Style Functions
@@ -210,7 +208,7 @@ public:
         m_greetingStyle = wxStartPageGreetingStyle::wxCustomGreeting;
         }
     /// @brief Sets the name to display when style is set to @c wxDynamicGreetingWithUserName.
-    /// @param name The user name to use.
+    /// @param name The username to use.
     void SetUserName(wxString name)
         { m_userName = std::move(name); }
     /** @brief How to display the application name and icon
@@ -244,13 +242,13 @@ public:
 private:
     struct wxStartPageButton
         {
-        wxStartPageButton(const wxBitmapBundle& icon, const wxString& label) :
-            m_icon(icon), m_label(label)
+        wxStartPageButton(const wxBitmapBundle& icon, wxString label) :
+            m_icon(icon), m_label(std::move(label))
             {}
         wxStartPageButton() = default;
         [[nodiscard]]
         bool IsOk() const
-            { return m_label.length() > 0; }
+            { return !m_label.empty(); }
         wxRect m_rect;
         wxBitmapBundle m_icon;
         wxString m_label;
@@ -272,14 +270,14 @@ private:
     size_t GetMRUFileCount() const noexcept
         {
         // the last item is the "clear file list" button, so don't count that
-        return m_fileButtons.size() > 0 ?
+        return !m_fileButtons.empty() ?
             m_fileButtons.size() - 1 :
             0;
         }
 
     void OnResize(wxSizeEvent& WXUNUSED(event));
     void OnPaintWindow(wxPaintEvent& WXUNUSED(event));
-    void OnMouseChange(wxMouseEvent& event);
+    void OnMouseChange(const wxMouseEvent& event);
     void OnMouseClick(wxMouseEvent& event);
     void OnMouseLeave(wxMouseEvent& WXUNUSED(event));
 
@@ -302,19 +300,19 @@ private:
         { return m_fileButtons.size(); }
     /// @returns The padding height around the labels.
     [[nodiscard]]
-    wxCoord GetLabelPaddingHeight() const
+    static wxCoord GetLabelPaddingHeight()
         { return wxSizerFlags::GetDefaultBorder(); }
     /// @returns The padding width around the labels.
     [[nodiscard]]
-    wxCoord GetLabelPaddingWidth() const
+    static wxCoord GetLabelPaddingWidth()
         { return wxSizerFlags::GetDefaultBorder(); }
     /// @returns The padding at the top of the control.
     [[nodiscard]]
-    wxCoord GetTopBorder() const
+    static wxCoord GetTopBorder()
         { return wxSizerFlags::GetDefaultBorder() * 4; }
     /// @returns The left border around the icons/labels.
     [[nodiscard]]
-    wxCoord GetLeftBorder() const
+    static wxCoord GetLeftBorder()
         { return wxSizerFlags::GetDefaultBorder() * 4; }
     /// @returns The size for the app logo
     [[nodiscard]]
@@ -345,12 +343,12 @@ private:
     wxCoord GetMRUButtonHeight() const noexcept
         { return m_mruButtonHeight; }
     [[nodiscard]]
-    wxString GetClearFileListLabel() const
+    static wxString GetClearFileListLabel()
         { return _(L"\u267B Clear file list..."); }
     [[nodiscard]]
-    wxString GetRecentLabel() const
+    static wxString GetRecentLabel()
         { return _(L"Recent"); }
-    void DrawHighlight(wxDC& dc, const wxRect rect, const wxColour color) const;
+    void DrawHighlight(wxDC& dc, const wxRect rect, const wxColour& color) const;
     void CalcButtonStart(wxDC& dc);
     void CalcMRUColumnHeaderHeight(wxDC& dc);
     [[nodiscard]]
@@ -420,4 +418,4 @@ private:
 
 /** @}*/
 
-#endif //__WXSTART_PAGE_H__
+#endif // WXSTART_PAGE_H

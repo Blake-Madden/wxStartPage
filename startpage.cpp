@@ -7,6 +7,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "startpage.h"
+#include <wx/dcbuffer.h>
+#include <wx/stdpaths.h>
+#include <algorithm>
+#include <utility>
 
 wxDEFINE_EVENT(wxEVT_STARTPAGE_CLICKED, wxCommandEvent);
 
@@ -14,21 +18,21 @@ wxDEFINE_EVENT(wxEVT_STARTPAGE_CLICKED, wxCommandEvent);
 wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
                          const wxArrayString& mruFiles /*= wxArrayString{}*/,
                          const wxBitmapBundle& logo /*= wxBitmapBundle{}*/,
-                         const wxString& productDescription /*= wxString{}*/)
+                         wxString productDescription /*= wxString{}*/)
         : wxWindow(parent, id, wxDefaultPosition, wxDefaultSize,
                    wxFULL_REPAINT_ON_RESIZE, L"wxStartPage"),
           m_logoFont(wxFontInfo(
               wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).
               GetFractionalPointSize() * 1.5)),
           m_logo(logo),
-          m_productDescription(productDescription)
+          m_productDescription(std::move(productDescription))
     {
     // Size of an icon scaled to 32x32, with label padding above and below it.
     // Note that Realise will adjust this later more intelligently.
     m_buttonHeight = GetButtonSize().GetHeight() + (2 * GetLabelPaddingHeight());
     m_buttonWidth = FromDIP(wxSize(200, 200)).GetWidth();
 
-    SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+    wxWindow::SetBackgroundStyle(wxBG_STYLE_CUSTOM);
     SetMRUList(mruFiles);
 
     if (wxSystemSettings::GetAppearance().IsDark())
@@ -46,9 +50,9 @@ wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
 
 //---------------------------------------------------
 void wxStartPage::DrawHighlight(wxDC& dc, const wxRect rect,
-                                const wxColour color) const
+                                const wxColour& color) const
     {
-    wxDCPenChanger pc{ dc, wxColour{ 211, 211, 211 } };
+    const wxDCPenChanger pc{ dc, wxColour{ 211, 211, 211 } };
     if (m_style == wxStartPageStyle::wxStartPage3D)
         {
         // fill with the color
@@ -65,7 +69,7 @@ void wxStartPage::DrawHighlight(wxDC& dc, const wxRect rect,
         }
     else
         {
-        wxDCBrushChanger bc(dc, color);
+        const wxDCBrushChanger bc(dc, color);
         dc.DrawRectangle(rect);
         }
     }
@@ -152,10 +156,10 @@ wxString wxStartPage::FormatGreeting() const
     {
     if (m_greetingStyle == wxStartPageGreetingStyle::wxNoGreeting)
         { return wxString{}; }
-    else if (m_greetingStyle == wxStartPageGreetingStyle::wxCustomGreeting)
+    if (m_greetingStyle == wxStartPageGreetingStyle::wxCustomGreeting)
         { return m_customGreeting; }
-    else if (m_greetingStyle == wxStartPageGreetingStyle::wxDynamicGreetingWithUserName &&
-        m_userName.length())
+    if (m_greetingStyle == wxStartPageGreetingStyle::wxDynamicGreetingWithUserName &&
+        !m_userName.empty())
         {
         const auto currentHour{ wxDateTime::Now().GetHour() };
         return currentHour < 12 ?
@@ -164,21 +168,17 @@ wxString wxStartPage::FormatGreeting() const
             wxString::Format(_(L"Good afternoon, %s"), m_userName) :
             wxString::Format(_(L"Good evening, %s"), m_userName);
         }
-    else
-        {
-        const auto currentHour{ wxDateTime::Now().GetHour() };
-        return currentHour < 12 ?
-            _(L"Good morning") :
-            currentHour < 17 ?
-            _(L"Good afternoon") :
-            _(L"Good evening");
-        }
+
+    const auto currentHour{ wxDateTime::Now().GetHour() };
+    return currentHour < 12 ? _(L"Good morning") :
+           currentHour < 17 ? _(L"Good afternoon") :
+                              _(L"Good evening");
     }
 
 //---------------------------------------------------
 void wxStartPage::CalcMRUColumnHeaderHeight(wxDC& dc)
     {
-    wxDCFontChanger fc(dc, dc.GetFont().Larger().Larger().Bold());
+    const wxDCFontChanger fc(dc, dc.GetFont().Larger().Larger().Bold());
         m_fileColumnHeaderHeight = dc.GetTextExtent(GetRecentLabel()).GetHeight() +
             (2 * GetLabelPaddingHeight());
 
@@ -186,7 +186,7 @@ void wxStartPage::CalcMRUColumnHeaderHeight(wxDC& dc)
             (2 * GetLabelPaddingHeight());
 
     const auto greeting{ FormatGreeting() };
-    if (greeting.length())
+    if (!greeting.empty())
         {
         m_fileColumnHeaderHeight += dc.GetTextExtent(greeting).GetHeight() +
             (2 * GetLabelPaddingHeight());
@@ -199,7 +199,7 @@ void wxStartPage::CalcButtonStart(wxDC& dc)
     wxCoord appNameWidth{ 0 }, appNameHeight{ 0 },
             appDescWidth{ 0 }, appDescHeight{ 0 };
         {
-        wxDCFontChanger fc(dc, m_logoFont);
+        const wxDCFontChanger fc(dc, m_logoFont);
         dc.GetTextExtent(wxTheApp->GetAppName(), &appNameWidth, &appNameHeight);
         }
 
@@ -213,7 +213,7 @@ void wxStartPage::CalcButtonStart(wxDC& dc)
             GetTopBorder() + (2 * GetLabelPaddingHeight()) +
             std::max(appNameHeight, GetAppLogoSize().GetHeight()) :
             GetTopBorder() + (2 * GetLabelPaddingHeight()) + appNameHeight;
-        if (m_productDescription.length())
+        if (!m_productDescription.empty())
             {
             dc.GetTextExtent(m_productDescription, &appDescWidth, &appDescHeight);
             m_buttonsStart += appDescHeight + (2 * GetLabelPaddingHeight());
@@ -229,14 +229,14 @@ void wxStartPage::OnResize(wxSizeEvent& WXUNUSED(event))
     wxCoord appNameWidth{ 0 }, appNameHeight{ 0 },
             appDescWidth{ 0 }, appDescHeight{ 0 };
         {
-        wxDCFontChanger fc(dc, m_logoFont);
+        const wxDCFontChanger fc(dc, m_logoFont);
         dc.GetTextExtent(wxTheApp->GetAppName(), &appNameWidth, &appNameHeight);
         }
 
     CalcButtonStart(dc);
     CalcMRUColumnHeaderHeight(dc);
 
-    if (m_productDescription.length())
+    if (!m_productDescription.empty())
         {
         dc.GetTextExtent(m_productDescription, &appDescWidth, &appDescHeight);
         m_buttonsStart += appDescHeight + (2 * GetLabelPaddingHeight());
@@ -250,7 +250,7 @@ void wxStartPage::OnResize(wxSizeEvent& WXUNUSED(event))
              (appNameWidth + GetAppLogoSize().GetWidth()+(2*GetLabelPaddingWidth())) :
               appNameWidth + (2*GetLabelPaddingWidth())));
 
-        wxDCFontChanger fc(dc, m_buttons.size() > MAX_BUTTONS_SMALL_SIZE ?
+        const wxDCFontChanger fc(dc, m_buttons.size() > MAX_BUTTONS_SMALL_SIZE ?
                                dc.GetFont() :
                                dc.GetFont().Larger());
         wxCoord textWidth{ 0 }, textHeight{ 0 };
@@ -285,12 +285,12 @@ void wxStartPage::OnResize(wxSizeEvent& WXUNUSED(event))
 
     // calculate MRU info
         {
-        wxDCFontChanger fc(dc, dc.GetFont().Larger());
-        if (m_fileButtons.size())
+        const wxDCFontChanger fc(dc, dc.GetFont().Larger());
+        if (!m_fileButtons.empty())
             {
-            auto line2TextSz = dc.GetTextExtent(m_fileButtons[0].m_label);
-            wxDCFontChanger fc2(dc, wxFont(dc.GetFont()).MakeLarger());
-            auto line1TextSz = dc.GetTextExtent(m_fileButtons[0].m_label);
+            const auto line2TextSz = dc.GetTextExtent(m_fileButtons[0].m_label);
+            const wxDCFontChanger fc2(dc, wxFont(dc.GetFont()).MakeLarger());
+            const auto line1TextSz = dc.GetTextExtent(m_fileButtons[0].m_label);
 
             // enough space for the text (label and path) height
             // (or icon, whichever is larger) and some padding around it
@@ -344,7 +344,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     wxRect greetingRect{ fileColumnHeader }, recentRect{ fileColumnHeader };
 
     const auto greeting{ FormatGreeting() };
-    if (greeting.length())
+    if (!greeting.empty())
         {
         greetingRect.SetHeight(fileColumnHeader.GetHeight()/2);
         recentRect.SetTop(greetingRect.GetBottom());
@@ -366,7 +366,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             }
         // the "clear file list" button
             {
-            wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeLarger());
+            const wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeLarger());
             const auto clearButtonSize = dc.GetTextExtent(GetClearFileListLabel());
             m_fileButtons[GetMRUFileAndClearButtonCount() - 1].m_rect =
                 wxRect(filesArea.GetLeft() + FromDIP(1),
@@ -394,13 +394,13 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     if (m_appHeaderStyle != wxStartPageAppHeaderStyle::wxStartPageNoHeader)
         {
         wxCoord appDescWidth{ 0 }, appDescHeight{ 0 };
-        if (m_productDescription.length())
+        if (!m_productDescription.empty())
             {
             dc.GetTextExtent(m_productDescription, &appDescWidth, &appDescHeight);
             appDescHeight += (2 * GetLabelPaddingHeight());
             }
-        wxDCTextColourChanger cc(dc, buttonAreaFontColor);
-        wxDCPenChanger pc(dc, buttonAreaFontColor);
+        const wxDCTextColourChanger cc(dc, buttonAreaFontColor);
+        const wxDCPenChanger pc(dc, buttonAreaFontColor);
         wxCoord textWidth{ 0 }, textHeight{ 0 };
         wxBitmap appLogo = m_logo.GetBitmap(ScaleToContentSize(GetAppLogoSize()));
         appLogo.SetScaleFactor(GetContentScaleFactor());
@@ -410,13 +410,13 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             dc.DrawBitmap(appLogo, GetLeftBorder(), GetTopBorder());
             // draw with larger font
                 {
-                wxDCFontChanger fc(dc, m_logoFont);
+                const wxDCFontChanger fc(dc, m_logoFont);
                 dc.GetTextExtent(wxTheApp->GetAppName(), &textWidth, &textHeight);
                 dc.DrawText(wxTheApp->GetAppName(),
                             GetLeftBorder()+appLogo.GetScaledWidth()+GetLabelPaddingWidth(),
                             GetTopBorder()+((appLogo.GetScaledHeight()/2)-(textHeight/2)));
                 }
-            if (m_productDescription.length())
+            if (!m_productDescription.empty())
                 {
                 dc.DrawText(m_productDescription,
                             (GetLeftBorder()) + ((m_buttonWidth/2) - (appDescWidth/2)),
@@ -433,14 +433,14 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             {
             // draw with larger font
                 {
-                wxDCFontChanger fc(dc, m_logoFont);
+                const wxDCFontChanger fc(dc, m_logoFont);
                 dc.GetTextExtent(wxTheApp->GetAppName(), &textWidth, &textHeight);
                 // centering looks better when there is no logo
                 dc.DrawText(wxTheApp->GetAppName(),
                             (buttonsArea.GetWidth() - textWidth) * 0.5,
                             GetTopBorder() + GetLabelPaddingHeight());
                 }
-            if (m_productDescription.length())
+            if (!m_productDescription.empty())
                 {
                 dc.DrawText(m_productDescription,
                            (GetLeftBorder())+((m_buttonWidth/2) - (appDescWidth/2)),
@@ -457,21 +457,21 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
 
     // draw the MRU files area
         {
-        wxDCPenChanger pc(dc, wxColour{ 0, 0, 0, 0 });
-        wxDCBrushChanger bc(dc, GetMRUBackgroundColor());
+        const wxDCPenChanger pc(dc, wxColour{ 0, 0, 0, 0 });
+        const wxDCBrushChanger bc(dc, GetMRUBackgroundColor());
         dc.DrawRectangle(filesArea);
         // if areas have the same color, then draw a contrasting line between them
         if (GetMRUBackgroundColor() == GetButtonAreaBackgroundColor())
             {
-            wxDCPenChanger pc2(dc, ShadeOrTint(GetMRUBackgroundColor()));
+            const wxDCPenChanger pc2(dc, ShadeOrTint(GetMRUBackgroundColor()));
             dc.DrawLine(filesArea.GetTopLeft(), filesArea.GetBottomLeft());
             }
         }
     // draw the greeting
         {
-        wxDCFontChanger fc(dc, dc.GetFont().Larger().Larger().Bold());
-        wxDCTextColourChanger tcc(dc, mruFontColor);
-        wxDCPenChanger pc(dc, mruSeparatorLineColor);
+        const wxDCFontChanger fc(dc, dc.GetFont().Larger().Larger().Bold());
+        const wxDCTextColourChanger tcc(dc, mruFontColor);
+        const wxDCPenChanger pc(dc, mruSeparatorLineColor);
         dc.SetClippingRegion(greetingRect);
         dc.DrawLabel(greeting,
             wxRect(greetingRect).Deflate(GetLabelPaddingWidth()),
@@ -482,9 +482,9 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         }
     // draw MRU column header
         {
-        wxDCFontChanger fc(dc, dc.GetFont().Larger().Larger());
-        wxDCTextColourChanger tcc(dc, mruFontColor);
-        wxDCPenChanger pc(dc,
+        const wxDCFontChanger fc(dc, dc.GetFont().Larger().Larger());
+        const wxDCTextColourChanger tcc(dc, mruFontColor);
+        const wxDCPenChanger pc(dc,
             wxPen(wxPenInfo(mruSeparatorLineColor,
                             FromDIP(2)).Cap(wxPenCap::wxCAP_BUTT)));
         dc.SetClippingRegion(recentRect);
@@ -517,7 +517,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 // (if a button under the MRU list)
                 m_toolTip = (i == (GetMRUFileAndClearButtonCount() -1 )) ?
                     wxString{} :
-                    m_fileButtons[i].m_fullFilePath.length() ?
+                    !m_fileButtons[i].m_fullFilePath.empty() ?
                     m_fileButtons[i].m_fullFilePath : m_fileButtons[i].m_label;
                 buttonBorderRect = m_fileButtons[i].m_rect;
                 activeButton = (i == (GetMRUFileAndClearButtonCount() - 1)) ?
@@ -541,8 +541,8 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             if (activeButton == ActiveButtonType::FileActionButton)
                 {
                 // highlight just the border so that it looks like a UI button
-                wxDCBrushChanger bdc(dc, wxColour{ 0, 0, 0, 0 });
-                wxDCPenChanger pdc(dc,
+                const wxDCBrushChanger bdc(dc, wxColour{ 0, 0, 0, 0 });
+                const wxDCPenChanger pdc(dc,
                     wxPen(ShadeOrTint(GetMRUBackgroundColor(), 0.4), FromDIP(2)));
                 dc.DrawRectangle(buttonBorderRect);
                 }
@@ -596,7 +596,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             wxString am, pm;
             wxDateTime::GetAmPmStrings(&am, &pm);
             wxString timeStr;
-            if (am.length() && pm.length())
+            if (!am.empty() && !pm.empty())
                 { timeStr = dt.Format(L"%I:%M %p").MakeUpper(); }
             else
                 { timeStr = dt.Format(L"%H:%M"); }
@@ -635,7 +635,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         decltype(wxSize::x) filePathLabelWidth{ 0 };
         decltype(wxSize::x) timeLabelWidth{ 0 };
             {
-            wxDCFontChanger fc(dc, wxFont(dc.GetFont()));
+            const wxDCFontChanger fc(dc, wxFont(dc.GetFont()));
             for (size_t i = 0; i < GetMRUFileCount(); ++i)
                 {
                 if (m_fileButtons[i].IsOk())
@@ -648,13 +648,11 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                             formatFileDateTime(modTime);
                         const wxSize timeStringSize =
                             dc.GetTextExtent(modTimeStr);
-                        if (timeLabelWidth < timeStringSize.GetWidth())
-                            { timeLabelWidth = timeStringSize.GetWidth(); }
+                        timeLabelWidth = std::max(timeLabelWidth, timeStringSize.GetWidth());
                         }
                     const wxSize filePathStringSize =
                         dc.GetTextExtent(fn.GetPath());
-                    if (filePathLabelWidth < filePathStringSize.GetWidth())
-                        { filePathLabelWidth = filePathStringSize.GetWidth(); }
+                    filePathLabelWidth = std::max(filePathLabelWidth, filePathStringSize.GetWidth());
                     }
                 }
             }
@@ -666,7 +664,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             {
             if (m_fileButtons[i].IsOk())
                 {
-                wxDCTextColourChanger tcc(dc,
+                const wxDCTextColourChanger tcc(dc,
                     m_activeButton == m_fileButtons[i].m_id ?
                     mruFontHoverColor : mruFontColor);
                 const wxRect fileLabelRect =
@@ -675,7 +673,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 // if the "clear file list" button
                 if (i == GetMRUFileAndClearButtonCount() - 1)
                     {
-                    wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeLarger());
+                    const wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeLarger());
                     dc.DrawLabel(m_fileButtons[i].m_label, fileLabelRect,
                                  wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL);
                     }
@@ -693,7 +691,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                         int nameHeight{ 0 };
                         // draw the filename
                             {
-                            wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeLarger());
+                            const wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeLarger());
                             nameHeight =
                                 dc.GetTextExtent(fn.GetFullName()).GetHeight();
                             dc.DrawText(fn.GetFullName(),
@@ -703,7 +701,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                             }
                         // draw the filepath
                             {
-                            wxDCTextColourChanger cc(dc, mruFontColor);
+                            const wxDCTextColourChanger cc(dc, mruFontColor);
                             dc.DrawText(
                                 // truncate the path is necessary
                                 (m_fileButtons[i].m_label.length() <= 75) ?
@@ -748,7 +746,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                     // draw separator line, unless this button is highlighted
                     if (m_activeButton != m_fileButtons[i].m_id)
                         {
-                        wxDCPenChanger pc(dc, mruSeparatorLineColor);
+                        const wxDCPenChanger pc(dc, mruSeparatorLineColor);
                         dc.DrawLine(m_fileButtons[i].m_rect.GetLeftBottom(),
                             m_fileButtons[i].m_rect.GetRightBottom());
                         }
@@ -762,14 +760,14 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         {
         const auto buttonIconSize = GetButtonSize();
         m_buttonHeight = buttonIconSize.GetHeight() + (2 * GetLabelPaddingHeight());
-        wxDCFontChanger fc(dc, m_buttons.size() > MAX_BUTTONS_SMALL_SIZE ?
+        const wxDCFontChanger fc(dc, m_buttons.size() > MAX_BUTTONS_SMALL_SIZE ?
                                dc.GetFont() :
                                dc.GetFont().Larger());
         for (const auto& button : m_buttons)
             {
             if (button.IsOk())
                 {
-                wxDCTextColourChanger cc(dc,
+                const wxDCTextColourChanger cc(dc,
                     m_activeButton == button.m_id ?
                     buttonAreaHoverFontColor : buttonAreaFontColor);
 
@@ -786,7 +784,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
     }
 
 //---------------------------------------------------
-void wxStartPage::OnMouseChange(wxMouseEvent& event)
+void wxStartPage::OnMouseChange(const wxMouseEvent& event)
     {
     // see which (if any) button was previously highlighted
     wxRect previousRect, currentRect;
@@ -818,7 +816,7 @@ void wxStartPage::OnMouseChange(wxMouseEvent& event)
             button.m_rect.Contains(event.GetX(), event.GetY()) )
             {
             m_activeButton = button.m_id;
-            // if its the same active button from before, then don't bother refreshing
+            // if it's the same active button from before, then don't bother refreshing
             if (previouslyActiveButton == m_activeButton)
                 { return; }
             // ...otherwise, just refresh the current and previous (if applicable) highlighted areas
