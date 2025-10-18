@@ -142,21 +142,18 @@ public:
     /// @sa GetButtonID().
     wxWindowID AddButton(const wxArtID& artId, const wxString& label)
         {
-        wxVector<wxBitmap> bmps;
-        bmps.push_back(
-            wxArtProvider::GetBitmap(artId, wxART_BUTTON, FromDIP(wxSize(16, 16))).
-            ConvertToImage());
-        bmps.push_back(
-            wxArtProvider::GetBitmap(artId, wxART_BUTTON, FromDIP(wxSize(32, 32))).
-            ConvertToImage());
-        bmps.push_back(
-            wxArtProvider::GetBitmap(artId, wxART_BUTTON, FromDIP(wxSize(64, 64))).
-            ConvertToImage());
-        bmps.push_back(
-            wxArtProvider::GetBitmap(artId, wxART_BUTTON, FromDIP(wxSize(128, 128))).
-            ConvertToImage());
-        m_buttons.push_back(wxStartPageButton(
-            wxBitmapBundle::FromBitmaps(bmps), label));
+        const wxVector<wxBitmap> bmps = {
+            wxArtProvider::GetBitmap(artId, wxART_BUTTON,
+                                     ScaleToContentSize(FromDIP(wxSize{ 16, 16 }))),
+            wxArtProvider::GetBitmap(artId, wxART_BUTTON,
+                                     ScaleToContentSize(FromDIP(wxSize{ 32, 32 }))),
+            wxArtProvider::GetBitmap(artId, wxART_BUTTON,
+                                     ScaleToContentSize(FromDIP(wxSize{ 64, 64 }))),
+            wxArtProvider::GetBitmap(artId, wxART_BUTTON,
+                                     ScaleToContentSize(FromDIP(wxSize{ 128, 128 })))
+        };
+
+        m_buttons.emplace_back(wxBitmapBundle::FromBitmaps(bmps), label);
         return ID_BUTTON_ID_START + (m_buttons.size() - 1);
         }
     /// @returns The ID of the given index into the custom button list,
@@ -330,6 +327,17 @@ private:
         {
         return FromDIP(m_buttons.size() > MAX_BUTTONS_SMALL_SIZE ?
             wxSize{ 16, 16 } : wxSize{ 32, 32 });
+        }
+    [[nodiscard]]
+    wxSize ScaleToContentSize(const wxSize sz) const
+        {
+        auto scaledSize{ sz };
+        // for Retina display
+        const double scaling = GetContentScaleFactor();
+
+        scaledSize = wxSize{static_cast<int>(std::lround(scaledSize.GetWidth() * scaling)),
+                            static_cast<int>(std::lround(scaledSize.GetHeight() * scaling)) };
+        return scaledSize;
         }
     /// @returns The size of an icon scaled to 16x16,
     ///     with label padding above and below it.

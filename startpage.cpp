@@ -402,7 +402,8 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         wxDCTextColourChanger cc(dc, buttonAreaFontColor);
         wxDCPenChanger pc(dc, buttonAreaFontColor);
         wxCoord textWidth{ 0 }, textHeight{ 0 };
-        wxBitmap appLogo = m_logo.GetBitmap(GetAppLogoSize()).ConvertToImage();
+        wxBitmap appLogo = m_logo.GetBitmap(ScaleToContentSize(GetAppLogoSize()));
+        appLogo.SetScaleFactor(GetContentScaleFactor());
         if (m_appHeaderStyle == wxStartPageAppHeaderStyle::wxStartPageAppNameAndLogo &&
             appLogo.IsOk())
             {
@@ -412,18 +413,18 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 wxDCFontChanger fc(dc, m_logoFont);
                 dc.GetTextExtent(wxTheApp->GetAppName(), &textWidth, &textHeight);
                 dc.DrawText(wxTheApp->GetAppName(),
-                            GetLeftBorder()+appLogo.GetWidth()+GetLabelPaddingWidth(),
-                            GetTopBorder()+((appLogo.GetHeight()/2)-(textHeight/2)));
+                            GetLeftBorder()+appLogo.GetScaledWidth()+GetLabelPaddingWidth(),
+                            GetTopBorder()+((appLogo.GetScaledHeight()/2)-(textHeight/2)));
                 }
             if (m_productDescription.length())
                 {
                 dc.DrawText(m_productDescription,
                             (GetLeftBorder()) + ((m_buttonWidth/2) - (appDescWidth/2)),
-                            GetTopBorder() + std::max(appLogo.GetHeight(),textHeight) +
+                            GetTopBorder() + std::max<wxCoord>(appLogo.GetScaledHeight(),textHeight) +
                             GetLabelPaddingHeight());
                 }
             const auto lineY = GetTopBorder() +
-                            std::max(appLogo.GetHeight(), textHeight) +
+                            std::max<wxCoord>(appLogo.GetScaledHeight(), textHeight) +
                             appDescHeight + GetLabelPaddingWidth();
             dc.DrawLine(wxPoint((2*GetLeftBorder()),lineY),
                         wxPoint(m_buttonWidth, lineY));
@@ -659,7 +660,8 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
             }
 
         // begin drawing them
-        wxBitmap fileIcon = m_logo.GetBitmap(FromDIP(wxSize(32, 32))).ConvertToImage();
+        wxBitmap fileIcon = m_logo.GetBitmap(ScaleToContentSize(wxSize{ 32, 32 }));
+        fileIcon.SetScaleFactor(GetContentScaleFactor());
         for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
             {
             if (m_fileButtons[i].IsOk())
@@ -686,7 +688,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                         dc.DrawBitmap(fileIcon,
                             wxPoint(fileLabelRect.GetLeft(),
                                     fileLabelRect.GetTop() +
-                                        ((fileLabelRect.GetHeight() - fileIcon.GetHeight()) / 2)
+                                        ((fileLabelRect.GetHeight() - fileIcon.GetLogicalHeight()) / 2)
                                     ));
                         int nameHeight{ 0 };
                         // draw the filename
@@ -696,7 +698,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                                 dc.GetTextExtent(fn.GetFullName()).GetHeight();
                             dc.DrawText(fn.GetFullName(),
                                 wxPoint(fileLabelRect.GetLeft() +
-                                        GetLabelPaddingWidth() + fileIcon.GetWidth(),
+                                        GetLabelPaddingWidth() + fileIcon.GetLogicalWidth(),
                                         fileLabelRect.GetTop()));
                             }
                         // draw the filepath
@@ -710,12 +712,12 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                                 (m_fileButtons[i].m_label.substr(0, 75) + _(L"...")),
                                 wxPoint(fileLabelRect.GetLeft() +
                                         GetLabelPaddingWidth() +
-                                        fileIcon.GetWidth(),
+                                        fileIcon.GetLogicalWidth(),
                                         fileLabelRect.GetTop() + nameHeight +
                                         (GetLabelPaddingHeight()/2)));
                             }
                         // draw the modified time off to the side
-                        if ((fileIcon.GetWidth() +
+                        if ((fileIcon.GetLogicalWidth() +
                              GetLabelPaddingWidth() +
                              filePathLabelWidth + timeLabelWidth) <
                             fileLabelRect.GetWidth())
@@ -773,7 +775,9 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
 
                 // draw it
                 dc.SetClippingRegion(button.m_rect);
-                dc.DrawLabel(button.m_label, button.m_icon.GetBitmap(buttonIconSize).ConvertToImage(),
+                wxBitmap bmp = button.m_icon.GetBitmap(ScaleToContentSize(buttonIconSize));
+                bmp.SetScaleFactor(GetContentScaleFactor());
+                dc.DrawLabel(button.m_label, bmp,
                     wxRect(button.m_rect).Deflate(GetLabelPaddingWidth()));
                 dc.DestroyClippingRegion();
                 }
