@@ -78,7 +78,7 @@ void wxStartPage::DrawHighlight(wxDC& dc, const wxRect rect,
 void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
     {
     m_fileButtons.clear();
-    m_fileButtons.resize(mruFiles.GetCount() + 1);
+    m_fileButtons.reserve(mruFiles.GetCount() + 1);
     if (mruFiles.GetCount() == 0)
         { return; }
 
