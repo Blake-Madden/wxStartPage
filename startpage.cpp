@@ -110,14 +110,13 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
         };
 
     // load files that can be found
-    size_t buttonCount{ 0 };
     std::vector<wxString> files;
     for (const auto& file: mruFiles)
         {
         if (wxFileName::FileExists(file))
             { files.push_back(file); }
         // no more than 9 items here, not enough real estate
-        if (buttonCount == MAX_FILE_BUTTONS)
+        if (files.size() == MAX_FILE_BUTTONS)
             { break; }
         }
     // no files, so no need for file buttons or the clear all button
@@ -139,6 +138,7 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
         });
 
     // connect the file paths to the buttons in the MRU list
+	size_t buttonCount{ 0 };
     for (buttonCount = 0; buttonCount < files.size(); ++buttonCount)
         {
         m_fileButtons[buttonCount].m_id = ID_FILE_ID_START + buttonCount;
