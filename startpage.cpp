@@ -179,11 +179,8 @@ wxString wxStartPage::FormatGreeting() const
 void wxStartPage::CalcMRUColumnHeaderHeight(wxDC& dc)
     {
     const wxDCFontChanger fc(dc, dc.GetFont().Larger().Larger().Bold());
-        m_fileColumnHeaderHeight = dc.GetTextExtent(GetRecentLabel()).GetHeight() +
-            (2 * GetLabelPaddingHeight());
-
     m_fileColumnHeaderHeight = dc.GetTextExtent(GetRecentLabel()).GetHeight() +
-            (2 * GetLabelPaddingHeight());
+        (2 * GetLabelPaddingHeight());
 
     const auto greeting{ FormatGreeting() };
     if (!greeting.empty())
@@ -236,11 +233,6 @@ void wxStartPage::OnResize(wxSizeEvent& WXUNUSED(event))
     CalcButtonStart(dc);
     CalcMRUColumnHeaderHeight(dc);
 
-    if (!m_productDescription.empty())
-        {
-        dc.GetTextExtent(m_productDescription, &appDescWidth, &appDescHeight);
-        m_buttonsStart += appDescHeight + (2 * GetLabelPaddingHeight());
-        }
     // calculate how wide the buttons/top label need to be fit their content
     const auto buttonIconSize = GetButtonSize();
     m_buttonHeight = buttonIconSize.GetHeight() + (2 * GetLabelPaddingHeight());
