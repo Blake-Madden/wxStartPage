@@ -138,7 +138,7 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
         });
 
     // connect the file paths to the buttons in the MRU list
-	size_t buttonCount{ 0 };
+    size_t buttonCount{ 0 };
     for (buttonCount = 0; buttonCount < files.size(); ++buttonCount)
         {
         m_fileButtons[buttonCount].m_id = ID_FILE_ID_START + buttonCount;
@@ -223,8 +223,7 @@ void wxStartPage::OnResize(wxSizeEvent& WXUNUSED(event))
     {
     wxClientDC dc(this);
 
-    wxCoord appNameWidth{ 0 }, appNameHeight{ 0 },
-            appDescWidth{ 0 }, appDescHeight{ 0 };
+    wxCoord appNameWidth{ 0 }, appNameHeight{ 0 };
         {
         const wxDCFontChanger fc(dc, m_logoFont);
         dc.GetTextExtent(wxTheApp->GetAppName(), &appNameWidth, &appNameHeight);
@@ -398,7 +397,7 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         if (m_appHeaderStyle == wxStartPageAppHeaderStyle::wxStartPageAppNameAndLogo &&
             appLogo.IsOk())
             {
-			appLogo.SetScaleFactor(GetContentScaleFactor());
+            appLogo.SetScaleFactor(GetContentScaleFactor());
             dc.DrawBitmap(appLogo, GetLeftBorder(), GetTopBorder());
             // draw with larger font
                 {
@@ -651,9 +650,9 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
 
         // begin drawing them
         wxBitmap fileIcon = m_logo.GetBitmap(ScaleToContentSize(wxSize{ 32, 32 }));
-		if (fileIcon.IsOk())
+        if (fileIcon.IsOk())
             {
-    	    fileIcon.SetScaleFactor(GetContentScaleFactor());
+            fileIcon.SetScaleFactor(GetContentScaleFactor());
             }
         for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
             {
@@ -770,15 +769,16 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 dc.SetClippingRegion(button.m_rect);
                 wxBitmap bmp = button.m_icon.GetBitmap(ScaleToContentSize(buttonIconSize));
                 if (bmp.IsOk())
-    				{
-                	bmp.SetScaleFactor(GetContentScaleFactor());
-                	dc.DrawLabel(button.m_label, bmp,
-                    	wxRect(button.m_rect).Deflate(GetLabelPaddingWidth()));
-					}
+                    {
+                    bmp.SetScaleFactor(GetContentScaleFactor());
+                    dc.DrawLabel(button.m_label, bmp,
+                        wxRect{ button.m_rect }.Deflate(GetLabelPaddingWidth()));
+                    }
                 else
-    				{
-    				dc.DrawLabel(button.m_label, rect, wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL);
-    				}
+                    {
+                    dc.DrawLabel(button.m_label, button.m_rect,
+                        wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL);
+                    }
                 dc.DestroyClippingRegion();
                 }
             }
