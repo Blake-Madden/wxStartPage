@@ -9,7 +9,7 @@
 @{*/
 
 #ifndef WXSTART_PAGE_H
-#define  WXSTART_PAGE_H
+#define WXSTART_PAGE_H
 
 #include <algorithm>
 #include <cassert>
@@ -160,7 +160,7 @@ public:
     [[nodiscard]]
     wxWindowID GetButtonID(const size_t buttonIndex) const noexcept
         {
-        return buttonIndex > m_buttons.size() ?
+        return buttonIndex >= m_buttons.size() ?
             wxNOT_FOUND :
             m_buttons[buttonIndex].m_id;
         }

@@ -78,7 +78,7 @@ void wxStartPage::DrawHighlight(wxDC& dc, const wxRect rect,
 void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
     {
     m_fileButtons.clear();
-    m_fileButtons.resize(mruFiles.GetCount() + 1);
+    m_fileButtons.reserve(mruFiles.GetCount() + 1);
     if (mruFiles.GetCount() == 0)
         { return; }
 
@@ -110,14 +110,13 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
         };
 
     // load files that can be found
-    size_t buttonCount{ 0 };
     std::vector<wxString> files;
     for (const auto& file: mruFiles)
         {
         if (wxFileName::FileExists(file))
             { files.push_back(file); }
         // no more than 9 items here, not enough real estate
-        if (buttonCount == MAX_FILE_BUTTONS)
+        if (files.size() == MAX_FILE_BUTTONS)
             { break; }
         }
     // no files, so no need for file buttons or the clear all button
@@ -139,6 +138,7 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
         });
 
     // connect the file paths to the buttons in the MRU list
+	size_t buttonCount{ 0 };
     for (buttonCount = 0; buttonCount < files.size(); ++buttonCount)
         {
         m_fileButtons[buttonCount].m_id = ID_FILE_ID_START + buttonCount;
@@ -179,11 +179,8 @@ wxString wxStartPage::FormatGreeting() const
 void wxStartPage::CalcMRUColumnHeaderHeight(wxDC& dc)
     {
     const wxDCFontChanger fc(dc, dc.GetFont().Larger().Larger().Bold());
-        m_fileColumnHeaderHeight = dc.GetTextExtent(GetRecentLabel()).GetHeight() +
-            (2 * GetLabelPaddingHeight());
-
     m_fileColumnHeaderHeight = dc.GetTextExtent(GetRecentLabel()).GetHeight() +
-            (2 * GetLabelPaddingHeight());
+        (2 * GetLabelPaddingHeight());
 
     const auto greeting{ FormatGreeting() };
     if (!greeting.empty())
@@ -236,11 +233,6 @@ void wxStartPage::OnResize(wxSizeEvent& WXUNUSED(event))
     CalcButtonStart(dc);
     CalcMRUColumnHeaderHeight(dc);
 
-    if (!m_productDescription.empty())
-        {
-        dc.GetTextExtent(m_productDescription, &appDescWidth, &appDescHeight);
-        m_buttonsStart += appDescHeight + (2 * GetLabelPaddingHeight());
-        }
     // calculate how wide the buttons/top label need to be fit their content
     const auto buttonIconSize = GetButtonSize();
     m_buttonHeight = buttonIconSize.GetHeight() + (2 * GetLabelPaddingHeight());
@@ -403,10 +395,10 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
         const wxDCPenChanger pc(dc, buttonAreaFontColor);
         wxCoord textWidth{ 0 }, textHeight{ 0 };
         wxBitmap appLogo = m_logo.GetBitmap(ScaleToContentSize(GetAppLogoSize()));
-        appLogo.SetScaleFactor(GetContentScaleFactor());
         if (m_appHeaderStyle == wxStartPageAppHeaderStyle::wxStartPageAppNameAndLogo &&
             appLogo.IsOk())
             {
+			appLogo.SetScaleFactor(GetContentScaleFactor());
             dc.DrawBitmap(appLogo, GetLeftBorder(), GetTopBorder());
             // draw with larger font
                 {
@@ -659,7 +651,10 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
 
         // begin drawing them
         wxBitmap fileIcon = m_logo.GetBitmap(ScaleToContentSize(wxSize{ 32, 32 }));
-        fileIcon.SetScaleFactor(GetContentScaleFactor());
+		if (fileIcon.IsOk())
+            {
+    	    fileIcon.SetScaleFactor(GetContentScaleFactor());
+            }
         for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
             {
             if (m_fileButtons[i].IsOk())
@@ -774,9 +769,16 @@ void wxStartPage::OnPaintWindow(wxPaintEvent& WXUNUSED(event))
                 // draw it
                 dc.SetClippingRegion(button.m_rect);
                 wxBitmap bmp = button.m_icon.GetBitmap(ScaleToContentSize(buttonIconSize));
-                bmp.SetScaleFactor(GetContentScaleFactor());
-                dc.DrawLabel(button.m_label, bmp,
-                    wxRect(button.m_rect).Deflate(GetLabelPaddingWidth()));
+                if (bmp.IsOk())
+    				{
+                	bmp.SetScaleFactor(GetContentScaleFactor());
+                	dc.DrawLabel(button.m_label, bmp,
+                    	wxRect(button.m_rect).Deflate(GetLabelPaddingWidth()));
+					}
+                else
+    				{
+    				dc.DrawLabel(button.m_label, rect, wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL);
+    				}
                 dc.DestroyClippingRegion();
                 }
             }
@@ -922,7 +924,7 @@ void wxStartPage::OnMouseClick(wxMouseEvent& event)
                     SetMRUList(wxArrayString{});
                     Refresh();
                     Update();
-                    // give the caller a change to clear the file history
+                    // give the caller a chance to clear the file history
                     // from their doc manager and whatnot
                     wxCommandEvent cevent(wxEVT_STARTPAGE_CLICKED, GetId());
                     cevent.SetId(START_PAGE_FILE_LIST_CLEAR);
