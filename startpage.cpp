@@ -138,17 +138,16 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
         });
 
     // connect the file paths to the buttons in the MRU list
-    size_t buttonCount{ 0 };
-    for (buttonCount = 0; buttonCount < files.size(); ++buttonCount)
+    m_fileButtons.resize(files.size() + 1);
+    for (size_t buttonCount = 0; buttonCount < files.size(); ++buttonCount)
         {
         m_fileButtons[buttonCount].m_id = ID_FILE_ID_START + buttonCount;
         m_fileButtons[buttonCount].m_fullFilePath = files[buttonCount];
         m_fileButtons[buttonCount].m_label = simplifyFilePath(files[buttonCount]);
         }
 
-    m_fileButtons[buttonCount].m_id = START_PAGE_FILE_LIST_CLEAR;
-    m_fileButtons[buttonCount++].m_label = GetClearFileListLabel();
-    m_fileButtons.resize(buttonCount);
+    m_fileButtons.back().m_id = START_PAGE_FILE_LIST_CLEAR;
+    m_fileButtons.back().m_label = GetClearFileListLabel();
     }
 
 //---------------------------------------------------
