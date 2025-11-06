@@ -3,13 +3,16 @@ wxStartPage
 
 <img src="img/RegularTheme.png" width="75%" />
 
-[![Linux Build](https://github.com/Blake-Madden/wxStartPage/actions/workflows/unix%20build.yml/badge.svg)](https://github.com/Blake-Madden/wxStartPage/actions/workflows/unix%20build.yml)
-[![macOS Build](https://github.com/Blake-Madden/wxStartPage/actions/workflows/macos-build.yml/badge.svg)](https://github.com/Blake-Madden/wxStartPage/actions/workflows/macos-build.yml)
+| Platforms  | Result |
+| ------------- | ------------- |
+| Linux  | [![Linux Build](https://github.com/Blake-Madden/wxStartPage/actions/workflows/unix%20build.yml/badge.svg)](https://github.com/Blake-Madden/wxStartPage/actions/workflows/unix%20build.yml) |
+| macOS  | [![macOS Build](https://github.com/Blake-Madden/wxStartPage/actions/workflows/macos-build.yml/badge.svg)](https://github.com/Blake-Madden/wxStartPage/actions/workflows/macos-build.yml) |
 
-[![cppcheck](https://github.com/Blake-Madden/wxStartPage/actions/workflows/cppcheck.yml/badge.svg)](https://github.com/Blake-Madden/wxStartPage/actions/workflows/cppcheck.yml)
-[![doxygen](https://github.com/Blake-Madden/wxStartPage/actions/workflows/doxygen.yml/badge.svg)](https://github.com/Blake-Madden/wxStartPage/actions/workflows/doxygen.yml)
-[![quneiform](https://github.com/Blake-Madden/wxStartPage/actions/workflows/i18n-check.yml/badge.svg)](https://github.com/Blake-Madden/wxStartPage/actions/workflows/i18n-check.yml)
-
+| Code Analyses  | Result |
+| ------------- | ------------- |
+| cppcheck | [![cppcheck](https://github.com/Blake-Madden/wxStartPage/actions/workflows/cppcheck.yml/badge.svg)](https://github.com/Blake-Madden/wxStartPage/actions/workflows/cppcheck.yml) |
+| Doxygen | [![doxygen](https://github.com/Blake-Madden/wxStartPage/actions/workflows/doxygen.yml/badge.svg)](https://github.com/Blake-Madden/wxStartPage/actions/workflows/doxygen.yml) | |
+| Quneiform | [![quneiform](https://github.com/Blake-Madden/wxStartPage/actions/workflows/i18n-check.yml/badge.svg)](https://github.com/Blake-Madden/wxStartPage/actions/workflows/i18n-check.yml)
 
 About
 =============================
