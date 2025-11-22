@@ -503,8 +503,7 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
             wxALIGN_CENTRE);
         dc.DestroyClippingRegion();
         auto midPoint = recentRect.GetLeftBottom();
-        midPoint.x += (recentRect.GetRightBottom().x -
-            wxRound(recentRect.GetLeftBottom().x) * 0.5);
+        midPoint.x += wxRound((recentRect.GetRightBottom().x - recentRect.GetLeftBottom().x) * 0.5);
         const wxSize recentTextSz{ dc.GetTextExtent(GetRecentLabel()) };
         dc.DrawLine(midPoint -
             wxSize(wxRound(recentTextSz.GetWidth() * 0.5), 0),
