@@ -42,7 +42,9 @@ private:
     wxWindowID m_exitButtonID{ wxID_ANY };
 };
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables,cppcoreguidelines-pro-type-static-cast-downcast)
 wxIMPLEMENT_APP(MyApp);
+// NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables,cppcoreguidelines-pro-type-static-cast-downcast)
 
 // ============================================================================
 // implementation
@@ -57,14 +59,16 @@ wxIMPLEMENT_APP(MyApp);
 bool MyApp::OnInit()
 {
     if (!wxApp::OnInit())
+    {
         return false;
+    }
 
     wxUILocale::UseDefault();
 
     SetAppName(L"Start Page Demo");
 
     // create the main application window
-    MyFrame* frame = new MyFrame(_(L"Start Page Demo"));
+    auto* frame = new MyFrame(_(L"Start Page Demo"));
     frame->Show(true);
 
     return true;
@@ -95,8 +99,7 @@ MyFrame::MyFrame(const wxString& title)
     // Normally, you would get this from your application's document history,
     // but for simplicity we will just look for PDF files in the documents folder.
     wxArrayString mruFiles;
-    wxDir dir;
-    dir.GetAllFiles(wxStandardPaths::Get().GetDocumentsDir(),
+    wxDir::GetAllFiles(wxStandardPaths::Get().GetDocumentsDir(),
         &mruFiles, "*.pdf", wxDIR_FILES);
 
     // construct the start page with the file list and app logo
@@ -199,7 +202,7 @@ void MyFrame::OnStartPageClick(wxCommandEvent& event)
         }
     }
     // something in the MRU list was clicked
-    else if (m_startPage->IsFileId(event.GetId()))
+    else if (wxStartPage::IsFileId(event.GetId()))
     {
         // Here, we could open the document in our application if
         // we are using a docview architecture. In this example,
@@ -207,7 +210,7 @@ void MyFrame::OnStartPageClick(wxCommandEvent& event)
         wxLaunchDefaultApplication(event.GetString());
     }
     // the "Clear file list" button for the MRU list was clicked
-    else if (m_startPage->IsFileListClearId(event.GetId()))
+    else if (wxStartPage::IsFileListClearId(event.GetId()))
     {
         // if we reach this point, then the list requested to clear
         // the MRU menu. This will clear the list on the start page,

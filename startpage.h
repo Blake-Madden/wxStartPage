@@ -28,26 +28,26 @@ wxDECLARE_EVENT(wxEVT_STARTPAGE_CLICKED, wxCommandEvent);
 
 /// @brief The appearance of the buttons on the start page.
 enum class wxStartPageStyle
-    {
+{
     wxStartPageFlat, /*!<Flat button appearance. (This is the default.)*/
     wxStartPage3D    /*!<3D button appearance.*/
-    };
+};
 /// @brief Which type of greeting to show in the start page banner.
 enum class wxStartPageGreetingStyle
-    {
+{
     wxDynamicGreeting,             /*!<Greeting based on the time of day (e.g., "Good morning").
                                    (This is the default.)*/
     wxDynamicGreetingWithUserName, /* Same as wxDynamicGreeting, but shows the username also.*/
     wxCustomGreeting,              /*!<User-defined greeting.*/
     wxNoGreeting                   /*!<No greeting.*/
-    };
+};
 /// @brief How to display in the application header (above the custom buttons)
 enum class wxStartPageAppHeaderStyle
-    {
+{
     wxStartPageAppNameAndLogo, /*!<The application name & logo. (This is the default.)*/
     wxStartPageAppName,        /*!<The application name.*/
     wxStartPageNoHeader        /*!<No application header.*/
-    };
+};
 
 /** @brief A wxWidgets landing page for an application.
 
@@ -80,7 +80,7 @@ enum class wxStartPageAppHeaderStyle
     - Calling IsFileListClearId() to see if the "Clear file list" button was clicked.
 */
 class wxStartPage final : public wxWindow
-    {
+{
 public:
     /** @brief Constructor.
         @param parent The parent window.
@@ -126,10 +126,10 @@ public:
     ///     @c wxEVT_STARTPAGE_CLICKED handler.
     /// @sa GetButtonID().
     wxWindowID AddButton(const wxBitmapBundle& bmp, const wxString& label)
-        {
+    {
         m_buttons.emplace_back(bmp, label);
         return ID_BUTTON_ID_START + (m_buttons.size() - 1);
-        }
+    }
     /// @brief Adds a feature button on the left side.
     /// @details A feature button can be something like
     ///     "Read the Help" or "Create a New Project."
@@ -139,7 +139,7 @@ public:
     ///     @c wxEVT_STARTPAGE_CLICKED handler.
     /// @sa GetButtonID().
     wxWindowID AddButton(const wxArtID& artId, const wxString& label)
-        {
+    {
         const wxVector<wxBitmap> bmps = {
             wxArtProvider::GetBitmap(artId, wxART_BUTTON,
                                      ScaleToContentSize(FromDIP(wxSize{ 16, 16 }))),
@@ -153,38 +153,42 @@ public:
 
         m_buttons.emplace_back(wxBitmapBundle::FromBitmaps(bmps), label);
         return ID_BUTTON_ID_START + (m_buttons.size() - 1);
-        }
+    }
     /// @returns The ID of the given index into the custom button list,
     ///     or @c wxNOT_FOUND if an invalid index is given.
     /// @param buttonIndex The index into the custom button list.
     [[nodiscard]]
     wxWindowID GetButtonID(const size_t buttonIndex) const noexcept
-        {
+    {
         return buttonIndex >= m_buttons.size() ?
             wxNOT_FOUND :
             m_buttons[buttonIndex].m_id;
-        }
+    }
     /// @returns @c true if @c id is and ID for one of the custom buttons on the left.
     /// @param id The ID from a @c wxEVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
     [[nodiscard]]
     bool IsCustomButtonId(const wxWindowID id) const noexcept
-        {
+    {
         return (id >= ID_BUTTON_ID_START &&
-                static_cast<size_t>(id) < ID_BUTTON_ID_START + m_buttons.size());
-        }
+            static_cast<size_t>(id) < ID_BUTTON_ID_START + m_buttons.size());
+    }
     /// @returns @c true if @c id is an ID within the MRU list.
     /// @param id The ID from a @c wxEVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
     [[nodiscard]]
     constexpr static bool IsFileId(const wxWindowID id) noexcept
-        { return (id >= ID_FILE_ID_START && id < START_PAGE_FILE_LIST_CLEAR); }
+    {
+        return (id >= ID_FILE_ID_START && id < START_PAGE_FILE_LIST_CLEAR);
+    }
     /// @returns @c true if @c id is the "Clear file list" button.
     /// @param id The ID from a @c wxEVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
     [[nodiscard]]
     constexpr static bool IsFileListClearId(const wxWindowID id) noexcept
-        { return (id == START_PAGE_FILE_LIST_CLEAR); }
+    {
+        return (id == START_PAGE_FILE_LIST_CLEAR);
+    }
     /// @}
 
     /// @name Style Functions
@@ -194,86 +198,105 @@ public:
     /// @brief Sets the appearance of the start page.
     /// @param style The style for the start page.
     void SetStyle(const wxStartPageStyle style) noexcept
-        { m_style = style; }
+    {
+        m_style = style;
+    }
     /// @brief Sets which type of greeting (if any) to display.
     /// @param style The greeting style for the start page.
     /// @sa SetCustomGreeting().
     void SetGreetingStyle(const wxStartPageGreetingStyle style) noexcept
-        { m_greetingStyle = style; }
+    {
+        m_greetingStyle = style;
+    }
     /// @brief Sets a custom greeting to display.
     /// @param greeting The custom greeting to use.
     void SetCustomGreeting(wxString greeting)
-        {
+    {
         m_customGreeting = std::move(greeting);
         m_greetingStyle = wxStartPageGreetingStyle::wxCustomGreeting;
-        }
+    }
     /// @brief Sets the name to display when style is set to @c wxDynamicGreetingWithUserName.
     /// @param name The username to use.
     void SetUserName(wxString name)
-        { m_userName = std::move(name); }
+    {
+        m_userName = std::move(name);
+    }
     /** @brief How to display the application name and icon
             above the custom buttons.
         @param style The style to use.*/
     void SetAppHeaderStyle(const wxStartPageAppHeaderStyle style) noexcept
-        { m_appHeaderStyle = style; }
+    {
+        m_appHeaderStyle = style;
+    }
     /// @returns The color of the left side of the start page.
     [[nodiscard]]
     wxColour GetButtonAreaBackgroundColor() const noexcept
-        { return m_buttonAreaBackgroundColor; }
+    {
+        return m_buttonAreaBackgroundColor;
+    }
     /// @brief Sets the color of the left side of the start page.
     /// @param color The color to use.
     void SetButtonAreaBackgroundColor(const wxColour& color) noexcept
-        {
+    {
         if (color.IsOk())
-            { m_buttonAreaBackgroundColor = color; }
+        {
+            m_buttonAreaBackgroundColor = color;
         }
+    }
     /// @returns The color of the right side of the start page.
     [[nodiscard]]
     wxColour GetMRUBackgroundColor() const noexcept
-        { return m_MRUBackgroundColor; }
+    {
+        return m_MRUBackgroundColor;
+    }
     /// @brief Sets the color of the right side of the start page.
     /// @param color The color to use.
     void SetMRUBackgroundColor(const wxColour& color) noexcept
-        {
+    {
         if (color.IsOk())
-            { m_MRUBackgroundColor = color; }
+        {
+            m_MRUBackgroundColor = color;
         }
+    }
     /// @}
 private:
     struct wxStartPageButton
-        {
+    {
         wxStartPageButton(const wxBitmapBundle& icon, wxString label) :
             m_icon(icon), m_label(std::move(label))
-            {}
+        {
+        }
         wxStartPageButton() = default;
         [[nodiscard]]
         bool IsOk() const
-            { return !m_label.empty(); }
+        {
+            return !m_label.empty();
+        }
         wxRect m_rect;
         wxBitmapBundle m_icon;
         wxString m_label;
         wxString m_fullFilePath;
         wxWindowID m_id{ wxNOT_FOUND };
-        };
+    };
 
     enum class ActiveButtonType
-        {
+    {
         CustomButton,
         FileButton,
         FileActionButton
-        };
+    };
 
     /// @returns The number of items in the MRU list.
     /// @note This is the number of files in the list,
     ///     not including the "clear file list" button.
     [[nodiscard]]
     size_t GetMRUFileCount() const noexcept
-        {
+    {
         // the last item is the "clear file list" button, so don't count that
         return !m_fileButtons.empty() ?
             m_fileButtons.size() - 1 :
             0;
-        }
+    }
 
     void OnResize(wxSizeEvent& WXUNUSED(event));
     void OnPaintWindow(wxPaintEvent& WXUNUSED(event));
@@ -297,57 +320,75 @@ private:
     ///     (including the "clear file list" button).
     [[nodiscard]]
     size_t GetMRUFileAndClearButtonCount() const noexcept
-        { return m_fileButtons.size(); }
+    {
+        return m_fileButtons.size();
+    }
     /// @returns The padding height around the labels.
     [[nodiscard]]
     static wxCoord GetLabelPaddingHeight()
-        { return wxSizerFlags::GetDefaultBorder(); }
+    {
+        return wxSizerFlags::GetDefaultBorder();
+    }
     /// @returns The padding width around the labels.
     [[nodiscard]]
     static wxCoord GetLabelPaddingWidth()
-        { return wxSizerFlags::GetDefaultBorder(); }
+    {
+        return wxSizerFlags::GetDefaultBorder();
+    }
     /// @returns The padding at the top of the control.
     [[nodiscard]]
     static wxCoord GetTopBorder()
-        { return wxSizerFlags::GetDefaultBorder() * 4; }
+    {
+        return wxSizerFlags::GetDefaultBorder() * 4;
+    }
     /// @returns The left border around the icons/labels.
     [[nodiscard]]
     static wxCoord GetLeftBorder()
-        { return wxSizerFlags::GetDefaultBorder() * 4; }
+    {
+        return wxSizerFlags::GetDefaultBorder() * 4;
+    }
     /// @returns The size for the app logo
     [[nodiscard]]
     wxSize GetAppLogoSize() const
-        { return FromDIP(wxSize{ 64, 64 }); }
+    {
+        return FromDIP(wxSize{ 64, 64 });
+    }
     /// @returns The button size, which will be smaller if there
     ///     are numerous buttons.
     [[nodiscard]]
     wxSize GetButtonSize() const
-        {
+    {
         return FromDIP(m_buttons.size() > MAX_BUTTONS_SMALL_SIZE ?
             wxSize{ 16, 16 } : wxSize{ 32, 32 });
-        }
+    }
     [[nodiscard]]
     wxSize ScaleToContentSize(const wxSize sz) const
-        {
+    {
         auto scaledSize{ sz };
         // for Retina display
         const double scaling = GetContentScaleFactor();
 
-        scaledSize = wxSize{static_cast<int>(std::lround(scaledSize.GetWidth() * scaling)),
+        scaledSize = wxSize{ static_cast<int>(std::lround(scaledSize.GetWidth() * scaling)),
                             static_cast<int>(std::lround(scaledSize.GetHeight() * scaling)) };
         return scaledSize;
-        }
+    }
     /// @returns The size of an icon scaled to 16x16,
     ///     with label padding above and below it.
     [[nodiscard]]
     wxCoord GetMRUButtonHeight() const noexcept
-        { return m_mruButtonHeight; }
+    {
+        return m_mruButtonHeight;
+    }
     [[nodiscard]]
     static wxString GetClearFileListLabel()
-        { return _(L"\u267B Clear file list..."); }
+    {
+        return _(L"\u267B Clear file list...");
+    }
     [[nodiscard]]
     static wxString GetRecentLabel()
-        { return _(L"Recent"); }
+    {
+        return _(L"Recent");
+    }
     void DrawHighlight(wxDC& dc, const wxRect rect, const wxColour& color) const;
     void CalcButtonStart(wxDC& dc);
     void CalcMRUColumnHeaderHeight(wxDC& dc);
@@ -363,12 +404,12 @@ private:
     /// @returns @c true if the color is dark.
     [[nodiscard]]
     static bool IsDark(const wxColour& color)
-        {
+    {
         assert(color.IsOk() && L"Invalid color passed to IsDark()!");
         return (color.IsOk() &&
-                color.Alpha() > 32 &&
-                color.GetLuminance() < 0.5);
-        }
+            color.Alpha() > 32 &&
+            color.GetLuminance() < 0.5);
+    }
     /// @brief Returns a darker (shaded) or lighter (tinted) version of a color,
     ///     depending on how dark it is to begin with.
     ///     For example, black will be returned as dark gray,
@@ -379,19 +420,21 @@ private:
     /// @returns The shaded or tinted color.
     [[nodiscard]]
     static wxColour ShadeOrTint(const wxColour& color,
-                                const double shadeOrTintValue = 0.2)
-        {
+        const double shadeOrTintValue = 0.2)
+    {
         return (IsDark(color) ?
             color.ChangeLightness(100 + static_cast<int>(shadeOrTintValue * 100)) :
             color.ChangeLightness(100 - static_cast<int>(shadeOrTintValue * 100)));
-        }
+    }
     /// @brief Returns either black or white, depending on which better contrasts
     ///     against the specified color.
     /// @param color The color to contrast against to see if white or black should go on it.
     /// @returns Black or white; whichever contrasts better against @c color.
     [[nodiscard]]
     static wxColour BlackOrWhiteContrast(const wxColour& color)
-        { return (IsDark(color) ? wxColour{ 255, 255, 255 } : wxColour{ 0, 0, 0 }); }
+    {
+        return (IsDark(color) ? wxColour{ 255, 255, 255 } : wxColour{ 0, 0, 0 });
+    }
 
     wxCoord m_buttonWidth{ 0 };
     wxCoord m_buttonHeight{ 0 };
@@ -401,10 +444,10 @@ private:
     wxWindowID m_activeButton{ wxNOT_FOUND };
     wxStartPageStyle m_style{ wxStartPageStyle::wxStartPageFlat };
     wxStartPageGreetingStyle m_greetingStyle
-        { wxStartPageGreetingStyle::wxDynamicGreetingWithUserName };
+    { wxStartPageGreetingStyle::wxDynamicGreetingWithUserName };
     wxString m_customGreeting;
     wxStartPageAppHeaderStyle m_appHeaderStyle
-        { wxStartPageAppHeaderStyle::wxStartPageAppNameAndLogo };
+    { wxStartPageAppHeaderStyle::wxStartPageAppNameAndLogo };
     wxFont m_logoFont;
     std::vector<wxStartPageButton> m_fileButtons;
     std::vector<wxStartPageButton> m_buttons;
@@ -414,7 +457,7 @@ private:
     wxColour m_buttonAreaBackgroundColor{ 145, 168, 208 };
     wxColour m_MRUBackgroundColor{ 255, 255, 255 };
     wxString m_userName{ wxGetUserName() };
-    };
+};
 
 /** @}*/
 
