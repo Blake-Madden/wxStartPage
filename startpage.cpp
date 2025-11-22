@@ -303,7 +303,7 @@ void wxStartPage::OnResize([[maybe_unused]] wxSizeEvent& event)
                     buttonIconSize.GetHeight()) +
                 (2 * GetLabelPaddingHeight()) +
                 // line space between file name and path
-                (GetLabelPaddingHeight() / 2);
+                wxRound(GetLabelPaddingHeight() * 0.5);
         }
     }
 }
@@ -350,9 +350,9 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
     const auto greeting{ FormatGreeting() };
     if (!greeting.empty())
     {
-        greetingRect.SetHeight(fileColumnHeader.GetHeight() / 2);
+        greetingRect.SetHeight(wxRound(fileColumnHeader.GetHeight() * 0.5));
         recentRect.SetTop(greetingRect.GetBottom());
-        recentRect.SetHeight(fileColumnHeader.GetHeight() / 2);
+        recentRect.SetHeight(wxRound(fileColumnHeader.GetHeight() * 0.5));
     }
     else
     {
@@ -422,12 +422,12 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
                 dc.DrawText(wxTheApp->GetAppName(),
                     GetLeftBorder() + appLogo.GetLogicalWidth() + GetLabelPaddingWidth(),
-                    GetTopBorder() + (wxRound(appLogo.GetLogicalHeight() / 2) - wxRound(textHeight / 2)));
+                    GetTopBorder() + (wxRound(appLogo.GetLogicalHeight() * 0.5) - wxRound(textHeight * 0.5)));
             }
             if (!m_productDescription.empty())
             {
                 dc.DrawText(m_productDescription,
-                    (GetLeftBorder()) + ((m_buttonWidth / 2) - (appDescWidth / 2)),
+                    (GetLeftBorder()) + (wxRound(m_buttonWidth * 0.5) - wxRound(appDescWidth * 0.5)),
                     GetTopBorder() + std::max<wxCoord>(appLogo.GetLogicalHeight(), textHeight) +
                     GetLabelPaddingHeight());
             }
@@ -453,7 +453,7 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
             if (!m_productDescription.empty())
             {
                 dc.DrawText(m_productDescription,
-                    (GetLeftBorder()) + ((m_buttonWidth / 2) - (appDescWidth / 2)),
+                    (GetLeftBorder()) + (wxRound(m_buttonWidth * 0.5) - wxRound(appDescWidth * 0.5)),
                     GetTopBorder() + textHeight + GetLabelPaddingHeight());
             }
             dc.DrawLine(wxPoint((2 * GetLeftBorder()),
@@ -504,12 +504,12 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
         dc.DestroyClippingRegion();
         auto midPoint = recentRect.GetLeftBottom();
         midPoint.x += (recentRect.GetRightBottom().x -
-            recentRect.GetLeftBottom().x) / 2;
+            wxRound(recentRect.GetLeftBottom().x) * 0.5);
         const wxSize recentTextSz{ dc.GetTextExtent(GetRecentLabel()) };
         dc.DrawLine(midPoint -
-            wxSize((recentTextSz.GetWidth() / 2), 0),
+            wxSize(wxRound(recentTextSz.GetWidth() * 0.5), 0),
             midPoint +
-            wxSize((recentTextSz.GetWidth() / 2), 0));
+            wxSize(wxRound(recentTextSz.GetWidth() * 0.5), 0));
     }
 
     [[maybe_unused]] const wxString currentToolTip = m_toolTip;
@@ -715,7 +715,7 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
                         dc.DrawBitmap(fileIcon,
                             wxPoint(fileLabelRect.GetLeft(),
                                 fileLabelRect.GetTop() +
-                                ((fileLabelRect.GetHeight() - fileIcon.GetLogicalHeight()) / 2)
+                                wxRound((fileLabelRect.GetHeight() - fileIcon.GetLogicalHeight()) * 0.5)
                             ));
                         int nameHeight{ 0 };
                         // draw the filename
@@ -741,7 +741,7 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
                                     GetLabelPaddingWidth() +
                                     fileIcon.GetLogicalWidth(),
                                     fileLabelRect.GetTop() + nameHeight +
-                                    (GetLabelPaddingHeight() / 2)));
+                                    wxRound(GetLabelPaddingHeight() * 0.5)));
                         }
                         // draw the modified time off to the side
                         if ((fileIcon.GetLogicalWidth() +
@@ -760,8 +760,8 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
                                     fileLabelRect.GetRight() -
                                     (timeLabelWidth + GetLabelPaddingHeight()),
                                     fileLabelRect.GetTop() +
-                                    ((fileLabelRect.GetHeight() / 2) -
-                                        (timeStringSize.GetHeight() / 2)));
+                                    (wxRound(fileLabelRect.GetHeight() * 0.5) -
+                                        wxRound(timeStringSize.GetHeight() * 0.5)));
                             }
                         }
                     }
