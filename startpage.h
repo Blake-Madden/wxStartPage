@@ -298,11 +298,11 @@ private:
             0;
     }
 
-    void OnResize(wxSizeEvent& WXUNUSED(event));
-    void OnPaintWindow(wxPaintEvent& WXUNUSED(event));
-    void OnMouseChange(const wxMouseEvent& event);
+    void OnResize([[maybe_unused]] wxSizeEvent& event);
+    void OnPaintWindow([[maybe_unused]] wxPaintEvent& event);
+    void OnMouseChange(wxMouseEvent& event);
     void OnMouseClick(wxMouseEvent& event);
-    void OnMouseLeave(wxMouseEvent& WXUNUSED(event));
+    void OnMouseLeave([[maybe_unused]] wxMouseEvent& event);
 
     static constexpr int MAX_BUTTONS_SMALL_SIZE = 8;
     static constexpr int MAX_FILE_BUTTONS = 9;
