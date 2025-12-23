@@ -820,7 +820,7 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
 }
 
 //---------------------------------------------------
-void wxStartPage::OnMouseChange(const wxMouseEvent& event)
+void wxStartPage::OnMouseChange(wxMouseEvent& event)
 {
     // see which (if any) button was previously highlighted
     wxRect previousRect, currentRect;
