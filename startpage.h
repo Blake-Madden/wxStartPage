@@ -1,5 +1,5 @@
 /** @addtogroup Controls
-    @date 2015-2023
+    @date 2015-2026
     @copyright Blake Madden
     @author Blake Madden
     @details This program is free software; you can redistribute it and/or modify
@@ -37,11 +37,11 @@ enum class wxStartPageGreetingStyle
 {
     wxDynamicGreeting,             /*!<Greeting based on the time of day (e.g., "Good morning").
                                    (This is the default.)*/
-    wxDynamicGreetingWithUserName, /* Same as wxDynamicGreeting, but shows the username also.*/
+    wxDynamicGreetingWithUserName, /*!<Same as wxDynamicGreeting, but shows the username also.*/
     wxCustomGreeting,              /*!<User-defined greeting.*/
     wxNoGreeting                   /*!<No greeting.*/
 };
-/// @brief How to display in the application header (above the custom buttons)
+/// @brief How to display the application name in the header (above the custom buttons).
 enum class wxStartPageAppHeaderStyle
 {
     wxStartPageAppNameAndLogo, /*!<The application name & logo. (This is the default.)*/
@@ -164,7 +164,7 @@ public:
             wxNOT_FOUND :
             m_buttons[buttonIndex].m_id;
     }
-    /// @returns @c true if @c id is and ID for one of the custom buttons on the left.
+    /// @returns @c true if @c id is an ID for one of the custom buttons on the left.
     /// @param id The ID from a @c wxEVT_STARTPAGE_CLICKED event after a
     ///     user clicks a button on the start page.
     [[nodiscard]]
@@ -368,8 +368,8 @@ private:
         // for Retina display
         const double scaling = GetContentScaleFactor();
 
-        scaledSize = wxSize{ static_cast<int>(std::lround(scaledSize.GetWidth() * scaling)),
-                            static_cast<int>(std::lround(scaledSize.GetHeight() * scaling)) };
+        scaledSize = wxSize{ wxRound(scaledSize.GetWidth() * scaling),
+                            wxRound(scaledSize.GetHeight() * scaling) };
         return scaledSize;
     }
     /// @returns The size of an icon scaled to 16x16,
@@ -389,7 +389,7 @@ private:
     {
         return _(L"Recent");
     }
-    void DrawHighlight(wxDC& dc, const wxRect rect, const wxColour& color) const;
+    void DrawHighlight(wxDC& dc, const wxRect& rect, const wxColour& color) const;
     void CalcButtonStart(wxDC& dc);
     void CalcMRUColumnHeaderHeight(wxDC& dc);
     [[nodiscard]]

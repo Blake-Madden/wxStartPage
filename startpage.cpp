@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Name:        startpage.cpp
 // Author:      Blake Madden
-// Copyright:   (c) 2005-2023 Blake Madden
+// Copyright:   (c) 2005-2026 Blake Madden
 // License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
 }
 
 //---------------------------------------------------
-void wxStartPage::DrawHighlight(wxDC& dc, const wxRect rect,
+void wxStartPage::DrawHighlight(wxDC& dc, const wxRect& rect,
     const wxColour& color) const
 {
     const wxDCPenChanger pc{ dc, wxColour{ 211, 211, 211 } };
@@ -78,8 +78,8 @@ void wxStartPage::DrawHighlight(wxDC& dc, const wxRect rect,
 void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
 {
     m_fileButtons.clear();
-    m_fileButtons.reserve(mruFiles.GetCount() + 1);
-    if (mruFiles.GetCount() == 0)
+    m_fileButtons.reserve(mruFiles.size() + 1);
+    if (mruFiles.IsEmpty())
     {
         return;
     }
