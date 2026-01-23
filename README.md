@@ -27,7 +27,8 @@ customizable buttons on the left.
   These dates are shown in a human readable format (e.g., "Just now", "12 minutes ago",
   "Yesterday", "Tues at 1:07 PM").
 - Human readable file paths are shown below the files (e.g., "Documents » Invoices")
-- Includes a "Clear file list" button beneath the MRU list.
+- Includes a "Clear File List" button beneath the MRU list.
+  (Clears the list only, doesn't delete the files.)
 - The application name & logo can be shown above the custom buttons.
 - A dynamic greeting (based on the time of day) is shown above the MRU list.
   This greeting is also customizable (e.g., can optionally include the user's name).
