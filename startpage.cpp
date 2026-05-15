@@ -1029,7 +1029,6 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
 
     // draw the custom button labels
     {
-        const auto buttonIconSize = GetButtonSize();
         m_buttonHeight = buttonIconSize.GetHeight() + (2 * GetLabelPaddingHeight());
         const wxDCFontChanger fc(dc, m_buttons.size() > MAX_BUTTONS_SMALL_SIZE ?
             dc.GetFont() :
