@@ -71,6 +71,7 @@ void wxStartPage::OnSetFocus(wxFocusEvent& event)
 //---------------------------------------------------
 void wxStartPage::OnKillFocus(wxFocusEvent& event)
 {
+    m_activeButton = wxNOT_FOUND;
     Refresh();
     event.Skip();
 }
@@ -1087,65 +1088,88 @@ void wxStartPage::OnMouseChange(wxMouseEvent& event)
     }
 
     const auto previouslyActiveButton{ m_activeButton };
-    m_activeButton = wxNOT_FOUND;
+    wxWindowID buttonUnderMouse{ wxNOT_FOUND };
+
     for (const auto& button : m_buttons)
     {
         if (button.IsOk() &&
             button.m_rect.Contains(event.GetX(), event.GetY()))
         {
-            m_activeButton = button.m_id;
-            // if it's the same active button from before, then don't bother refreshing
-            if (previouslyActiveButton == m_activeButton)
-            {
-                return;
-            }
-            // ...otherwise, just refresh the current and previous (if applicable) highlighted areas
-            currentRect = button.m_rect;
-            wxRect refreshRect = previousRect.IsEmpty() ?
-                currentRect :
-                previousRect.Union(currentRect);
-            refreshRect.Inflate(GetLabelPaddingHeight());
-            Refresh(true, &refreshRect);
-            Update();
-            return;
-        }
-    }
-    for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
-    {
-        if (m_fileButtons[i].IsOk() &&
-            m_fileButtons[i].m_rect.Contains(event.GetX(), event.GetY()))
-        {
-            m_activeButton = m_fileButtons[i].m_id;
-            if (previouslyActiveButton == m_activeButton)
-            {
-                return;
-            }
-            currentRect = m_fileButtons[i].m_rect;
-            wxRect refreshRect = previousRect.IsEmpty() ?
-                currentRect :
-                previousRect.Union(currentRect);
-            refreshRect.Inflate(GetLabelPaddingHeight());
-            Refresh(true, &refreshRect);
-            Update();
-            return;
+            buttonUnderMouse = button.m_id;
+            break;
         }
     }
 
-    if (previousRect.IsEmpty())
+    if (buttonUnderMouse == wxNOT_FOUND)
     {
-        previousRect = GetClientRect();
+        for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
+        {
+            if (m_fileButtons[i].IsOk() &&
+                m_fileButtons[i].m_rect.Contains(event.GetX(), event.GetY()))
+            {
+                buttonUnderMouse = m_fileButtons[i].m_id;
+                break;
+            }
+        }
     }
-    else
+
+    if (buttonUnderMouse != wxNOT_FOUND)
     {
-        previousRect.Inflate(GetLabelPaddingHeight());
+        m_activeButton = buttonUnderMouse;
     }
-    Refresh(true, &previousRect);
-    Update();
+    else if (!HasFocus())
+    {
+        m_activeButton = wxNOT_FOUND;
+    }
+
+    if (previouslyActiveButton == m_activeButton)
+    {
+        return;
+    }
+
+    // refresh the current and previous (if applicable) highlighted areas
+    if (m_activeButton != wxNOT_FOUND)
+    {
+        for (const auto& button : m_buttons)
+        {
+            if (m_activeButton == button.m_id)
+            {
+                currentRect = button.m_rect;
+                break;
+            }
+        }
+        if (currentRect.IsEmpty())
+        {
+            for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
+            {
+                if (m_activeButton == m_fileButtons[i].m_id)
+                {
+                    currentRect = m_fileButtons[i].m_rect;
+                    break;
+                }
+            }
+        }
+    }
+
+    wxRect refreshRect = previousRect.IsEmpty() ?
+        currentRect :
+        previousRect.Union(currentRect);
+    if (!refreshRect.IsEmpty())
+    {
+        refreshRect.Inflate(GetLabelPaddingHeight());
+        Refresh(true, &refreshRect);
+        Update();
+    }
 }
 
 //---------------------------------------------------
 void wxStartPage::OnMouseLeave([[maybe_unused]] wxMouseEvent& event)
 {
+    if (HasFocus())
+    {
+        return;
+    }
+
     // see which (if any) button was previously highlighted
     wxRect refreshRect;
     if (m_activeButton != wxNOT_FOUND)

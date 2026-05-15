@@ -129,7 +129,8 @@ public:
     wxWindowID AddButton(const wxBitmapBundle& bmp, const wxString& label)
     {
         m_buttons.emplace_back(bmp, label);
-        return ID_BUTTON_ID_START + (m_buttons.size() - 1);
+        m_buttons.back().m_id = ID_BUTTON_ID_START + (m_buttons.size() - 1);
+        return m_buttons.back().m_id;
     }
     /// @brief Adds a feature button on the left side.
     /// @details A feature button can be something like
@@ -153,7 +154,8 @@ public:
         };
 
         m_buttons.emplace_back(wxBitmapBundle::FromBitmaps(bmps), label);
-        return ID_BUTTON_ID_START + (m_buttons.size() - 1);
+        m_buttons.back().m_id = ID_BUTTON_ID_START + (m_buttons.size() - 1);
+        return m_buttons.back().m_id;
     }
     /// @returns The ID of the given index into the custom button list,
     ///     or @c wxNOT_FOUND if an invalid index is given.
@@ -435,7 +437,7 @@ private:
     [[nodiscard]]
     static bool IsDark(const wxColour& color)
     {
-        assert(color.IsOk() && L"Invalid color passed to IsDark()!");
+        wxASSERT_MSG(color.IsOk(), L"Invalid color passed to IsDark()!");
         return (color.IsOk() &&
             color.Alpha() > 32 &&
             color.GetLuminance() < 0.5);
