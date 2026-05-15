@@ -101,9 +101,11 @@ void wxStartPage::OnKeyDown(wxKeyEvent& event)
             }
             m_activeButton = m_buttons[idx].m_id;
         }
-        else if (IsFileId(m_activeButton) || IsFileListClearId(m_activeButton))
+        else if (IsFileId(m_activeButton) || IsFileListClearId(m_activeButton) ||
+                 IsBrowseId(m_activeButton))
         {
-            size_t idx = (m_activeButton == START_PAGE_FILE_LIST_CLEAR) ?
+            size_t idx = (m_activeButton == START_PAGE_FILE_LIST_CLEAR ||
+                          m_activeButton == START_PAGE_BROWSE_FILE) ?
                 m_fileButtons.size() - 1 :
                 m_activeButton - ID_FILE_ID_START;
             if (idx == 0)
@@ -133,9 +135,11 @@ void wxStartPage::OnKeyDown(wxKeyEvent& event)
             idx = (idx + 1) % m_buttons.size();
             m_activeButton = m_buttons[idx].m_id;
         }
-        else if (IsFileId(m_activeButton) || IsFileListClearId(m_activeButton))
+        else if (IsFileId(m_activeButton) || IsFileListClearId(m_activeButton) ||
+                 IsBrowseId(m_activeButton))
         {
-            size_t idx = (m_activeButton == START_PAGE_FILE_LIST_CLEAR) ?
+            size_t idx = (m_activeButton == START_PAGE_FILE_LIST_CLEAR ||
+                          m_activeButton == START_PAGE_BROWSE_FILE) ?
                 m_fileButtons.size() - 1 :
                 m_activeButton - ID_FILE_ID_START;
             idx = (idx + 1) % m_fileButtons.size();
@@ -145,7 +149,8 @@ void wxStartPage::OnKeyDown(wxKeyEvent& event)
     }
     else if (keyCode == WXK_LEFT)
     {
-        if ((IsFileId(m_activeButton) || IsFileListClearId(m_activeButton)) && !m_buttons.empty())
+        if ((IsFileId(m_activeButton) || IsFileListClearId(m_activeButton) ||
+            IsBrowseId(m_activeButton)) && !m_buttons.empty())
         {
             m_activeButton = m_buttons[0].m_id;
             Refresh();
@@ -185,9 +190,9 @@ void wxStartPage::ActivateButton(wxWindowID id)
         cevent.SetEventObject(this);
         GetEventHandler()->ProcessEvent(cevent);
     }
-    else if (IsFileId(id) || IsFileListClearId(id))
+    else if (IsFileId(id) || IsFileListClearId(id) || IsBrowseId(id))
     {
-        size_t idx = (id == START_PAGE_FILE_LIST_CLEAR) ?
+        size_t idx = (id == START_PAGE_FILE_LIST_CLEAR || id == START_PAGE_BROWSE_FILE) ?
             m_fileButtons.size() - 1 :
             id - ID_FILE_ID_START;
         if (idx < m_fileButtons.size())
@@ -208,6 +213,14 @@ void wxStartPage::ActivateButton(wxWindowID id)
                     cevent.SetEventObject(this);
                     GetEventHandler()->ProcessEvent(cevent);
                 }
+            }
+            else if (id == START_PAGE_BROWSE_FILE)
+            {
+                wxCommandEvent cevent(wxEVT_STARTPAGE_CLICKED, GetId());
+                cevent.SetId(START_PAGE_BROWSE_FILE);
+                cevent.SetInt(START_PAGE_BROWSE_FILE);
+                cevent.SetEventObject(this);
+                GetEventHandler()->ProcessEvent(cevent);
             }
             else
             {
@@ -255,6 +268,18 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
     m_fileButtons.reserve(mruFiles.size() + 1);
     if (mruFiles.IsEmpty())
     {
+        const wxVector<wxBitmap> bmps = {
+            wxArtProvider::GetBitmap(wxART_FOLDER_OPEN, wxART_BUTTON,
+                                     ScaleToContentSize(FromDIP(wxSize{ 16, 16 }))),
+            wxArtProvider::GetBitmap(wxART_FOLDER_OPEN, wxART_BUTTON,
+                                     ScaleToContentSize(FromDIP(wxSize{ 32, 32 }))),
+            wxArtProvider::GetBitmap(wxART_FOLDER_OPEN, wxART_BUTTON,
+                                     ScaleToContentSize(FromDIP(wxSize{ 64, 64 })))
+        };
+        m_fileButtons.resize(1);
+        m_fileButtons[0].m_id = START_PAGE_BROWSE_FILE;
+        m_fileButtons[0].m_label = GetBrowseForFileLabel();
+        m_fileButtons[0].m_icon = wxBitmapBundle::FromBitmaps(bmps);
         return;
     }
 
@@ -302,6 +327,9 @@ void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
     // no files, so no need for file buttons or the clear all button
     if (files.empty())
     {
+        m_fileButtons.resize(1);
+        m_fileButtons[0].m_id = START_PAGE_BROWSE_FILE;
+        m_fileButtons[0].m_label = GetBrowseForFileLabel();
         return;
     }
 
@@ -489,6 +517,7 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
     adc.Clear();
     wxGCDC dc(adc);
 
+    const auto buttonIconSize = GetButtonSize();
     CalcButtonStart(dc);
     CalcMRUColumnHeaderHeight(dc);
 
@@ -555,6 +584,22 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
                     clearButtonSize.GetWidth() + (GetLabelPaddingHeight() * 2),
                     clearButtonSize.GetHeight() + (GetLabelPaddingHeight() * 2));
         }
+    }
+    else if (GetMRUFileAndClearButtonCount() > 0 && IsBrowseId(m_fileButtons[0].m_id))
+    {
+        // update the browse button rect
+        const wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeLarger());
+        const wxSize textSz = dc.GetTextExtent(m_fileButtons[0].m_label);
+        const wxSize iconSz = m_fileButtons[0].m_icon.GetBitmap(ScaleToContentSize(buttonIconSize)).GetLogicalSize();
+        const auto browseButtonSize = wxSize(textSz.x + iconSz.x + GetLabelPaddingWidth(),
+                                             std::max(textSz.y, iconSz.y));
+
+        m_fileButtons[0].m_rect =
+            wxRect(filesArea.GetLeft() + FromDIP(1),
+                m_fileColumnHeaderHeight + (3 * GetLabelPaddingHeight()) +
+                dc.GetTextExtent(GetNoRecentFilesLabel()).GetHeight(),
+                browseButtonSize.GetWidth() + (GetLabelPaddingHeight() * 2),
+                browseButtonSize.GetHeight() + (GetLabelPaddingHeight() * 2));
     }
 
     // update the custom buttons' rects
@@ -862,6 +907,19 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
         {
             fileIcon.SetScaleFactor(GetContentScaleFactor());
         }
+
+        // if empty state, draw the message
+        if (GetMRUFileCount() == 0 && GetMRUFileAndClearButtonCount() > 0 && IsBrowseId(m_fileButtons[0].m_id))
+        {
+            const wxDCTextColourChanger tcc(dc, mruFontColor);
+            const wxRect emptyStateMessageRect =
+                wxRect(filesArea.GetLeft() + GetLabelPaddingWidth(),
+                    m_fileColumnHeaderHeight + GetLabelPaddingHeight(),
+                    filesArea.GetWidth() - (2 * GetLabelPaddingWidth()),
+                    dc.GetTextExtent(GetNoRecentFilesLabel()).GetHeight());
+            dc.DrawLabel(GetNoRecentFilesLabel(), emptyStateMessageRect, wxALIGN_LEFT);
+        }
+
         for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
         {
             if (m_fileButtons[i].IsOk())
@@ -872,12 +930,22 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
                 const wxRect fileLabelRect =
                     wxRect{ m_fileButtons[i].m_rect }.Deflate(GetLabelPaddingHeight());
                 dc.SetClippingRegion(m_fileButtons[i].m_rect);
-                // if the "clear file list" button
-                if (i == GetMRUFileAndClearButtonCount() - 1)
+                // if the "clear file list" button or "browse" button
+                if (i == GetMRUFileAndClearButtonCount() - 1 || IsBrowseId(m_fileButtons[i].m_id))
                 {
                     const wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeLarger());
-                    dc.DrawLabel(m_fileButtons[i].m_label, fileLabelRect,
-                        wxALIGN_LEFT | wxALIGN_CENTRE_VERTICAL);
+                    wxBitmap bmp = m_fileButtons[i].m_icon.GetBitmap(ScaleToContentSize(buttonIconSize));
+                    if (bmp.IsOk())
+                    {
+                        bmp.SetScaleFactor(GetContentScaleFactor());
+                        dc.DrawLabel(m_fileButtons[i].m_label, bmp, fileLabelRect,
+                                     wxALIGN_LEFT | wxALIGN_CENTRE_VERTICAL);
+                    }
+                    else
+                    {
+                        dc.DrawLabel(m_fileButtons[i].m_label, fileLabelRect,
+                            wxALIGN_LEFT | wxALIGN_CENTRE_VERTICAL);
+                    }
                 }
                 else
                 {

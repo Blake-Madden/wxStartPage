@@ -78,6 +78,7 @@ enum class wxStartPageAppHeaderStyle
       If @c true, then you can get the selected file path from the event's
       string value.
     - Calling IsFileListClearId() to see if the "Clear file list" button was clicked.
+    - Calling IsBrowseId() to see if the "Browse for a file" button was clicked.
 */
 class wxStartPage final : public wxWindow
 {
@@ -189,6 +190,14 @@ public:
     {
         return (id == START_PAGE_FILE_LIST_CLEAR);
     }
+    /// @returns @c true if @c id is the "Browse for a file" button.
+    /// @param id The ID from a @c wxEVT_STARTPAGE_CLICKED event after a
+    ///     user clicks a button on the start page.
+    [[nodiscard]]
+    constexpr static bool IsBrowseId(const wxWindowID id) noexcept
+    {
+        return (id == START_PAGE_BROWSE_FILE);
+    }
     /// @}
 
     /// @name Style Functions
@@ -288,11 +297,12 @@ private:
 
     /// @returns The number of items in the MRU list.
     /// @note This is the number of files in the list,
-    ///     not including the "clear file list" button.
+    ///     not including the "clear file list" or "browse" button.
     [[nodiscard]]
     size_t GetMRUFileCount() const noexcept
     {
-        // the last item is the "clear file list" button, so don't count that
+        // the last item is the "clear file list" button (or "browse" button if empty),
+        // so don't count that
         return !m_fileButtons.empty() ?
             m_fileButtons.size() - 1 :
             0;
@@ -313,13 +323,18 @@ private:
     static constexpr int MAX_FILE_BUTTONS = 9;
     // supports 9 MRU file buttons
     static constexpr int ID_FILE_ID_START = wxID_HIGHEST;
-    static constexpr int ID_BUTTON_ID_START =
-        wxID_HIGHEST + MAX_FILE_BUTTONS + 1;
     /// @brief ID returned when the "Clear file list" button is clicked.
     /// @details Client code can check for this in their @c wxEVT_STARTPAGE_CLICKED
     ///     handler and clear the application's file history.
     static constexpr int START_PAGE_FILE_LIST_CLEAR =
         wxID_HIGHEST + MAX_FILE_BUTTONS;
+    /// @brief ID returned when the "Browse for a file" button is clicked.
+    /// @details Client code can check for this in their @c wxEVT_STARTPAGE_CLICKED
+    ///     handler and open a file dialog.
+    static constexpr int START_PAGE_BROWSE_FILE =
+        wxID_HIGHEST + MAX_FILE_BUTTONS + 1;
+    static constexpr int ID_BUTTON_ID_START =
+        wxID_HIGHEST + MAX_FILE_BUTTONS + 2;
 
     /// @returns The number of items in the MRU list
     ///     (including the "clear file list" button).
@@ -393,6 +408,16 @@ private:
     static wxString GetRecentLabel()
     {
         return _(L"Recent");
+    }
+    [[nodiscard]]
+    static wxString GetNoRecentFilesLabel()
+    {
+        return _(L"You haven't opened any files recently.");
+    }
+    [[nodiscard]]
+    static wxString GetBrowseForFileLabel()
+    {
+        return _(L"Browse for a file...");
     }
     void DrawHighlight(wxDC& dc, const wxRect& rect, const wxColour& color) const;
     void CalcButtonStart(wxDC& dc);
