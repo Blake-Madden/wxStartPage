@@ -20,7 +20,7 @@ wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
     const wxBitmapBundle& logo /*= wxBitmapBundle{}*/,
     wxString productDescription /*= wxString{}*/)
     : wxWindow(parent, id, wxDefaultPosition, wxDefaultSize,
-        wxFULL_REPAINT_ON_RESIZE, L"wxStartPage"),
+        wxFULL_REPAINT_ON_RESIZE | wxWANTS_CHARS, L"wxStartPage"),
     m_logoFont(wxFontInfo(
         wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).
         GetFractionalPointSize() * 1.5)),
@@ -41,11 +41,185 @@ wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
         SetMRUBackgroundColor(wxColour(31, 31, 31));
     }
 
+    SetCanFocus(true);
+
     Bind(wxEVT_PAINT, &wxStartPage::OnPaintWindow, this);
     Bind(wxEVT_MOTION, &wxStartPage::OnMouseChange, this);
     Bind(wxEVT_LEFT_DOWN, &wxStartPage::OnMouseClick, this);
     Bind(wxEVT_LEAVE_WINDOW, &wxStartPage::OnMouseLeave, this);
     Bind(wxEVT_SIZE, &wxStartPage::OnResize, this);
+    Bind(wxEVT_KEY_DOWN, &wxStartPage::OnKeyDown, this);
+    Bind(wxEVT_SET_FOCUS, &wxStartPage::OnSetFocus, this);
+    Bind(wxEVT_KILL_FOCUS, &wxStartPage::OnKillFocus, this);
+}
+
+//---------------------------------------------------
+void wxStartPage::OnSetFocus(wxFocusEvent& event)
+{
+    if (!m_buttons.empty())
+    {
+        m_activeButton = m_buttons[0].m_id;
+    }
+    else if (!m_fileButtons.empty())
+    {
+        m_activeButton = m_fileButtons[0].m_id;
+    }
+    Refresh();
+    event.Skip();
+}
+
+//---------------------------------------------------
+void wxStartPage::OnKillFocus(wxFocusEvent& event)
+{
+    Refresh();
+    event.Skip();
+}
+
+//---------------------------------------------------
+void wxStartPage::OnKeyDown(wxKeyEvent& event)
+{
+    const int keyCode = event.GetKeyCode();
+    if (keyCode == WXK_UP)
+    {
+        if (m_activeButton == wxNOT_FOUND)
+        {
+            if (!m_buttons.empty())
+            {
+                m_activeButton = m_buttons[0].m_id;
+            }
+        }
+        else if (IsCustomButtonId(m_activeButton))
+        {
+            size_t idx = m_activeButton - ID_BUTTON_ID_START;
+            if (idx == 0)
+            {
+                idx = m_buttons.size() - 1;
+            }
+            else
+            {
+                --idx;
+            }
+            m_activeButton = m_buttons[idx].m_id;
+        }
+        else if (IsFileId(m_activeButton) || IsFileListClearId(m_activeButton))
+        {
+            size_t idx = (m_activeButton == START_PAGE_FILE_LIST_CLEAR) ?
+                m_fileButtons.size() - 1 :
+                m_activeButton - ID_FILE_ID_START;
+            if (idx == 0)
+            {
+                idx = m_fileButtons.size() - 1;
+            }
+            else
+            {
+                --idx;
+            }
+            m_activeButton = m_fileButtons[idx].m_id;
+        }
+        Refresh();
+    }
+    else if (keyCode == WXK_DOWN)
+    {
+        if (m_activeButton == wxNOT_FOUND)
+        {
+            if (!m_buttons.empty())
+            {
+                m_activeButton = m_buttons[0].m_id;
+            }
+        }
+        else if (IsCustomButtonId(m_activeButton))
+        {
+            size_t idx = m_activeButton - ID_BUTTON_ID_START;
+            idx = (idx + 1) % m_buttons.size();
+            m_activeButton = m_buttons[idx].m_id;
+        }
+        else if (IsFileId(m_activeButton) || IsFileListClearId(m_activeButton))
+        {
+            size_t idx = (m_activeButton == START_PAGE_FILE_LIST_CLEAR) ?
+                m_fileButtons.size() - 1 :
+                m_activeButton - ID_FILE_ID_START;
+            idx = (idx + 1) % m_fileButtons.size();
+            m_activeButton = m_fileButtons[idx].m_id;
+        }
+        Refresh();
+    }
+    else if (keyCode == WXK_LEFT)
+    {
+        if ((IsFileId(m_activeButton) || IsFileListClearId(m_activeButton)) && !m_buttons.empty())
+        {
+            m_activeButton = m_buttons[0].m_id;
+            Refresh();
+        }
+    }
+    else if (keyCode == WXK_RIGHT)
+    {
+        if (IsCustomButtonId(m_activeButton) && !m_fileButtons.empty())
+        {
+            m_activeButton = m_fileButtons[0].m_id;
+            Refresh();
+        }
+    }
+    else if (keyCode == WXK_RETURN || keyCode == WXK_NUMPAD_ENTER || keyCode == WXK_SPACE)
+    {
+        ActivateButton(m_activeButton);
+    }
+    else
+    {
+        event.Skip();
+    }
+}
+
+//---------------------------------------------------
+void wxStartPage::ActivateButton(wxWindowID id)
+{
+    if (id == wxNOT_FOUND)
+    {
+        return;
+    }
+
+    if (IsCustomButtonId(id))
+    {
+        wxCommandEvent cevent(wxEVT_STARTPAGE_CLICKED, GetId());
+        cevent.SetId(id);
+        cevent.SetInt(id);
+        cevent.SetEventObject(this);
+        GetEventHandler()->ProcessEvent(cevent);
+    }
+    else if (IsFileId(id) || IsFileListClearId(id))
+    {
+        size_t idx = (id == START_PAGE_FILE_LIST_CLEAR) ?
+            m_fileButtons.size() - 1 :
+            id - ID_FILE_ID_START;
+        if (idx < m_fileButtons.size())
+        {
+            if (id == START_PAGE_FILE_LIST_CLEAR)
+            {
+                if (wxMessageBox(
+                    _(L"Do you wish to clear the list of recent files?"),
+                    _(L"Clear File List"), wxYES_NO | wxICON_QUESTION) == wxYES)
+                {
+                    SetMRUList(wxArrayString{});
+                    m_activeButton = wxNOT_FOUND;
+                    Refresh();
+                    Update();
+                    wxCommandEvent cevent(wxEVT_STARTPAGE_CLICKED, GetId());
+                    cevent.SetId(START_PAGE_FILE_LIST_CLEAR);
+                    cevent.SetInt(START_PAGE_FILE_LIST_CLEAR);
+                    cevent.SetEventObject(this);
+                    GetEventHandler()->ProcessEvent(cevent);
+                }
+            }
+            else
+            {
+                wxCommandEvent cevent(wxEVT_STARTPAGE_CLICKED, GetId());
+                cevent.SetId(m_fileButtons[idx].m_id);
+                cevent.SetInt(m_fileButtons[idx].m_id);
+                cevent.SetString(m_fileButtons[idx].m_fullFilePath);
+                cevent.SetEventObject(this);
+                GetEventHandler()->ProcessEvent(cevent);
+            }
+        }
+    }
 }
 
 //---------------------------------------------------
@@ -945,12 +1119,8 @@ void wxStartPage::OnMouseClick(wxMouseEvent& event)
         if (button.IsOk() &&
             button.m_rect.Contains(event.GetX(), event.GetY()))
         {
-            wxCommandEvent cevent(wxEVT_STARTPAGE_CLICKED, GetId());
-            cevent.SetId(button.m_id);
-            cevent.SetInt(button.m_id);
-            cevent.SetEventObject(this);
-            GetEventHandler()->ProcessEvent(cevent);
-            break;
+            ActivateButton(button.m_id);
+            return;
         }
     }
     for (size_t i = 0; i < GetMRUFileAndClearButtonCount(); ++i)
@@ -958,39 +1128,8 @@ void wxStartPage::OnMouseClick(wxMouseEvent& event)
         if (m_fileButtons[i].IsOk() &&
             m_fileButtons[i].m_rect.Contains(event.GetX(), event.GetY()))
         {
-            // if clicking the clear all button
-            if (i == GetMRUFileAndClearButtonCount() - 1)
-            {
-                if (wxMessageBox(
-                    _(L"Do you wish to clear the list of recent files?"),
-                    _(L"Clear File List"), wxYES_NO | wxICON_QUESTION) == wxYES)
-                {
-                    SetMRUList(wxArrayString{});
-                    Refresh();
-                    Update();
-                    // give the caller a chance to clear the file history
-                    // from their doc manager and whatnot
-                    wxCommandEvent cevent(wxEVT_STARTPAGE_CLICKED, GetId());
-                    cevent.SetId(START_PAGE_FILE_LIST_CLEAR);
-                    cevent.SetInt(START_PAGE_FILE_LIST_CLEAR);
-                    cevent.SetEventObject(this);
-                    GetEventHandler()->ProcessEvent(cevent);
-                    break;
-                }
-            }
-            else
-            {
-                wxCommandEvent cevent(wxEVT_STARTPAGE_CLICKED, GetId());
-                // client calls IsFileId() on this ID to see
-                // if a file button was clicked
-                cevent.SetId(m_fileButtons[i].m_id);
-                cevent.SetInt(m_fileButtons[i].m_id);
-                // selected file path
-                cevent.SetString(m_fileButtons[i].m_fullFilePath);
-                cevent.SetEventObject(this);
-                GetEventHandler()->ProcessEvent(cevent);
-                break;
-            }
+            ActivateButton(m_fileButtons[i].m_id);
+            return;
         }
     }
 }

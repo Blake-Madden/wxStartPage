@@ -36,6 +36,11 @@ customizable buttons on the left.
 - Supports dark mode.
 - Supports HiDPI displays.
 - Fully internationalized (messages are available via *gettext*).
+- Full keyboard navigation support:
+  - **Tab**: Focus the control or move focus to the next control.
+  - **Up/Down Arrows**: Navigate through items in the active column (cycles and wraps).
+  - **Left/Right Arrows**: Switch between the button area (left) and MRU list (right).
+  - **Enter/Space**: Activate the highlighted button or file.
 
 Dark theme:
 

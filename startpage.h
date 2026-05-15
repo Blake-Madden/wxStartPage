@@ -303,6 +303,11 @@ private:
     void OnMouseChange(wxMouseEvent& event);
     void OnMouseClick(wxMouseEvent& event);
     void OnMouseLeave([[maybe_unused]] wxMouseEvent& event);
+    void OnKeyDown(wxKeyEvent& event);
+    void OnSetFocus(wxFocusEvent& event);
+    void OnKillFocus(wxFocusEvent& event);
+
+    void ActivateButton(wxWindowID id);
 
     static constexpr int MAX_BUTTONS_SMALL_SIZE = 8;
     static constexpr int MAX_FILE_BUTTONS = 9;
