@@ -404,7 +404,7 @@ private:
     [[nodiscard]]
     static wxString GetClearFileListLabel()
     {
-        return _(L"\u267B Clear file list...");
+        return _(L"♻ Clear file list...");
     }
     [[nodiscard]]
     static wxString GetRecentLabel()
