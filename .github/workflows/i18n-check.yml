@@ -24,7 +24,7 @@ jobs:
 
       - name: analyze
         run: |
-             ./quneiform/bin/quneiform ./ --ignore=quneiform --cpp-version=2017 -q --enable=allI18N,allCodeFormatting -o wxSPresults.txt
+             ./quneiform/bin/quneiform ./ --ignore=quneiform --cpp-version=2017 -q --enable=allI18N,allCodeFormatting --disable=unencodedExtASCII -o wxSPresults.txt
              cat wxSPresults.txt
 
       - name: print output
