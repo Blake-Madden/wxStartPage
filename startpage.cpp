@@ -193,7 +193,7 @@ void wxStartPage::ActivateButton(wxWindowID id)
     }
     else if (IsFileId(id) || IsFileListClearId(id) || IsBrowseId(id))
     {
-        size_t idx = (id == START_PAGE_FILE_LIST_CLEAR || id == START_PAGE_BROWSE_FILE) ?
+        const size_t idx = (id == START_PAGE_FILE_LIST_CLEAR || id == START_PAGE_BROWSE_FILE) ?
             m_fileButtons.size() - 1 :
             id - ID_FILE_ID_START;
         if (idx < m_fileButtons.size())
