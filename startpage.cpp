@@ -35,12 +35,6 @@ wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
     wxWindow::SetBackgroundStyle(wxBG_STYLE_CUSTOM);
     SetMRUList(mruFiles);
 
-    if (wxSystemSettings::GetAppearance().IsDark())
-    {
-        SetButtonAreaBackgroundColor(wxColour(46, 46, 46));
-        SetMRUBackgroundColor(wxColour(31, 31, 31));
-    }
-
     SetCanFocus(true);
 
     Bind(wxEVT_PAINT, &wxStartPage::OnPaintWindow, this);

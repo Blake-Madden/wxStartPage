@@ -243,7 +243,12 @@ public:
     [[nodiscard]]
     wxColour GetButtonAreaBackgroundColor() const noexcept
     {
-        return m_buttonAreaBackgroundColor;
+        if (m_buttonAreaBackgroundColor.IsOk())
+        {
+            return m_buttonAreaBackgroundColor;
+        }
+        return wxSystemSettings::GetAppearance().IsDark() ?
+            wxColour(46, 46, 46) : wxColour(145, 168, 208);
     }
     /// @brief Sets the color of the left side of the start page.
     /// @param color The color to use.
@@ -258,7 +263,12 @@ public:
     [[nodiscard]]
     wxColour GetMRUBackgroundColor() const noexcept
     {
-        return m_MRUBackgroundColor;
+        if (m_MRUBackgroundColor.IsOk())
+        {
+            return m_MRUBackgroundColor;
+        }
+        return wxSystemSettings::GetAppearance().IsDark() ?
+            wxColour(31, 31, 31) : wxColour(255, 255, 255);
     }
     /// @brief Sets the color of the right side of the start page.
     /// @param color The color to use.
@@ -486,8 +496,8 @@ private:
     wxBitmapBundle m_logo;
     wxString m_toolTip;
     wxString m_productDescription;
-    wxColour m_buttonAreaBackgroundColor{ 145, 168, 208 };
-    wxColour m_MRUBackgroundColor{ 255, 255, 255 };
+    wxColour m_buttonAreaBackgroundColor;
+    wxColour m_MRUBackgroundColor;
     wxString m_userName{ wxGetUserName() };
 };
 
