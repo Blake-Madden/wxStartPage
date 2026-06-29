@@ -591,7 +591,10 @@ void wxStartPage::OnPaintWindow([[maybe_unused]] wxPaintEvent& event)
         // update the browse button rect
         const wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeLarger());
         const wxSize textSz = dc.GetTextExtent(m_fileButtons[0].m_label);
-        const wxSize iconSz = m_fileButtons[0].m_icon.GetBitmap(ScaleToContentSize(buttonIconSize)).GetLogicalSize();
+        const wxBitmap browseIconBmp =
+            m_fileButtons[0].m_icon.GetBitmap(ScaleToContentSize(buttonIconSize));
+        const wxSize iconSz = browseIconBmp.IsOk() ?
+            browseIconBmp.GetLogicalSize() : wxSize{ 0, 0 };
         const auto browseButtonSize = wxSize(textSz.x + iconSz.x + GetLabelPaddingWidth(),
                                              std::max(textSz.y, iconSz.y));
 
