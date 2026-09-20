@@ -41,6 +41,10 @@ customizable buttons on the left.
   - **Up/Down Arrows**: Navigate through items in the active column (cycles and wraps).
   - **Left/Right Arrows**: Switch between the button area (left) and MRU list (right).
   - **Enter/Space**: Activate the highlighted button or file.
+- Screen reader support (Windows only):
+  - The custom buttons, MRU files, and the "Clear file list"/"Browse for a file" button
+    are exposed as push buttons, with names, states, locations, and default actions.
+  - Changes to the highlighted button, and to the list of buttons, are announced.
 
 Dark theme:
 

@@ -7,12 +7,321 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "startpage.h"
+#include <wx/access.h>
 #include <wx/dcbuffer.h>
 #include <wx/stdpaths.h>
 #include <algorithm>
 #include <utility>
 
 wxDEFINE_EVENT(wxEVT_STARTPAGE_CLICKED, wxCommandEvent);
+
+//-------------------------------------------
+#if wxUSE_ACCESSIBILITY
+//-------------------------------------------
+// Lets screen readers see the buttons on the start page.
+// Each button gets a number starting at 1. The custom buttons (left side)
+// come first, followed by the file buttons (right side).
+class wxStartPage::Accessible final : public wxAccessible
+{
+public:
+    explicit Accessible(wxStartPage* page) : wxAccessible(page), m_page(page)
+    {
+    }
+
+    wxAccStatus GetChildCount(int* childCount) override
+    {
+        *childCount = ChildCount();
+        return wxACC_OK;
+    }
+
+    wxAccStatus GetChild(const int childId, wxAccessible** child) override
+    {
+        *child = (childId == wxACC_SELF) ? this : nullptr;
+        return wxACC_OK;
+    }
+
+    wxAccStatus HitTest(const wxPoint& pt, int* childId, wxAccessible** childObject) override
+    {
+        *childId = wxACC_SELF;
+        *childObject = nullptr;
+        const wxPoint clientPt = m_page->ScreenToClient(pt);
+        if (!m_page->GetClientRect().Contains(clientPt))
+        {
+            return wxACC_FALSE;
+        }
+        for (int id = 1; id <= ChildCount(); ++id)
+        {
+            const auto* button = m_page->GetButtonFromChildId(id);
+            if (button->IsOk() && button->m_rect.Contains(clientPt))
+            {
+                *childId = id;
+                break;
+            }
+        }
+        return wxACC_OK;
+    }
+
+    wxAccStatus GetLocation(wxRect& rect, const int elementId) override
+    {
+        if (elementId == wxACC_SELF)
+        {
+            rect = wxRect{ m_page->ClientToScreen(wxPoint{ 0, 0 }), m_page->GetClientSize() };
+            return wxACC_OK;
+        }
+        const auto* button = m_page->GetButtonFromChildId(elementId);
+        if (button == nullptr)
+        {
+            return wxACC_INVALID_ARG;
+        }
+        rect = wxRect{ m_page->ClientToScreen(button->m_rect.GetPosition()),
+                       button->m_rect.GetSize() };
+        return wxACC_OK;
+    }
+
+    // Works like the arrow keys: up/down moves within a side, left/right switches sides.
+    // Unlike the arrow keys, it doesn't wrap around. Screen readers stepping through
+    // the buttons need to know when they've reached the last one.
+    wxAccStatus Navigate(const wxNavDir navDir, const int fromId,
+                         int* toId, wxAccessible** toObject) override
+    {
+        *toId = wxACC_SELF;
+        *toObject = nullptr;
+        const int count = ChildCount();
+        const int customCount = static_cast<int>(m_page->m_buttons.size());
+
+        if (fromId == wxACC_SELF)
+        {
+            if (navDir == wxNAVDIR_FIRSTCHILD || navDir == wxNAVDIR_LASTCHILD)
+            {
+                if (count == 0)
+                {
+                    return wxACC_FALSE;
+                }
+                *toId = (navDir == wxNAVDIR_FIRSTCHILD) ? 1 : count;
+                return wxACC_OK;
+            }
+            // moving to the controls next to this one is left to Windows
+            return wxACC_NOT_IMPLEMENTED;
+        }
+        if (fromId < 1 || fromId > count)
+        {
+            return wxACC_INVALID_ARG;
+        }
+
+        const bool inCustomColumn = fromId <= customCount;
+        const int columnFirst = inCustomColumn ? 1 : customCount + 1;
+        const int columnLast = inCustomColumn ? customCount : count;
+
+        int target{ 0 };
+        int lowest{ 1 }, highest{ count };
+        switch (navDir)
+        {
+        case wxNAVDIR_NEXT:
+            target = fromId + 1;
+            break;
+        case wxNAVDIR_PREVIOUS:
+            target = fromId - 1;
+            break;
+        case wxNAVDIR_DOWN:
+            target = fromId + 1;
+            lowest = columnFirst;
+            highest = columnLast;
+            break;
+        case wxNAVDIR_UP:
+            target = fromId - 1;
+            lowest = columnFirst;
+            highest = columnLast;
+            break;
+        case wxNAVDIR_LEFT:
+            target = inCustomColumn ? 0 : 1;
+            highest = customCount;
+            break;
+        case wxNAVDIR_RIGHT:
+            target = inCustomColumn ? customCount + 1 : 0;
+            break;
+        // buttons don't contain anything else, so there is nowhere to go
+        case wxNAVDIR_FIRSTCHILD:
+        case wxNAVDIR_LASTCHILD:
+            break;
+        }
+
+        if (target < lowest || target > highest)
+        {
+            return wxACC_FALSE;
+        }
+        *toId = target;
+        return wxACC_OK;
+    }
+
+    wxAccStatus GetName(const int childId, wxString* name) override
+    {
+        if (childId == wxACC_SELF)
+        {
+            return wxACC_NOT_IMPLEMENTED;
+        }
+        const auto* button = m_page->GetButtonFromChildId(childId);
+        if (button == nullptr)
+        {
+            return wxACC_INVALID_ARG;
+        }
+        if (!button->m_fullFilePath.empty())
+        {
+            // just the file name (the folder is read out separately, as the description)
+            *name = wxFileName{ button->m_fullFilePath }.GetFullName();
+        }
+        else if (IsFileListClearId(button->m_id))
+        {
+            // leave out the recycling symbol, so it isn't read aloud
+            *name = button->m_label;
+            name->Replace(L"♻", wxString{});
+            name->Trim(false);
+        }
+        else
+        {
+            *name = button->m_label;
+        }
+        return wxACC_OK;
+    }
+
+    wxAccStatus GetDescription(const int childId, wxString* description) override
+    {
+        const auto* button = m_page->GetButtonFromChildId(childId);
+        if (button == nullptr || button->m_fullFilePath.empty())
+        {
+            return wxACC_NOT_IMPLEMENTED;
+        }
+        *description = button->m_label;
+        return wxACC_OK;
+    }
+
+    wxAccStatus GetHelpText(const int childId, wxString* helpText) override
+    {
+        // same as the tooltip
+        const auto* button = m_page->GetButtonFromChildId(childId);
+        if (button == nullptr || button->m_fullFilePath.empty())
+        {
+            return wxACC_NOT_IMPLEMENTED;
+        }
+        *helpText = button->m_fullFilePath;
+        return wxACC_OK;
+    }
+
+    wxAccStatus GetRole(const int childId, wxAccRole* role) override
+    {
+        if (childId == wxACC_SELF)
+        {
+            *role = wxROLE_SYSTEM_PANE;
+            return wxACC_OK;
+        }
+        if (m_page->GetButtonFromChildId(childId) == nullptr)
+        {
+            return wxACC_INVALID_ARG;
+        }
+        *role = wxROLE_SYSTEM_PUSHBUTTON;
+        return wxACC_OK;
+    }
+
+    wxAccStatus GetState(const int childId, long* state) override
+    {
+        if (childId == wxACC_SELF)
+        {
+            *state = wxACC_STATE_SYSTEM_FOCUSABLE |
+                (m_page->HasFocus() ? wxACC_STATE_SYSTEM_FOCUSED : 0);
+            return wxACC_OK;
+        }
+        const auto* button = m_page->GetButtonFromChildId(childId);
+        if (button == nullptr)
+        {
+            return wxACC_INVALID_ARG;
+        }
+        *state = wxACC_STATE_SYSTEM_FOCUSABLE;
+        // the active button is the one highlighted, either by the keyboard or the mouse
+        if (button->m_id == m_page->m_activeButton)
+        {
+            *state |= m_page->HasFocus() ?
+                wxACC_STATE_SYSTEM_FOCUSED : wxACC_STATE_SYSTEM_HOTTRACKED;
+        }
+        return wxACC_OK;
+    }
+
+    wxAccStatus GetDefaultAction(const int childId, wxString* actionName) override
+    {
+        const auto* button = m_page->GetButtonFromChildId(childId);
+        if (button == nullptr)
+        {
+            *actionName = wxString{};
+        }
+        else
+        {
+            *actionName = button->m_fullFilePath.empty() ? _(L"Press") : _(L"Open");
+        }
+        return wxACC_OK;
+    }
+
+    wxAccStatus DoDefaultAction(const int childId) override
+    {
+        const auto* button = m_page->GetButtonFromChildId(childId);
+        if (button == nullptr)
+        {
+            return wxACC_NOT_SUPPORTED;
+        }
+        // Wait until the screen reader's request is finished before clicking.
+        // The click might open a dialog (e.g., "Clear file list"), which would
+        // leave the screen reader frozen while it waits for this call to return.
+        m_page->CallAfter(&wxStartPage::ActivateButton, button->m_id);
+        return wxACC_OK;
+    }
+
+    wxAccStatus GetFocus(int* childId, wxAccessible** child) override
+    {
+        *childId = wxACC_SELF;
+        *child = nullptr;
+        if (!m_page->HasFocus())
+        {
+            return wxACC_NOT_IMPLEMENTED;
+        }
+        if (const int activeId = m_page->GetChildId(m_page->m_activeButton);
+            activeId != wxNOT_FOUND)
+        {
+            *childId = activeId;
+        }
+        else
+        {
+            *child = this;
+        }
+        return wxACC_OK;
+    }
+
+    wxAccStatus Select(const int childId, const wxAccSelectionFlags selectFlags) override
+    {
+        const auto* button = m_page->GetButtonFromChildId(childId);
+        if (childId != wxACC_SELF && button == nullptr)
+        {
+            return wxACC_INVALID_ARG;
+        }
+        if ((selectFlags & (wxACC_SEL_TAKEFOCUS | wxACC_SEL_TAKESELECTION)) != 0)
+        {
+            m_page->SetFocus();
+            if (button != nullptr)
+            {
+                m_page->m_activeButton = button->m_id;
+                m_page->Refresh();
+                m_page->NotifyFocusChanged();
+            }
+        }
+        return wxACC_OK;
+    }
+
+private:
+    [[nodiscard]]
+    int ChildCount() const noexcept
+    {
+        return static_cast<int>(m_page->m_buttons.size() + m_page->m_fileButtons.size());
+    }
+
+    wxStartPage* m_page{ nullptr };
+};
+#endif
 
 //-------------------------------------------
 wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
@@ -36,6 +345,9 @@ wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
     SetMRUList(mruFiles);
 
     SetCanFocus(true);
+#if wxUSE_ACCESSIBILITY
+    SetAccessible(new Accessible{ this });
+#endif
 
     Bind(wxEVT_PAINT, &wxStartPage::OnPaintWindow, this);
     Bind(wxEVT_MOTION, &wxStartPage::OnMouseChange, this);
@@ -45,6 +357,62 @@ wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
     Bind(wxEVT_KEY_DOWN, &wxStartPage::OnKeyDown, this);
     Bind(wxEVT_SET_FOCUS, &wxStartPage::OnSetFocus, this);
     Bind(wxEVT_KILL_FOCUS, &wxStartPage::OnKillFocus, this);
+}
+
+//---------------------------------------------------
+const wxStartPage::wxStartPageButton*
+wxStartPage::GetButtonFromChildId(const int childId) const noexcept
+{
+    if (childId < 1)
+    {
+        return nullptr;
+    }
+    auto idx = static_cast<size_t>(childId) - 1;
+    if (idx < m_buttons.size())
+    {
+        return &m_buttons[idx];
+    }
+    idx -= m_buttons.size();
+    return idx < m_fileButtons.size() ? &m_fileButtons[idx] : nullptr;
+}
+
+//---------------------------------------------------
+int wxStartPage::GetChildId(const wxWindowID id) const noexcept
+{
+    for (size_t i = 0; i < m_buttons.size(); ++i)
+    {
+        if (m_buttons[i].m_id == id)
+        {
+            return static_cast<int>(i) + 1;
+        }
+    }
+    for (size_t i = 0; i < m_fileButtons.size(); ++i)
+    {
+        if (m_fileButtons[i].m_id == id)
+        {
+            return static_cast<int>(m_buttons.size() + i) + 1;
+        }
+    }
+    return wxNOT_FOUND;
+}
+
+//---------------------------------------------------
+void wxStartPage::NotifyFocusChanged()
+{
+#if wxUSE_ACCESSIBILITY
+    if (const int childId = GetChildId(m_activeButton); childId != wxNOT_FOUND)
+    {
+        wxAccessible::NotifyEvent(wxACC_EVENT_OBJECT_FOCUS, this, wxOBJID_CLIENT, childId);
+    }
+#endif
+}
+
+//---------------------------------------------------
+void wxStartPage::NotifyChildrenChanged()
+{
+#if wxUSE_ACCESSIBILITY
+    wxAccessible::NotifyEvent(wxACC_EVENT_OBJECT_REORDER, this, wxOBJID_CLIENT, wxACC_SELF);
+#endif
 }
 
 //---------------------------------------------------
@@ -58,6 +426,7 @@ void wxStartPage::OnSetFocus(wxFocusEvent& event)
     {
         m_activeButton = m_fileButtons[0].m_id;
     }
+    NotifyFocusChanged();
     Refresh();
     event.Skip();
 }
@@ -169,9 +538,8 @@ void wxStartPage::OnKeyDown(wxKeyEvent& event)
     }
     else if (keyCode == WXK_TAB)
     {
-        // wxWANTS_CHARS delivers Tab to this control instead of using it for dialog
-        // navigation, so move to the next (or previous) control ourselves.
-        // Otherwise, keyboard users would be trapped here.
+        // Because of wxWANTS_CHARS, Tab is sent to this control instead of moving focus
+        // to the next one. Move focus ourselves, or keyboard users would be stuck here.
         Navigate(event.ShiftDown() ?
             wxNavigationKeyEvent::IsBackward : wxNavigationKeyEvent::IsForward);
         return;
@@ -179,6 +547,12 @@ void wxStartPage::OnKeyDown(wxKeyEvent& event)
     else
     {
         event.Skip();
+    }
+
+    // let screen readers announce the newly highlighted button
+    if (m_activeButton != previousActiveButton)
+    {
+        NotifyFocusChanged();
     }
 }
 
@@ -273,8 +647,8 @@ void wxStartPage::DrawHighlight(wxDC& dc, const wxRect& rect,
 void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
 {
     LoadMRUList(mruFiles);
-    // The highlighted button may not exist anymore (e.g., the list got shorter).
-    // The keyboard handler indexes the button lists from this ID, so don't leave it dangling.
+    // The highlighted button may be gone now (e.g., the list got shorter).
+    // If so, clear it. Otherwise, the arrow keys could look up a button that doesn't exist.
     if (GetChildId(m_activeButton) == wxNOT_FOUND)
     {
         m_activeButton = wxNOT_FOUND;
@@ -1145,6 +1519,12 @@ void wxStartPage::OnMouseChange(wxMouseEvent& event)
     if (previouslyActiveButton == m_activeButton)
     {
         return;
+    }
+
+    // the highlighted button is the focused one while the control has focus
+    if (HasFocus())
+    {
+        NotifyFocusChanged();
     }
 
     // refresh the current and previous (if applicable) highlighted areas

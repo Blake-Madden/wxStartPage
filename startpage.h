@@ -79,6 +79,13 @@ enum class wxStartPageAppHeaderStyle
       string value.
     - Calling IsFileListClearId() to see if the "Clear file list" button was clicked.
     - Calling IsBrowseId() to see if the "Browse for a file" button was clicked.
+
+    @par Accessibility
+    On Windows (when wxWidgets is built with @c wxUSE_ACCESSIBILITY), screen readers
+    can see and use the buttons, via @c wxAccessible. Each custom button, file,
+    and the "Clear file list" or "Browse for a file" button appears as a button.
+    They are numbered starting at 1, with the custom buttons first,
+    followed by the files.
 */
 class wxStartPage final : public wxWindow
 {
@@ -130,6 +137,7 @@ public:
     {
         m_buttons.emplace_back(bmp, label);
         m_buttons.back().m_id = ID_BUTTON_ID_START + (m_buttons.size() - 1);
+        NotifyChildrenChanged();
         return m_buttons.back().m_id;
     }
     /// @brief Adds a feature button on the left side.
@@ -155,6 +163,7 @@ public:
 
         m_buttons.emplace_back(wxBitmapBundle::FromBitmaps(bmps), label);
         m_buttons.back().m_id = ID_BUTTON_ID_START + (m_buttons.size() - 1);
+        NotifyChildrenChanged();
         return m_buttons.back().m_id;
     }
     /// @returns The ID of the given index into the custom button list,
@@ -319,6 +328,27 @@ private:
             m_fileButtons.size() - 1 :
             0;
     }
+
+    /// @brief Rebuilds the MRU list.
+    void LoadMRUList(const wxArrayString& mruFiles);
+
+    /// @returns The button with the given screen reader number
+    ///     (starting at 1; custom buttons first, then the file buttons),
+    ///     or @c nullptr if there is no such button.
+    [[nodiscard]]
+    const wxStartPageButton* GetButtonFromChildId(int childId) const noexcept;
+    /// @returns The screen reader number of a button (starting at 1),
+    ///     or @c wxNOT_FOUND if @c id isn't a button.
+    [[nodiscard]]
+    int GetChildId(wxWindowID id) const noexcept;
+    /// @brief Tells screen readers that a different button is now highlighted.
+    void NotifyFocusChanged();
+    /// @brief Tells screen readers that buttons were added or removed.
+    void NotifyChildrenChanged();
+
+#if wxUSE_ACCESSIBILITY
+    class Accessible;
+#endif
 
     void OnResize([[maybe_unused]] wxSizeEvent& event);
     void OnPaintWindow([[maybe_unused]] wxPaintEvent& event);
