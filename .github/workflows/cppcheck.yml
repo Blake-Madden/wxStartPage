@@ -37,7 +37,7 @@ jobs:
              WARNINGSFILE=./warnings.txt
              if test -f "$REPORTFILE"; then
                 # Filter innocuous warnings and write the remaining ones to another file.
-                sed 's/\[\(missingIncludeSystem\|assertWithSideEffect\|unknownMacro\|internalAstError\|missingInclude\|unusedFunction\|ConfigurationNotChecked\|toomanyconfigs\|unmatchedSuppression\|useStlAlgorithm\)\]//g' "$REPORTFILE" > "$WARNINGSFILE"
+                sed 's/\[\(missingIncludeSystem\|assertWithSideEffect\|unknownMacro\|internalAstError\|missingInclude\|unusedFunction\|ConfigurationNotChecked\|toomanyconfigs\|unmatchedSuppression\|useStlAlgorithm\|checkersReport\)\]//g' "$REPORTFILE" > "$WARNINGSFILE"
 
                 # are there any remaining warnings?
                 if grep -qP '\[[a-zA-Z0-9]{5,}\]' "$WARNINGSFILE"; then
