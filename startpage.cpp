@@ -167,6 +167,15 @@ void wxStartPage::OnKeyDown(wxKeyEvent& event)
         ActivateButton(m_activeButton);
         return;
     }
+    else if (keyCode == WXK_TAB)
+    {
+        // wxWANTS_CHARS delivers Tab to this control instead of using it for dialog
+        // navigation, so move to the next (or previous) control ourselves.
+        // Otherwise, keyboard users would be trapped here.
+        Navigate(event.ShiftDown() ?
+            wxNavigationKeyEvent::IsBackward : wxNavigationKeyEvent::IsForward);
+        return;
+    }
     else
     {
         event.Skip();
