@@ -300,24 +300,21 @@ void wxStartPage::LoadMRUList(const wxArrayString& mruFiles)
         {
             path = wxFileName(path).GetPath();
             // shorten standard user paths
-            path.Replace(
-                wxStandardPaths::Get().GetUserDir(wxStandardPathsBase::Dir::Dir_Documents),
-                _(L"Documents"));
-            path.Replace(
-                wxStandardPaths::Get().GetUserDir(wxStandardPathsBase::Dir::Dir_Desktop),
-                _(L"Desktop"));
-            path.Replace(
-                wxStandardPaths::Get().GetUserDir(wxStandardPathsBase::Dir::Dir_Pictures),
-                _(L"Pictures"));
-            path.Replace(
-                wxStandardPaths::Get().GetUserDir(wxStandardPathsBase::Dir::Dir_Videos),
-                _(L"Videos"));
-            path.Replace(
-                wxStandardPaths::Get().GetUserDir(wxStandardPathsBase::Dir::Dir_Music),
-                _(L"Music"));
-            path.Replace(
-                wxStandardPaths::Get().GetUserDir(wxStandardPathsBase::Dir::Dir_Downloads),
-                _(L"Downloads"));
+            const auto shortenDir = [&path](const wxStandardPathsBase::Dir dir,
+                                            const wxString& name)
+                {
+                    const wxString userDir = wxStandardPaths::Get().GetUserDir(dir);
+                    if (!userDir.empty())
+                    {
+                        path.Replace(userDir, name);
+                    }
+                };
+            shortenDir(wxStandardPathsBase::Dir::Dir_Documents, _(L"Documents"));
+            shortenDir(wxStandardPathsBase::Dir::Dir_Desktop, _(L"Desktop"));
+            shortenDir(wxStandardPathsBase::Dir::Dir_Pictures, _(L"Pictures"));
+            shortenDir(wxStandardPathsBase::Dir::Dir_Videos, _(L"Videos"));
+            shortenDir(wxStandardPathsBase::Dir::Dir_Music, _(L"Music"));
+            shortenDir(wxStandardPathsBase::Dir::Dir_Downloads, _(L"Downloads"));
             // replace slashes with guillemets (makes it look fancier)
             path.Replace(wxFileName::GetPathSeparator(), L" » ", true);
             return path;
