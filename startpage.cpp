@@ -73,6 +73,7 @@ void wxStartPage::OnKillFocus(wxFocusEvent& event)
 //---------------------------------------------------
 void wxStartPage::OnKeyDown(wxKeyEvent& event)
 {
+    const auto previousActiveButton{ m_activeButton };
     const int keyCode = event.GetKeyCode();
     if (keyCode == WXK_UP)
     {
@@ -161,7 +162,10 @@ void wxStartPage::OnKeyDown(wxKeyEvent& event)
     }
     else if (keyCode == WXK_RETURN || keyCode == WXK_NUMPAD_ENTER || keyCode == WXK_SPACE)
     {
+        // The click handler may destroy this control (e.g., by closing the
+        // start page after opening a file), so don't touch any members afterwards.
         ActivateButton(m_activeButton);
+        return;
     }
     else
     {
@@ -258,6 +262,20 @@ void wxStartPage::DrawHighlight(wxDC& dc, const wxRect& rect,
 
 //---------------------------------------------------
 void wxStartPage::SetMRUList(const wxArrayString& mruFiles)
+{
+    LoadMRUList(mruFiles);
+    // The highlighted button may not exist anymore (e.g., the list got shorter).
+    // The keyboard handler indexes the button lists from this ID, so don't leave it dangling.
+    if (GetChildId(m_activeButton) == wxNOT_FOUND)
+    {
+        m_activeButton = wxNOT_FOUND;
+    }
+    NotifyChildrenChanged();
+    Refresh();
+}
+
+//---------------------------------------------------
+void wxStartPage::LoadMRUList(const wxArrayString& mruFiles)
 {
     m_fileButtons.clear();
     m_fileButtons.reserve(mruFiles.size() + 1);
