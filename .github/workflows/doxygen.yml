@@ -9,8 +9,10 @@ jobs:
   build:
     name: doxygen-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       
       - name: install doxygen
         run: |

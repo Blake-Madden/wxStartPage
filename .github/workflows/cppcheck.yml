@@ -9,19 +9,46 @@ jobs:
   build:
     name: cppcheck-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-          
-      - name: cppcheck
-        uses: deep5050/cppcheck-action@main
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN}}
-          std: c++17
-          inline_suppression: enable
-          exclude_check: ./tests
-          output_file: cppcheck_report.txt
-          other_options: --library=wxwidgets
-          
+      - uses: actions/checkout@v7
+
+      - name: Install Cppcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cppcheck
+
+      - name: Run Cppcheck
+        run: |
+          # Note: there is no space between -i and the directory name.
+          # '|| true' keeps this step from failing early so that the next step
+          # can parse the report and decide whether the job passes.
+          cppcheck --enable=all \
+                   --std=c++17 \
+                   --inline-suppr \
+                   --library=wxwidgets,windows \
+                   -itests \
+                   . > cppcheck_report.txt 2>&1 || true
+
       - name: print output
         run: |
-          ./.github/review_cppcheck_output.sh
+             REPORTFILE=./cppcheck_report.txt
+             WARNINGSFILE=./warnings.txt
+             if test -f "$REPORTFILE"; then
+                # Filter innocuous warnings and write the remaining ones to another file.
+                sed 's/\[\(missingIncludeSystem\|assertWithSideEffect\|unknownMacro\|internalAstError\|missingInclude\|unusedFunction\|ConfigurationNotChecked\|toomanyconfigs\|unmatchedSuppression\|useStlAlgorithm\)\]//g' "$REPORTFILE" > "$WARNINGSFILE"
+
+                # are there any remaining warnings?
+                if grep -qP '\[[a-zA-Z0-9]{5,}\]' "$WARNINGSFILE"; then
+                    echo Warnings detected:
+                    echo ==================
+                    grep -P '\[[a-zA-Z0-9]{5,}\]' "$WARNINGSFILE"
+                    exit 1
+                else
+                    echo "No relevant warnings detected"
+                fi
+             else
+                echo "$REPORTFILE" not found
+                exit 1
+             fi
