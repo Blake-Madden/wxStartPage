@@ -361,6 +361,27 @@ private:
 
     void ActivateButton(wxWindowID id);
 
+    /// @brief Redraws the custom buttons and the MRU file buttons.
+    void RefreshButtons()
+    {
+        Refresh();
+        m_mruPane->Refresh();
+    }
+
+    /// @returns The button's rectangle in the start page's client coordinates.
+    /// @note File buttons live in the scrolled pane, so only their visible part is returned.
+    [[nodiscard]]
+    wxRect GetButtonClientRect(const wxStartPageButton& button) const
+    {
+        if (IsCustomButtonId(button.m_id))
+        {
+            return button.m_rect;
+        }
+        return wxRect{ m_mruPane->GetPosition() +
+                           m_mruPane->CalcScrolledPosition(button.m_rect.GetPosition()),
+                       button.m_rect.GetSize() }.Intersect(m_mruPane->GetRect());
+    }
+
     static constexpr int MAX_BUTTONS_SMALL_SIZE = 8;
     static constexpr int MAX_FILE_BUTTONS = 9;
     // supports 9 MRU file buttons
@@ -508,6 +529,60 @@ private:
         return (IsDark(color) ? wxColour{ 255, 255, 255 } : wxColour{ 0, 0, 0 });
     }
 
+    /// @brief The scrolled area (below the greeting and "Recent" header) that shows the MRU files.
+    class MRUPane final : public wxScrolledWindow
+    {
+    public:
+        explicit MRUPane(wxStartPage* page)
+            : wxScrolledWindow(page, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                               wxHSCROLL | wxVSCROLL, L"wxStartPageMRUPane"),
+              m_page(page)
+        {
+            SetScrollRate(0, FromDIP(12));
+            // only scroll vertically
+            ShowScrollbars(wxSHOW_SB_NEVER, wxSHOW_SB_DEFAULT);
+            // the start page keeps the focus
+            SetCanFocus(false);
+            SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+            Bind(wxEVT_PAINT, &MRUPane::OnPaint, this);
+            Bind(wxEVT_MOTION, &MRUPane::OnMouseChange, this);
+            Bind(wxEVT_LEFT_DOWN, &MRUPane::OnMouseClick, this);
+            Bind(wxEVT_LEAVE_WINDOW, &MRUPane::OnMouseLeave, this);
+        }
+
+        /// @brief Scrolls (if needed) so that a button is fully visible.
+        /// @param rect The button's rectangle, in unscrolled coordinates.
+        void ScrollToRect(const wxRect& rect)
+        {
+            int unitX{ 0 }, unitY{ 0 };
+            GetScrollPixelsPerUnit(&unitX, &unitY);
+            if (unitY <= 0)
+            {
+                return;
+            }
+            const int viewTop{ GetViewStart().y * unitY };
+            const int viewHeight{ GetClientSize().GetHeight() };
+            if (rect.GetTop() < viewTop)
+            {
+                Scroll(-1, rect.GetTop() / unitY);
+            }
+            else if (rect.GetBottom() >= viewTop + viewHeight)
+            {
+                Scroll(-1, (rect.GetBottom() - viewHeight + unitY) / unitY);
+            }
+        }
+
+    private:
+        void OnPaint(wxPaintEvent& event);
+        void OnMouseChange(wxMouseEvent& event);
+        void OnMouseClick(wxMouseEvent& event);
+        void OnMouseLeave(wxMouseEvent& event);
+
+        wxStartPage* m_page{ nullptr };
+    };
+
+    MRUPane* m_mruPane{ nullptr };
+
     wxCoord m_buttonWidth{ 0 };
     wxCoord m_buttonHeight{ 0 };
     wxCoord m_buttonsStart{ 0 };
@@ -524,7 +599,6 @@ private:
     std::vector<wxStartPageButton> m_fileButtons;
     std::vector<wxStartPageButton> m_buttons;
     wxBitmapBundle m_logo;
-    wxString m_toolTip;
     wxString m_productDescription;
     wxColour m_buttonAreaBackgroundColor;
     wxColour m_MRUBackgroundColor;
