@@ -85,7 +85,8 @@ enum class wxStartPageAppHeaderStyle
     can see and use the buttons, via @c wxAccessible. Each custom button, file,
     and the "Clear file list" or "Browse for a file" button appears as a button.
     They are numbered starting at 1, with the custom buttons first,
-    followed by the files.
+    followed by the files. The date group headings in the file list
+    (e.g., "Today") appear as static text, right before their first file.
 */
 class wxStartPage final : public wxWindow
 {
@@ -306,6 +307,8 @@ private:
         wxBitmapBundle m_icon;
         wxString m_label;
         wxString m_fullFilePath;
+        // the date group (e.g., "Today") that a file is listed under
+        wxString m_section;
         wxWindowID m_id{ wxNOT_FOUND };
     };
 
@@ -329,14 +332,53 @@ private:
             0;
     }
 
+    /// @returns @c true if the file at @c index is the first one in its date group
+    ///     (which has a heading above it).
+    [[nodiscard]]
+    bool IsSectionStart(const size_t index) const noexcept
+    {
+        return index < GetMRUFileCount() &&
+            (index == 0 || m_fileButtons[index].m_section != m_fileButtons[index - 1].m_section);
+    }
+    /// @returns The number of date group headings in the MRU list.
+    [[nodiscard]]
+    size_t GetSectionCount() const noexcept
+    {
+        size_t count{ 0 };
+        for (size_t i = 0; i < GetMRUFileCount(); ++i)
+        {
+            if (IsSectionStart(i))
+            {
+                ++count;
+            }
+        }
+        return count;
+    }
+
     /// @brief Rebuilds the MRU list.
     void LoadMRUList(const wxArrayString& mruFiles);
 
-    /// @returns The button with the given screen reader number
-    ///     (starting at 1; custom buttons first, then the file buttons),
-    ///     or @c nullptr if there is no such button.
+    /// @brief What a screen reader number refers to.
+    struct AccessibleChild
+    {
+        // either a button or a date group heading
+        const wxStartPageButton* m_button{ nullptr };
+        const wxString* m_heading{ nullptr };
+        // in the start page's client coordinates
+        wxRect m_rect;
+    };
+    /// @returns What the screen reader number refers to
+    ///     (starting at 1; custom buttons first, then each date group heading
+    ///     followed by its files), or an empty result if there is no such child.
     [[nodiscard]]
-    const wxStartPageButton* GetButtonFromChildId(int childId) const noexcept;
+    AccessibleChild GetAccessibleChild(int childId) const;
+    /// @returns The button with the given screen reader number,
+    ///     or @c nullptr if there is none (or if it is a heading).
+    [[nodiscard]]
+    const wxStartPageButton* GetButtonFromChildId(const int childId) const
+    {
+        return GetAccessibleChild(childId).m_button;
+    }
     /// @returns The screen reader number of a button (starting at 1),
     ///     or @c wxNOT_FOUND if @c id isn't a button.
     [[nodiscard]]
@@ -368,18 +410,21 @@ private:
         m_mruPane->Refresh();
     }
 
+    /// @returns A rectangle in the pane's unscrolled coordinates,
+    ///     converted to the start page's client coordinates (only the visible part).
+    [[nodiscard]]
+    wxRect GetPaneClientRect(const wxRect& paneRect) const
+    {
+        return wxRect{ m_mruPane->GetPosition() +
+                           m_mruPane->CalcScrolledPosition(paneRect.GetPosition()),
+                       paneRect.GetSize() }.Intersect(m_mruPane->GetRect());
+    }
     /// @returns The button's rectangle in the start page's client coordinates.
     /// @note File buttons live in the scrolled pane, so only their visible part is returned.
     [[nodiscard]]
     wxRect GetButtonClientRect(const wxStartPageButton& button) const
     {
-        if (IsCustomButtonId(button.m_id))
-        {
-            return button.m_rect;
-        }
-        return wxRect{ m_mruPane->GetPosition() +
-                           m_mruPane->CalcScrolledPosition(button.m_rect.GetPosition()),
-                       button.m_rect.GetSize() }.Intersect(m_mruPane->GetRect());
+        return IsCustomButtonId(button.m_id) ? button.m_rect : GetPaneClientRect(button.m_rect);
     }
 
     static constexpr int MAX_BUTTONS_SMALL_SIZE = 8;
@@ -588,6 +633,7 @@ private:
     wxCoord m_buttonsStart{ 0 };
     wxCoord m_fileColumnHeaderHeight{ 0 };
     wxCoord m_mruButtonHeight{ 0 };
+    wxCoord m_mruSectionHeight{ 0 };
     wxWindowID m_activeButton{ wxNOT_FOUND };
     wxStartPageStyle m_style{ wxStartPageStyle::wxStartPageFlat };
     wxStartPageGreetingStyle m_greetingStyle

@@ -20,7 +20,8 @@ wxDEFINE_EVENT(wxEVT_STARTPAGE_CLICKED, wxCommandEvent);
 //-------------------------------------------
 // Lets screen readers see the buttons on the start page.
 // Each button gets a number starting at 1. The custom buttons (left side)
-// come first, followed by the file buttons (right side).
+// come first, followed by the file buttons (right side). Each date group
+// heading in the file list is also numbered, right before its first file.
 class wxStartPage::Accessible final : public wxAccessible
 {
 public:
@@ -51,8 +52,10 @@ public:
         }
         for (int id = 1; id <= ChildCount(); ++id)
         {
-            const auto* button = m_page->GetButtonFromChildId(id);
-            if (button->IsOk() && m_page->GetButtonClientRect(*button).Contains(clientPt))
+            const auto child = m_page->GetAccessibleChild(id);
+            if (child.m_rect.Contains(clientPt) &&
+                (child.m_heading != nullptr ||
+                 (child.m_button != nullptr && child.m_button->IsOk())))
             {
                 *childId = id;
                 break;
@@ -68,13 +71,12 @@ public:
             rect = wxRect{ m_page->ClientToScreen(wxPoint{ 0, 0 }), m_page->GetClientSize() };
             return wxACC_OK;
         }
-        const auto* button = m_page->GetButtonFromChildId(elementId);
-        if (button == nullptr)
+        const auto child = m_page->GetAccessibleChild(elementId);
+        if (child.m_button == nullptr && child.m_heading == nullptr)
         {
             return wxACC_INVALID_ARG;
         }
-        const wxRect clientRect{ m_page->GetButtonClientRect(*button) };
-        rect = wxRect{ m_page->ClientToScreen(clientRect.GetPosition()), clientRect.GetSize() };
+        rect = wxRect{ m_page->ClientToScreen(child.m_rect.GetPosition()), child.m_rect.GetSize() };
         return wxACC_OK;
     }
 
@@ -159,7 +161,13 @@ public:
         {
             return wxACC_NOT_IMPLEMENTED;
         }
-        const auto* button = m_page->GetButtonFromChildId(childId);
+        const auto child = m_page->GetAccessibleChild(childId);
+        if (child.m_heading != nullptr)
+        {
+            *name = *child.m_heading;
+            return wxACC_OK;
+        }
+        const auto* button = child.m_button;
         if (button == nullptr)
         {
             return wxACC_INVALID_ARG;
@@ -213,7 +221,13 @@ public:
             *role = wxROLE_SYSTEM_PANE;
             return wxACC_OK;
         }
-        if (m_page->GetButtonFromChildId(childId) == nullptr)
+        const auto child = m_page->GetAccessibleChild(childId);
+        if (child.m_heading != nullptr)
+        {
+            *role = wxROLE_SYSTEM_STATICTEXT;
+            return wxACC_OK;
+        }
+        if (child.m_button == nullptr)
         {
             return wxACC_INVALID_ARG;
         }
@@ -229,7 +243,13 @@ public:
                 (m_page->HasFocus() ? wxACC_STATE_SYSTEM_FOCUSED : 0);
             return wxACC_OK;
         }
-        const auto* button = m_page->GetButtonFromChildId(childId);
+        const auto child = m_page->GetAccessibleChild(childId);
+        if (child.m_heading != nullptr)
+        {
+            *state = wxACC_STATE_SYSTEM_READONLY;
+            return wxACC_OK;
+        }
+        const auto* button = child.m_button;
         if (button == nullptr)
         {
             return wxACC_INVALID_ARG;
@@ -316,7 +336,9 @@ private:
     [[nodiscard]]
     int ChildCount() const noexcept
     {
-        return static_cast<int>(m_page->m_buttons.size() + m_page->m_fileButtons.size());
+        // custom buttons, file buttons, and the date group headings
+        return static_cast<int>(m_page->m_buttons.size() + m_page->m_fileButtons.size() +
+                                m_page->GetSectionCount());
     }
 
     wxStartPage* m_page{ nullptr };
@@ -361,20 +383,48 @@ wxStartPage::wxStartPage(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
 }
 
 //---------------------------------------------------
-const wxStartPage::wxStartPageButton*
-wxStartPage::GetButtonFromChildId(const int childId) const noexcept
+wxStartPage::AccessibleChild wxStartPage::GetAccessibleChild(const int childId) const
 {
+    AccessibleChild child;
     if (childId < 1)
     {
-        return nullptr;
+        return child;
     }
     auto idx = static_cast<size_t>(childId) - 1;
     if (idx < m_buttons.size())
     {
-        return &m_buttons[idx];
+        child.m_button = &m_buttons[idx];
+        child.m_rect = GetButtonClientRect(m_buttons[idx]);
+        return child;
     }
     idx -= m_buttons.size();
-    return idx < m_fileButtons.size() ? &m_fileButtons[idx] : nullptr;
+
+    // the files, with a heading before the first file of each date group
+    for (size_t i = 0; i < m_fileButtons.size(); ++i)
+    {
+        if (IsSectionStart(i))
+        {
+            if (idx == 0)
+            {
+                // the heading is directly above its first file
+                const wxRect& fileRect{ m_fileButtons[i].m_rect };
+                child.m_heading = &m_fileButtons[i].m_section;
+                child.m_rect = GetPaneClientRect(
+                    wxRect{ fileRect.GetX(), fileRect.GetY() - m_mruSectionHeight,
+                            fileRect.GetWidth(), m_mruSectionHeight });
+                return child;
+            }
+            --idx;
+        }
+        if (idx == 0)
+        {
+            child.m_button = &m_fileButtons[i];
+            child.m_rect = GetButtonClientRect(m_fileButtons[i]);
+            return child;
+        }
+        --idx;
+    }
+    return child;
 }
 
 //---------------------------------------------------
@@ -387,11 +437,17 @@ int wxStartPage::GetChildId(const wxWindowID id) const noexcept
             return static_cast<int>(i) + 1;
         }
     }
+    // each date group heading comes before its files
+    size_t headingCount{ 0 };
     for (size_t i = 0; i < m_fileButtons.size(); ++i)
     {
+        if (IsSectionStart(i))
+        {
+            ++headingCount;
+        }
         if (m_fileButtons[i].m_id == id)
         {
-            return static_cast<int>(m_buttons.size() + i) + 1;
+            return static_cast<int>(m_buttons.size() + i + headingCount) + 1;
         }
     }
     return wxNOT_FOUND;
@@ -553,11 +609,18 @@ void wxStartPage::OnKeyDown(wxKeyEvent& event)
     if (m_activeButton != previousActiveButton)
     {
         // file buttons are in the scrolled pane, so make sure the new one is visible
-        for (const auto& button : m_fileButtons)
+        for (size_t i = 0; i < m_fileButtons.size(); ++i)
         {
-            if (button.m_id == m_activeButton)
+            if (m_fileButtons[i].m_id == m_activeButton)
             {
-                m_mruPane->ScrollToRect(button.m_rect);
+                wxRect rect{ m_fileButtons[i].m_rect };
+                // include the heading above the first file of a date group
+                if (IsSectionStart(i))
+                {
+                    rect = wxRect{ rect.GetX(), rect.GetY() - m_mruSectionHeight, rect.GetWidth(),
+                                   rect.GetHeight() + m_mruSectionHeight };
+                }
+                m_mruPane->ScrollToRect(rect);
                 break;
             }
         }
@@ -750,13 +813,49 @@ void wxStartPage::LoadMRUList(const wxArrayString& mruFiles)
             return modTime1 > modTime2;
         });
 
+    // the date heading that a file is listed under
+    const auto getSection = [now = wxDateTime::Now()](const wxDateTime& modified) -> wxString
+        {
+            if (!modified.IsValid())
+            {
+                return _(L"Older");
+            }
+            // future dates are treated as today
+            if (modified.IsLaterThan(now) || modified.IsSameDate(now))
+            {
+                return _(L"Today");
+            }
+            if (modified.IsSameDate(now - wxDateSpan::Day()))
+            {
+                return _(L"Yesterday");
+            }
+            wxDateTime weekStart{ now.GetDateOnly() };
+            weekStart.SetToWeekDayInSameWeek(wxDateTime::Mon, wxDateTime::Monday_First);
+            if (modified >= weekStart)
+            {
+                return _(L"This Week");
+            }
+            if (modified >= (weekStart - wxDateSpan::Week()))
+            {
+                return _(L"Last Week");
+            }
+            if (modified.GetYear() == now.GetYear() && modified.GetMonth() == now.GetMonth())
+            {
+                return _(L"Earlier This Month");
+            }
+            return _(L"Older");
+        };
+
     // connect the file paths to the buttons in the MRU list
     m_fileButtons.resize(files.size() + 1);
     for (size_t buttonCount = 0; buttonCount < files.size(); ++buttonCount)
     {
+        wxDateTime accessTime, modTime, createTime;
+        wxFileName{ files[buttonCount] }.GetTimes(&accessTime, &modTime, &createTime);
         m_fileButtons[buttonCount].m_id = ID_FILE_ID_START + buttonCount;
         m_fileButtons[buttonCount].m_fullFilePath = files[buttonCount];
         m_fileButtons[buttonCount].m_label = simplifyFilePath(files[buttonCount]);
+        m_fileButtons[buttonCount].m_section = getSection(modTime);
     }
 
     m_fileButtons.back().m_id = START_PAGE_FILE_LIST_CLEAR;
@@ -925,8 +1024,15 @@ void wxStartPage::OnResize([[maybe_unused]] wxSizeEvent& event)
     wxCoord contentHeight{ 0 };
     if (GetMRUFileCount() > 0)
     {
+        // each date group has a heading above it
+        {
+            const wxDCFontChanger fc(dc, dc.GetFont().Larger().Bold());
+            m_mruSectionHeight =
+                dc.GetTextExtent(L"Ag").GetHeight() + (2 * GetLabelPaddingHeight());
+        }
         const wxDCFontChanger fc(dc, dc.GetFont().Larger());
         contentHeight = (GetMRUFileCount() * GetMRUButtonHeight()) +
+            (GetSectionCount() * m_mruSectionHeight) +
             dc.GetTextExtent(GetClearFileListLabel()).GetHeight() +
             (2 * GetLabelPaddingHeight());
     }
@@ -1262,20 +1368,27 @@ void wxStartPage::MRUPane::OnPaint([[maybe_unused]] wxPaintEvent& event)
                              wxStartPage::IsBrowseId(fileButtons[0].m_id) };
 
     // calculate the positions of the buttons (in unscrolled coordinates)
+    std::vector<std::pair<wxString, wxCoord>> sectionHeadings;
     if (fileCount > 0)
     {
+        wxCoord nextTop{ 0 };
         for (size_t i = 0; i < fileCount; ++i)
         {
-            fileButtons[i].m_rect =
-                wxRect(FromDIP(1), static_cast<wxCoord>(i * m_page->GetMRUButtonHeight()),
-                       paneWidth - FromDIP(2), m_page->GetMRUButtonHeight());
+            // a heading goes above the first file of each date group
+            if (m_page->IsSectionStart(i))
+            {
+                sectionHeadings.emplace_back(fileButtons[i].m_section, nextTop);
+                nextTop += m_page->m_mruSectionHeight;
+            }
+            fileButtons[i].m_rect = wxRect(FromDIP(1), nextTop, paneWidth - FromDIP(2),
+                                           m_page->GetMRUButtonHeight());
+            nextTop += m_page->GetMRUButtonHeight();
         }
         // the "clear file list" button
         const wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeLarger());
         const auto clearButtonSize = dc.GetTextExtent(wxStartPage::GetClearFileListLabel());
         fileButtons[totalCount - 1].m_rect =
-            wxRect(FromDIP(1),
-                   static_cast<wxCoord>(fileCount * m_page->GetMRUButtonHeight()),
+            wxRect(FromDIP(1), nextTop,
                    clearButtonSize.GetWidth() + (padHeight * 2),
                    clearButtonSize.GetHeight() + (padHeight * 2));
     }
@@ -1376,6 +1489,24 @@ void wxStartPage::MRUPane::OnPaint([[maybe_unused]] wxPaintEvent& event)
     // the part of the pane that is showing
     const wxRect visibleRect{ CalcUnscrolledPosition(wxPoint{ 0, 0 }), GetClientSize() };
 
+    // the date group headings
+    {
+        const wxDCFontChanger fc(dc, wxFont(dc.GetFont()).MakeLarger().MakeBold());
+        const wxDCTextColourChanger tcc(dc, mruFontColor);
+        const wxDCPenChanger pc(dc, mruSeparatorLineColor);
+        for (const auto& [section, top] : sectionHeadings)
+        {
+            const wxRect headingRect{ padWidth, top, paneWidth - (2 * padWidth),
+                                      m_page->m_mruSectionHeight };
+            if (headingRect.Intersects(visibleRect))
+            {
+                dc.DrawLabel(section, headingRect, wxALIGN_LEFT | wxALIGN_CENTRE_VERTICAL);
+                dc.DrawLine(FromDIP(1), headingRect.GetBottom(),
+                            paneWidth - FromDIP(1), headingRect.GetBottom());
+            }
+        }
+    }
+
     for (size_t i = 0; i < totalCount; ++i)
     {
         if (!fileButtons[i].IsOk() || !fileButtons[i].m_rect.Intersects(visibleRect))
@@ -1459,13 +1590,6 @@ void wxStartPage::MRUPane::OnPaint([[maybe_unused]] wxPaintEvent& event)
             {
                 dc.DrawLabel(fn.GetFullName(), fileLabelRect,
                              wxALIGN_LEFT | wxALIGN_CENTRE_VERTICAL);
-            }
-            // draw separator line, unless this button is highlighted
-            if (m_page->m_activeButton != fileButtons[i].m_id)
-            {
-                const wxDCPenChanger pc(dc, mruSeparatorLineColor);
-                dc.DrawLine(fileButtons[i].m_rect.GetLeftBottom(),
-                            fileButtons[i].m_rect.GetRightBottom());
             }
         }
         dc.DestroyClippingRegion();
