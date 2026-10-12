@@ -1411,7 +1411,7 @@ void wxStartPage::MRUPane::OnPaint([[maybe_unused]] wxPaintEvent& event)
     }
 
     // highlight the active file button
-    wxString toolTip;
+    [[maybe_unused]] wxString toolTip;
     if (m_page->m_activeButton != wxNOT_FOUND)
     {
         for (size_t i = 0; i < totalCount; ++i)
